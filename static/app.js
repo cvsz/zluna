@@ -299,24 +299,38 @@
   async function refreshStatsPage() {
     try {
       const res = await fetch("/api/stats");
+      if (!res.ok) throw new Error("stats request failed");
       const data = await res.json();
+      const stats = {
+        rounds: Number(data.rounds) || 0,
+        win_rate: Number(data.win_rate) || 0,
+        biggest_win: Number(data.biggest_win) || 0,
+        avg_bet: Number(data.avg_bet) || 0,
+        net_profit: Number(data.net_profit) || 0,
+        biggest_multiplier: Number(data.biggest_multiplier) || 0,
+        game_breakdown: data.game_breakdown || {},
+        outcome_breakdown: data.outcome_breakdown || {},
+      };
       const grid = $("stats-grid");
-      if (!grid) return;
-      grid.innerHTML = `
-        <div class="stat-card"><span class="stat-label">Total Rounds</span><strong>${data.rounds}</strong></div>
-        <div class="stat-card"><span class="stat-label">Win Rate</span><strong>${data.win_rate}%</strong></div>
-        <div class="stat-card"><span class="stat-label">Biggest Win</span><strong>${formatNumber(data.biggest_win)}</strong></div>
-        <div class="stat-card"><span class="stat-label">Avg Bet</span><strong>${formatNumber(data.avg_bet)}</strong></div>
-        <div class="stat-card"><span class="stat-label">Net Profit</span><strong>${data.net_profit >= 0 ? "+" : ""}${formatNumber(data.net_profit)}</strong></div>
-        <div class="stat-card"><span class="stat-label">Max Multiplier</span><strong>${data.biggest_multiplier}x</strong></div>
-      `;
+      if (grid) {
+        grid.innerHTML = `
+          <div class="stat-card"><span class="stat-label">Total Rounds</span><strong>${stats.rounds}</strong></div>
+          <div class="stat-card"><span class="stat-label">Win Rate</span><strong>${stats.win_rate}%</strong></div>
+          <div class="stat-card"><span class="stat-label">Biggest Win</span><strong>${formatNumber(stats.biggest_win)}</strong></div>
+          <div class="stat-card"><span class="stat-label">Avg Bet</span><strong>${formatNumber(stats.avg_bet)}</strong></div>
+          <div class="stat-card"><span class="stat-label">Net Profit</span><strong>${stats.net_profit >= 0 ? "+" : ""}${formatNumber(stats.net_profit)}</strong></div>
+          <div class="stat-card"><span class="stat-label">Max Multiplier</span><strong>${stats.biggest_multiplier}x</strong></div>
+        `;
+      }
       const gameBreakdown = $("stats-game-breakdown");
       if (gameBreakdown) {
-        gameBreakdown.innerHTML = Object.entries(data.game_breakdown || {}).map(([k, v]) => `<div class="breakdown-row"><span>${(games || []).find(g => g.id === k)?.name || k}</span><span>${v} rounds</span></div>`).join("");
+        const entries = Object.entries(stats.game_breakdown);
+        gameBreakdown.innerHTML = entries.length ? entries.map(([k, v]) => `<div class="breakdown-row"><span>${(games || []).find(g => g.id === k)?.name || k}</span><span>${v} rounds</span></div>`).join("") : '<div class="empty-state"><span>No data yet</span></div>';
       }
       const outcomeBreakdown = $("stats-outcome-breakdown");
       if (outcomeBreakdown) {
-        outcomeBreakdown.innerHTML = Object.entries(data.outcome_breakdown || {}).map(([k, v]) => `<div class="breakdown-row"><span>${k}</span><span>${v}</span></div>`).join("");
+        const entries = Object.entries(stats.outcome_breakdown);
+        outcomeBreakdown.innerHTML = entries.length ? entries.map(([k, v]) => `<div class="breakdown-row"><span>${k}</span><span>${v}</span></div>`).join("") : '<div class="empty-state"><span>No data yet</span></div>';
       }
     } catch (_) {}
   }
