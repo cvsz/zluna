@@ -1,0 +1,5 @@
+data/*.jsonl
+data/*.log
+__pycache__/
+tests/__pycache__/
+.pytest_cache/

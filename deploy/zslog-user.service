@@ -1,0 +1,24 @@
+[Unit]
+Description=zslog fake-credit realtime simulator (user service)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/cvsz/zslog
+ExecStart=/usr/bin/python3 /home/cvsz/zslog/app.py
+Environment=ZSLOG_HOST=127.0.0.1
+Environment=ZSLOG_PORT=9581
+Environment=ZSLOG_DATA_PATH=/home/cvsz/zslog/data/events.jsonl
+Restart=always
+RestartSec=3
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/home/cvsz/zslog/data
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#090e19" />
+    <title>zslog / Synthetic Run Console</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="zslog home">
+          <span class="brand-mark">Z</span>
+          <span><strong>zslog</strong><small>run telemetry</small></span>
+        </a>
+        <div class="topbar-meta">
+          <span class="live-indicator"><i id="connection-dot"></i><span id="connection-label">connecting</span></span>
+          <span class="demo-badge">DEMO ONLY</span>
+          <button class="icon-button" id="settings-button" title="Settings">⚙</button>
+          <button class="icon-button" id="stats-button" title="Statistics">📊</button>
+          <button class="icon-button" id="profile-button" title="Profile">👤</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">synthetic event console <span>/</span> local state</p>
+            <h1>Watch the run.<br /><em>As it happens.</em></h1>
+            <p class="lede">A transparent fake-credit simulator for testing live dashboards, bounded automation, and event trails.</p>
+            <div class="safety-note"><span>✦</span> No external game connection. No real money. No browser automation.</div>
+          </div>
+          <div class="hero-orbit" aria-hidden="true">
+            <div class="orbit orbit-one"></div>
+            <div class="orbit orbit-two"></div>
+            <div class="orbit-core"><span>LIVE</span><strong>24/7</strong><small>telemetry</small></div>
+          </div>
+        </section>
+
+        <section class="metrics" aria-label="simulation metrics">
+          <article class="metric metric-primary"><span class="metric-label">fake credits</span><strong id="balance">1,000</strong><small>available balance</small></article>
+          <article class="metric"><span class="metric-label">rounds</span><strong id="rounds">0</strong><small id="rounds-note">awaiting first event</small></article>
+          <article class="metric"><span class="metric-label">hit rate</span><strong id="hit-rate">0%</strong><small>synthetic outcomes</small></article>
+          <article class="metric"><span class="metric-label">net profit</span><strong id="net-profit">0</strong><small>total payout - bet</small></article>
+        </section>
+
+        <section class="console-grid">
+          <article class="panel control-panel">
+            <div class="panel-heading">
+              <div><p class="eyebrow">01 / control</p><h2>Start a run</h2></div>
+              <span class="panel-kicker">bounded</span>
+            </div>
+            <p class="panel-intro">Generate synthetic rounds on the server. Every action is capped and written to the local event log.</p>
+
+            <div class="field-row">
+              <label for="game-select">game <span>select a game</span></label>
+              <div class="game-selector" id="game-selector"></div>
+            </div>
+
+            <div class="game-fields" id="game-fields"></div>
+
+            <div class="field-row">
+              <label for="bet-input">round stake <span>fake credits</span></label>
+              <div class="input-wrap"><input id="bet-input" type="number" min="1" max="100" value="2" inputmode="numeric" /><span>FC</span></div>
+            </div>
+            <button class="primary-button" id="spin-button" type="button"><span>Run one round</span><b>↗</b></button>
+
+            <div class="divider"><span>or bounded auto-run</span></div>
+            <div class="auto-fields">
+              <label for="rounds-input">rounds<input id="rounds-input" type="number" min="1" max="100" value="10" /></label>
+              <label for="interval-input">pace<input id="interval-input" type="number" min="0" max="5000" step="100" value="500" /><small>ms</small></label>
+            </div>
+            <div class="button-row">
+              <button class="secondary-button" id="auto-start-button" type="button">Start auto-run</button>
+              <button class="stop-button" id="auto-stop-button" type="button" disabled>Stop</button>
+            </div>
+            <p class="control-status" id="control-status">Ready for a synthetic round.</p>
+            <div class="game-details" id="game-details" style="display:none;"></div>
+          </article>
+
+          <article class="panel signal-panel">
+            <div class="panel-heading">
+              <div><p class="eyebrow">02 / signal</p><h2>Outcome sampler</h2></div>
+              <span class="signal-counter" id="signal-counter">0000</span>
+            </div>
+            <div class="reel-stage" aria-label="synthetic outcome display">
+              <div class="scan-line"></div>
+              <div class="reel"><span id="reel-a">—</span><small>A</small></div>
+              <div class="reel"><span id="reel-b">—</span><small>B</small></div>
+              <div class="reel"><span id="reel-c">—</span><small>C</small></div>
+            </div>
+            <div class="signal-footer"><span><i class="pulse"></i> generator online</span><span>entropy / synthetic</span></div>
+          </article>
+
+          <article class="panel feed-panel">
+            <div class="panel-heading">
+              <div><p class="eyebrow">03 / event trail</p><h2>Live log</h2></div>
+              <span class="panel-kicker">SSE stream</span>
+              <div class="panel-actions">
+                <button class="icon-button small" id="export-button" title="Export events">⬇</button>
+                <label class="icon-button small" title="Import events" for="import-file">⬆</label>
+                <input type="file" id="import-file" accept=".json" style="display:none" />
+                <button class="icon-button small" id="reset-button" title="Reset balance">↺</button>
+              </div>
+            </div>
+            <div class="feed-head"><span>timestamp</span><span>event / result</span><span>balance</span></div>
+            <div class="event-list" id="event-list" aria-live="polite"><div class="empty-state">Waiting for the first event<span>Run a synthetic round to light up the stream.</span></div></div>
+          </article>
+        </section>
+      </main>
+
+      <footer class="footer"><span>zslog / synthetic telemetry</span><span>server-side state · append-only events · bounded execution</span></footer>
+    </div>
+
+    <div class="modal" id="stats-modal" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-header"><h3>Statistics</h3><button class="icon-button" id="close-stats">✕</button></div>
+        <div class="modal-body" id="stats-body"></div>
+      </div>
+    </div>
+
+    <div class="modal" id="profile-modal" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-header"><h3>Profile</h3><button class="icon-button" id="close-profile">✕</button></div>
+        <div class="modal-body" id="profile-body">
+          <div class="profile-list" id="profile-list"></div>
+          <div class="profile-form">
+            <input type="text" id="profile-name" placeholder="New profile name" />
+            <button id="create-profile" class="primary-button">Create Profile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="settings-modal" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-header"><h3>Settings</h3><button class="icon-button" id="close-settings">✕</button></div>
+        <div class="modal-body">
+          <div class="setting-row"><label>Sound effects</label><input type="checkbox" id="setting-sound" checked /></div>
+          <div class="setting-row"><label>Starting balance</label><input type="number" id="setting-balance" value="1000" min="100" max="100000" /></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
