@@ -18,19 +18,23 @@
           </div>
         </div>
         <nav class="nav">
-          <a class="nav-item active" href="#">
+          <a class="nav-item active" href="#run">
             <span class="nav-icon">◉</span>
             <span>Run</span>
           </a>
-          <a class="nav-item" href="#">
+          <a class="nav-item" href="#library">
             <span class="nav-icon">☰</span>
-            <span>Event log</span>
+            <span>Library</span>
           </a>
-          <a class="nav-item" href="#">
+          <a class="nav-item" href="#stats">
             <span class="nav-icon">◫</span>
             <span>Statistics</span>
           </a>
-          <a class="nav-item" href="#">
+          <a class="nav-item" href="#history">
+            <span class="nav-icon">☷</span>
+            <span>History</span>
+          </a>
+          <a class="nav-item" href="#settings">
             <span class="nav-icon">⚙</span>
             <span>Settings</span>
           </a>
@@ -46,135 +50,240 @@
 
       <main class="main">
         <header class="topbar">
-          <div>
-            <p class="eyebrow">synthetic event console</p>
-            <h1>Run dashboard</h1>
+          <div class="topbar-left">
+            <button class="icon-button mobile-menu" id="mobile-menu-button" title="Menu">☰</button>
+            <div>
+              <p class="eyebrow" id="page-eyebrow">synthetic event console</p>
+              <h1 id="page-title">Run dashboard</h1>
+            </div>
           </div>
           <div class="topbar-actions">
             <button class="icon-button" id="stats-button" title="Statistics">◫</button>
+            <button class="icon-button" id="profile-button" title="Profile">👤</button>
             <button class="icon-button" id="settings-button" title="Settings">⚙</button>
           </div>
         </header>
 
-        <section class="metrics" aria-label="simulation metrics">
-          <article class="metric metric-primary">
-            <span class="metric-label">Fake credits</span>
-            <strong id="balance">1,000</strong>
-            <small>available balance</small>
-          </article>
-          <article class="metric">
-            <span class="metric-label">Rounds</span>
-            <strong id="rounds">0</strong>
-            <small id="rounds-note">awaiting first event</small>
-          </article>
-          <article class="metric">
-            <span class="metric-label">Hit rate</span>
-            <strong id="hit-rate">0%</strong>
-            <small>synthetic outcomes</small>
-          </article>
-          <article class="metric">
-            <span class="metric-label">Net profit</span>
-            <strong id="net-profit">0</strong>
-            <small>total payout − bet</small>
-          </article>
+        <section class="view active" id="view-run">
+          <section class="metrics" aria-label="simulation metrics">
+            <article class="metric metric-primary">
+              <span class="metric-label">Fake credits</span>
+              <strong id="balance">1,000</strong>
+              <small>available balance</small>
+              <div class="metric-trend" id="balance-trend"></div>
+            </article>
+            <article class="metric">
+              <span class="metric-label">Rounds</span>
+              <strong id="rounds">0</strong>
+              <small id="rounds-note">awaiting first event</small>
+            </article>
+            <article class="metric">
+              <span class="metric-label">Hit rate</span>
+              <strong id="hit-rate">0%</strong>
+              <small>synthetic outcomes</small>
+            </article>
+            <article class="metric">
+              <span class="metric-label">Net profit</span>
+              <strong id="net-profit">0</strong>
+              <small>total payout − bet</small>
+            </article>
+          </section>
+
+          <section class="grid">
+            <article class="card control-card">
+              <div class="card-header">
+                <div>
+                  <p class="eyebrow">Control</p>
+                  <h2>Start a run</h2>
+                </div>
+                <span class="badge">bounded</span>
+              </div>
+              <p class="card-subtitle">Generate synthetic rounds on the server. Every action is capped and written to the local event log.</p>
+
+              <div class="field">
+                <label>Game</label>
+                <div class="game-selector" id="game-selector"></div>
+              </div>
+
+              <div class="game-fields" id="game-fields"></div>
+
+              <div class="field">
+                <label for="bet-input">Round stake</label>
+                <div class="input-wrap">
+                  <input id="bet-input" type="number" min="1" max="100" value="2" inputmode="numeric" />
+                  <span class="input-suffix">FC</span>
+                </div>
+              </div>
+              <button class="button button-primary" id="spin-button" type="button">
+                <span>Run one round</span>
+                <b>↗</b>
+              </button>
+
+              <div class="divider"><span>or bounded auto-run</span></div>
+              <div class="auto-fields">
+                <label>
+                  <span>Rounds</span>
+                  <input id="rounds-input" type="number" min="1" max="100" value="10" />
+                </label>
+                <label>
+                  <span>Pace</span>
+                  <input id="interval-input" type="number" min="0" max="5000" step="100" value="500" />
+                  <span class="input-suffix">ms</span>
+                </label>
+              </div>
+              <div class="button-row">
+                <button class="button button-secondary" id="auto-start-button" type="button">Start auto-run</button>
+                <button class="button button-stop" id="auto-stop-button" type="button" disabled>Stop</button>
+              </div>
+              <p class="control-status" id="control-status">Ready for a synthetic round.</p>
+              <div class="game-details" id="game-details" style="display:none;"></div>
+            </article>
+
+            <article class="card signal-card">
+              <div class="card-header">
+                <div>
+                  <p class="eyebrow">Signal</p>
+                  <h2>Outcome sampler</h2>
+                </div>
+                <span class="signal-counter" id="signal-counter">0000</span>
+              </div>
+              <div class="reel-stage" aria-label="synthetic outcome display">
+                <div class="scan-line"></div>
+                <div class="reel"><span id="reel-a">—</span><small>A</small></div>
+                <div class="reel"><span id="reel-b">—</span><small>B</small></div>
+                <div class="reel"><span id="reel-c">—</span><small>C</small></div>
+              </div>
+              <div class="signal-footer">
+                <span><i class="pulse"></i> generator online</span>
+                <span>entropy / synthetic</span>
+              </div>
+            </article>
+
+            <article class="card feed-card">
+              <div class="card-header">
+                <div>
+                  <p class="eyebrow">Event trail</p>
+                  <h2>Live log</h2>
+                </div>
+                <span class="badge">SSE stream</span>
+                <div class="card-actions">
+                  <button class="icon-button small" id="export-button" title="Export events">⬇</button>
+                  <label class="icon-button small" title="Import events" for="import-file">⬆</label>
+                  <input type="file" id="import-file" accept=".json" style="display:none" />
+                  <button class="icon-button small" id="reset-button" title="Reset balance">↺</button>
+                </div>
+              </div>
+              <div class="feed-head">
+                <span>Timestamp</span>
+                <span>Event / result</span>
+                <span>Balance</span>
+              </div>
+              <div class="event-list" id="event-list" aria-live="polite">
+                <div class="empty-state">
+                  <span>Waiting for the first event</span>
+                  <small>Run a synthetic round to light up the stream.</small>
+                </div>
+              </div>
+            </article>
+          </section>
         </section>
 
-        <section class="grid">
-          <article class="card control-card">
+        <section class="view" id="view-library">
+          <div class="library-header">
+            <div>
+              <p class="eyebrow">game library</p>
+              <h2>Available games</h2>
+            </div>
+            <div class="library-filters" id="library-filters"></div>
+          </div>
+          <div class="library-grid" id="library-grid">
+            <div class="empty-state">
+              <span>Loading games...</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-stats">
+          <div class="stats-header">
+            <div>
+              <p class="eyebrow">analytics</p>
+              <h2>Statistics</h2>
+            </div>
+            <button class="button button-secondary" id="refresh-stats">Refresh</button>
+          </div>
+          <div class="stats-grid" id="stats-grid">
+            <div class="stat-card"><span class="stat-label">Total Rounds</span><strong>0</strong></div>
+            <div class="stat-card"><span class="stat-label">Win Rate</span><strong>0%</strong></div>
+            <div class="stat-card"><span class="stat-label">Biggest Win</span><strong>0</strong></div>
+            <div class="stat-card"><span class="stat-label">Avg Bet</span><strong>0</strong></div>
+            <div class="stat-card"><span class="stat-label">Net Profit</span><strong>0</strong></div>
+            <div class="stat-card"><span class="stat-label">Max Multiplier</span><strong>0x</strong></div>
+          </div>
+          <div class="card">
             <div class="card-header">
               <div>
-                <p class="eyebrow">Control</p>
-                <h2>Start a run</h2>
-              </div>
-              <span class="badge">bounded</span>
-            </div>
-            <p class="card-subtitle">Generate synthetic rounds on the server. Every action is capped and written to the local event log.</p>
-
-            <div class="field">
-              <label>Game</label>
-              <div class="game-selector" id="game-selector"></div>
-            </div>
-
-            <div class="game-fields" id="game-fields"></div>
-
-            <div class="field">
-              <label for="bet-input">Round stake</label>
-              <div class="input-wrap">
-                <input id="bet-input" type="number" min="1" max="100" value="2" inputmode="numeric" />
-                <span class="input-suffix">FC</span>
+                <p class="eyebrow">breakdown</p>
+                <h2>Performance by game</h2>
               </div>
             </div>
-            <button class="button button-primary" id="spin-button" type="button">
-              <span>Run one round</span>
-              <b>↗</b>
-            </button>
-
-            <div class="divider"><span>or bounded auto-run</span></div>
-            <div class="auto-fields">
-              <label>
-                <span>Rounds</span>
-                <input id="rounds-input" type="number" min="1" max="100" value="10" />
-              </label>
-              <label>
-                <span>Pace</span>
-                <input id="interval-input" type="number" min="0" max="5000" step="100" value="500" />
-                <span class="input-suffix">ms</span>
-              </label>
-            </div>
-            <div class="button-row">
-              <button class="button button-secondary" id="auto-start-button" type="button">Start auto-run</button>
-              <button class="button button-stop" id="auto-stop-button" type="button" disabled>Stop</button>
-            </div>
-            <p class="control-status" id="control-status">Ready for a synthetic round.</p>
-            <div class="game-details" id="game-details" style="display:none;"></div>
-          </article>
-
-          <article class="card signal-card">
+            <div class="breakdown" id="stats-game-breakdown"></div>
+          </div>
+          <div class="card">
             <div class="card-header">
               <div>
-                <p class="eyebrow">Signal</p>
-                <h2>Outcome sampler</h2>
+                <p class="eyebrow">outcomes</p>
+                <h2>Outcome distribution</h2>
               </div>
-              <span class="signal-counter" id="signal-counter">0000</span>
             </div>
-            <div class="reel-stage" aria-label="synthetic outcome display">
-              <div class="scan-line"></div>
-              <div class="reel"><span id="reel-a">—</span><small>A</small></div>
-              <div class="reel"><span id="reel-b">—</span><small>B</small></div>
-              <div class="reel"><span id="reel-c">—</span><small>C</small></div>
-            </div>
-            <div class="signal-footer">
-              <span><i class="pulse"></i> generator online</span>
-              <span>entropy / synthetic</span>
-            </div>
-          </article>
+            <div class="breakdown" id="stats-outcome-breakdown"></div>
+          </div>
+        </section>
 
-          <article class="card feed-card">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Event trail</p>
-                <h2>Live log</h2>
-              </div>
-              <span class="badge">SSE stream</span>
-              <div class="card-actions">
-                <button class="icon-button small" id="export-button" title="Export events">⬇</button>
-                <label class="icon-button small" title="Import events" for="import-file">⬆</label>
-                <input type="file" id="import-file" accept=".json" style="display:none" />
-                <button class="icon-button small" id="reset-button" title="Reset balance">↺</button>
-              </div>
+        <section class="view" id="view-history">
+          <div class="history-header">
+            <div>
+              <p class="eyebrow">event history</p>
+              <h2>Recent rounds</h2>
             </div>
+            <div class="history-actions">
+              <button class="icon-button small" id="export-history" title="Export">⬇</button>
+              <button class="icon-button small" id="clear-history" title="Clear">🗑</button>
+            </div>
+          </div>
+          <div class="card">
             <div class="feed-head">
               <span>Timestamp</span>
               <span>Event / result</span>
               <span>Balance</span>
             </div>
-            <div class="event-list" id="event-list" aria-live="polite">
+            <div class="event-list" id="history-event-list" aria-live="polite">
               <div class="empty-state">
-                <span>Waiting for the first event</span>
-                <small>Run a synthetic round to light up the stream.</small>
+                <span>No history yet</span>
+                <small>Play some rounds to see them here.</small>
               </div>
             </div>
-          </article>
+          </div>
+        </section>
+
+        <section class="view" id="view-settings">
+          <div class="settings-header">
+            <div>
+              <p class="eyebrow">preferences</p>
+              <h2>Settings</h2>
+            </div>
+          </div>
+          <div class="settings-grid">
+            <div class="card">
+              <div class="card-header"><h2>General</h2></div>
+              <div class="setting-row"><label>Sound effects</label><input type="checkbox" id="setting-sound" checked /></div>
+              <div class="setting-row"><label>Starting balance</label><input type="number" id="setting-balance" value="1000" min="100" max="100000" /></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h2>Account</h2></div>
+              <div class="setting-row"><label>Username</label><input type="text" id="setting-username" value="player" /></div>
+              <div class="setting-row"><label>Email</label><input type="email" id="setting-email" value="" /></div>
+            </div>
+          </div>
         </section>
       </main>
     </div>
@@ -214,11 +323,11 @@
         <div class="modal-body">
           <div class="setting-row">
             <label>Sound effects</label>
-            <input type="checkbox" id="setting-sound" checked />
+            <input type="checkbox" id="modal-setting-sound" checked />
           </div>
           <div class="setting-row">
             <label>Starting balance</label>
-            <input type="number" id="setting-balance" value="1000" min="100" max="100000" />
+            <input type="number" id="modal-setting-balance" value="1000" min="100" max="100000" />
           </div>
         </div>
       </div>

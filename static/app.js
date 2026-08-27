@@ -18,6 +18,8 @@
   const gameSelector = $("game-selector");
   const gameFields = $("game-fields");
   const gameDetails = $("game-details");
+  const pageTitle = $("page-title");
+  const pageEyebrow = $("page-eyebrow");
   let knownIds = new Set();
   let games = [];
   let currentGameId = "slots";
@@ -135,6 +137,19 @@
     row.innerHTML = `<span class="event-time">${formatTime(event.timestamp)}</span><span class="event-result"><b class="${outcomeClass(event.outcome)}">${event.outcome}</b><small>#${event.round} · ${gameLabel}</small></span><span class="event-balance">${formatNumber(event.balance)}</span>`;
     if (prepend) eventList.prepend(row); else eventList.append(row);
     while (eventList.children.length > 40) eventList.lastElementChild.remove();
+  }
+
+  function addHistoryEvent(event) {
+    const historyList = $("history-event-list");
+    if (!historyList) return;
+    const empty = historyList.querySelector(".empty-state");
+    if (empty) empty.remove();
+    const row = document.createElement("div");
+    row.className = "event-row";
+    const gameLabel = (games || []).find((g) => g.id === event.game)?.name || event.game;
+    row.innerHTML = `<span class="event-time">${formatTime(event.timestamp)}</span><span class="event-result"><b class="${outcomeClass(event.outcome)}">${event.outcome}</b><small>#${event.round} · ${gameLabel}</small></span><span class="event-balance">${formatNumber(event.balance)}</span>`;
+    historyList.prepend(row);
+    while (historyList.children.length > 100) historyList.lastElementChild.remove();
   }
 
   function setConnected(connected) {
@@ -279,6 +294,100 @@
     } catch (_) {}
   }
 
+  async function refreshStatsPage() {
+    try {
+      const res = await fetch("/api/stats");
+      const data = await res.json();
+      const grid = $("stats-grid");
+      if (!grid) return;
+      grid.innerHTML = `
+        <div class="stat-card"><span class="stat-label">Total Rounds</span><strong>${data.rounds}</strong></div>
+        <div class="stat-card"><span class="stat-label">Win Rate</span><strong>${data.win_rate}%</strong></div>
+        <div class="stat-card"><span class="stat-label">Biggest Win</span><strong>${formatNumber(data.biggest_win)}</strong></div>
+        <div class="stat-card"><span class="stat-label">Avg Bet</span><strong>${formatNumber(data.avg_bet)}</strong></div>
+        <div class="stat-card"><span class="stat-label">Net Profit</span><strong>${data.net_profit >= 0 ? "+" : ""}${formatNumber(data.net_profit)}</strong></div>
+        <div class="stat-card"><span class="stat-label">Max Multiplier</span><strong>${data.biggest_multiplier}x</strong></div>
+      `;
+      const gameBreakdown = $("stats-game-breakdown");
+      if (gameBreakdown) {
+        gameBreakdown.innerHTML = Object.entries(data.game_breakdown || {}).map(([k, v]) => `<div class="breakdown-row"><span>${(games || []).find(g => g.id === k)?.name || k}</span><span>${v} rounds</span></div>`).join("");
+      }
+      const outcomeBreakdown = $("stats-outcome-breakdown");
+      if (outcomeBreakdown) {
+        outcomeBreakdown.innerHTML = Object.entries(data.outcome_breakdown || {}).map(([k, v]) => `<div class="breakdown-row"><span>${k}</span><span>${v}</span></div>`).join("");
+      }
+    } catch (_) {}
+  }
+
+  async function loadHistory() {
+    try {
+      const res = await fetch("/api/export");
+      const data = await res.json();
+      const historyList = $("history-event-list");
+      if (!historyList) return;
+      historyList.replaceChildren();
+      knownIds.clear();
+      data.events.slice().reverse().forEach((event) => {
+        knownIds.add(event.id);
+        const row = document.createElement("div");
+        row.className = "event-row";
+        const gameLabel = (games || []).find((g) => g.id === event.game)?.name || event.game;
+        row.innerHTML = `<span class="event-time">${formatTime(event.timestamp)}</span><span class="event-result"><b class="${outcomeClass(event.outcome)}">${event.outcome}</b><small>#${event.round} · ${gameLabel}</small></span><span class="event-balance">${formatNumber(event.balance)}</span>`;
+        historyList.appendChild(row);
+      });
+      if (!data.count) {
+        historyList.innerHTML = '<div class="empty-state"><span>No history yet</span><small>Play some rounds to see them here.</small></div>';
+      }
+    } catch (_) {}
+  }
+
+  async function loadLibrary() {
+    try {
+      const res = await fetch("/api/games");
+      const data = await res.json();
+      const grid = $("library-grid");
+      if (!grid) return;
+      grid.innerHTML = data.games.map((game) => `
+        <div class="library-card" data-game-id="${game.id}">
+          <h3>${game.name}</h3>
+          <p>${game.description}</p>
+          <div class="library-meta">
+            <span>Bet: ${game.min_bet}-${game.max_bet} FC</span>
+            <span>${game.category || "game"}</span>
+          </div>
+        </div>
+      `).join("");
+      grid.querySelectorAll(".library-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          currentGameId = card.dataset.gameId;
+          showView("run");
+          renderGameSelector();
+          renderGameFields();
+        });
+      });
+    } catch (_) {}
+  }
+
+  function showView(name) {
+    document.querySelectorAll(".view").forEach((view) => view.classList.remove("active"));
+    const view = $(`view-${name}`);
+    if (view) view.classList.add("active");
+    document.querySelectorAll(".nav-item").forEach((item) => item.classList.toggle("active", item.getAttribute("href") === `#${name}`));
+    const titles = {
+      run: { eyebrow: "synthetic event console", title: "Run dashboard" },
+      library: { eyebrow: "game library", title: "Available games" },
+      stats: { eyebrow: "analytics", title: "Statistics" },
+      history: { eyebrow: "event history", title: "Recent rounds" },
+      settings: { eyebrow: "preferences", title: "Settings" },
+    };
+    const t = titles[name] || titles.run;
+    if (pageTitle) pageTitle.textContent = t.title;
+    if (pageEyebrow) pageEyebrow.textContent = t.eyebrow;
+    if (name === "stats") refreshStatsPage();
+    if (name === "history") loadHistory();
+    if (name === "library") loadLibrary();
+  }
+
   async function exportEvents() {
     try {
       const res = await fetch("/api/export");
@@ -336,14 +445,14 @@
         <button data-name="${name}" class="profile-delete">✕</button>
       </div>
     `).join("");
-    list.querySelectorAll(".profile-load").forEach(btn => {
+    list.querySelectorAll(".profile-load").forEach((btn) => {
       btn.addEventListener("click", () => {
         currentProfile = btn.dataset.name;
         setStatus(`Loaded profile: ${currentProfile}`, "success");
         closeModal("#profile-modal");
       });
     });
-    list.querySelectorAll(".profile-delete").forEach(btn => {
+    list.querySelectorAll(".profile-delete").forEach((btn) => {
       btn.addEventListener("click", () => {
         const profiles = loadProfiles();
         delete profiles[btn.dataset.name];
@@ -361,6 +470,7 @@
       renderState(result.state);
       renderSignal(result.event);
       addEvent(result.event);
+      addHistoryEvent(result.event);
       renderGameDetails(result.event);
       setStatus(`${result.event.outcome} · +${formatNumber(result.event.payout)} payout`, "success");
     } catch (error) { setStatus(error.message, "error"); }
@@ -394,7 +504,7 @@
     } catch (error) { setStatus(error.message, "error"); }
   });
 
-  $("stats-button").addEventListener("click", loadStats);
+  $("stats-button").addEventListener("click", () => showView("stats"));
   $("close-stats").addEventListener("click", () => closeModal("#stats-modal"));
 
   $("profile-button").addEventListener("click", () => {
@@ -422,6 +532,8 @@
   $("close-settings").addEventListener("click", () => closeModal("#settings-modal"));
   $("setting-sound").addEventListener("change", (e) => { settings.sound = e.target.checked; saveSettings(); });
   $("setting-balance").addEventListener("change", (e) => { settings.startingBalance = Number.parseInt(e.target.value, 10); saveSettings(); });
+  $("modal-setting-sound").addEventListener("change", (e) => { settings.sound = e.target.checked; saveSettings(); });
+  $("modal-setting-balance").addEventListener("change", (e) => { settings.startingBalance = Number.parseInt(e.target.value, 10); saveSettings(); });
 
   $("export-button").addEventListener("click", exportEvents);
   $("import-file").addEventListener("change", (e) => { if (e.target.files[0]) importEvents(e.target.files[0]); });
@@ -437,6 +549,27 @@
       eventList.appendChild(empty);
       setStatus("Balance reset.", "success");
     } catch (error) { setStatus(error.message, "error"); }
+  });
+
+  $("export-history").addEventListener("click", exportEvents);
+  $("clear-history").addEventListener("click", async () => {
+    if (!confirm("Clear all history? This does not reset balance.")) return;
+    try {
+      await request("/api/reset", {});
+      knownIds.clear();
+      const historyList = $("history-event-list");
+      if (historyList) historyList.replaceChildren();
+      setStatus("History cleared.", "success");
+    } catch (error) { setStatus(error.message, "error"); }
+  });
+
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    item.addEventListener("click", (e) => {
+      e.preventDefault();
+      const href = item.getAttribute("href");
+      const name = href.replace("#", "");
+      showView(name);
+    });
   });
 
   const stream = new EventSource("/events");
@@ -456,6 +589,7 @@
       renderState(payload.state);
       renderSignal(payload.event);
       addEvent(payload.event);
+      addHistoryEvent(payload.event);
       renderGameDetails(payload.event);
     }
     if (payload.type === "auto")
