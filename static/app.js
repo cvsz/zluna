@@ -741,6 +741,14 @@
     });
   }
 
+  document.addEventListener("keydown", (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
+    if (e.code === "Space" && !spinButton.disabled) {
+      e.preventDefault();
+      spinButton.click();
+    }
+  });
+
   document.addEventListener("click", (e) => {
     const sidebar = document.getElementById("sidebar");
     if (!sidebar || !sidebar.classList.contains("mobile-open")) return;
