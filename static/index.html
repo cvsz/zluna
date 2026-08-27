@@ -194,7 +194,16 @@
               <p class="eyebrow">game library</p>
               <h2>Available games</h2>
             </div>
-            <div class="library-filters" id="library-filters"></div>
+            <div class="library-filters" id="library-filters">
+              <input id="library-search" type="search" placeholder="Search games..." />
+              <select id="library-category">
+                <option value="">All categories</option>
+              </select>
+              <select id="library-provider">
+                <option value="">All providers</option>
+              </select>
+              <button class="button button-secondary small" id="library-favorites-only">Favorites</button>
+            </div>
           </div>
           <div class="library-grid" id="library-grid">
             <div class="empty-state">

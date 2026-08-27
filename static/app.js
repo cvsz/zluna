@@ -20,6 +20,8 @@
   const gameDetails = $("game-details");
   const pageTitle = $("page-title");
   const pageEyebrow = $("page-eyebrow");
+  const mobileMenuButton = $("mobile-menu-button");
+  let libraryFilterState = { q: "", category: "", provider: "", favoritesOnly: false };
   let knownIds = new Set();
   let games = [];
   let currentGameId = "slots";
@@ -343,7 +345,11 @@
 
   async function loadLibrary() {
     try {
-      const query = new URLSearchParams(window.location.hash.replace("#library", "").trim());
+      const query = new URLSearchParams();
+      if (libraryFilterState.q) query.set("q", libraryFilterState.q);
+      if (libraryFilterState.category) query.set("category", libraryFilterState.category);
+      if (libraryFilterState.provider) query.set("provider", libraryFilterState.provider);
+      if (libraryFilterState.favoritesOnly) query.set("favorites", "1");
       const res = await fetch(`/api/catalog?${query.toString()}`);
       const data = await res.json();
       const grid = $("library-grid");
@@ -403,6 +409,40 @@
     } catch (_) {}
   }
 
+  async function loadCatalogFilters() {
+    try {
+      const [categoriesRes, providersRes] = await Promise.all([
+        fetch("/api/catalog/categories"),
+        fetch("/api/catalog/providers"),
+      ]);
+      const categories = await categoriesRes.json();
+      const providers = await providersRes.json();
+      const categorySelect = $("library-category");
+      const providerSelect = $("library-provider");
+      if (categorySelect && categories.categories) {
+        categorySelect.innerHTML = '<option value="">All categories</option>' + categories.categories.map(c => `<option value="${c}">${c}</option>`).join("");
+      }
+      if (providerSelect && providers.providers) {
+        providerSelect.innerHTML = '<option value="">All providers</option>' + providers.providers.map(p => `<option value="${p}">${p}</option>`).join("");
+      }
+    } catch (_) {}
+  }
+
+  function applyLibraryFilters() {
+    const search = $("library-search");
+    const category = $("library-category");
+    const provider = $("library-provider");
+    const favoritesButton = $("library-favorites-only");
+    libraryFilterState.q = search?.value || "";
+    libraryFilterState.category = category?.value || "";
+    libraryFilterState.provider = provider?.value || "";
+    libraryFilterState.favoritesOnly = favoritesButton?.classList.contains("active") || false;
+    if (favoritesButton) {
+      favoritesButton.classList.toggle("active", libraryFilterState.favoritesOnly);
+    }
+    loadLibrary();
+  }
+
   function showView(name) {
     document.querySelectorAll(".view").forEach((view) => view.classList.remove("active"));
     const view = $(`view-${name}`);
@@ -420,7 +460,10 @@
     if (pageEyebrow) pageEyebrow.textContent = t.eyebrow;
     if (name === "stats") refreshStatsPage();
     if (name === "history") loadHistory();
-    if (name === "library") loadLibrary();
+    if (name === "library") {
+      loadCatalogFilters();
+      applyLibraryFilters();
+    }
   }
 
   async function exportEvents() {
@@ -606,6 +649,27 @@
       showView(name);
     });
   });
+
+  if (mobileMenuButton) {
+    mobileMenuButton.addEventListener("click", () => {
+      const sidebar = document.querySelector(".sidebar");
+      if (sidebar) sidebar.classList.toggle("mobile-open");
+    });
+  }
+
+  const librarySearch = $("library-search");
+  const libraryCategory = $("library-category");
+  const libraryProvider = $("library-provider");
+  const libraryFavoritesOnly = $("library-favorites-only");
+  if (librarySearch) librarySearch.addEventListener("input", applyLibraryFilters);
+  if (libraryCategory) libraryCategory.addEventListener("change", applyLibraryFilters);
+  if (libraryProvider) libraryProvider.addEventListener("change", applyLibraryFilters);
+  if (libraryFavoritesOnly) {
+    libraryFavoritesOnly.addEventListener("click", () => {
+      libraryFilterState.favoritesOnly = !libraryFilterState.favoritesOnly;
+      applyLibraryFilters();
+    });
+  }
 
   const stream = new EventSource("/events");
   stream.addEventListener("open", () => setConnected(true));
