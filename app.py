@@ -22,6 +22,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from games import GameContext, get_game, list_games, play_game
+from catalog import catalog
 
 
 HOST = os.environ.get("ZSLOG_HOST", "127.0.0.1")
@@ -243,6 +244,10 @@ class Simulator:
             self._events.append(event)
             self._append_event(event)
             state = self.state()
+            try:
+                catalog.record_play(game_id)
+            except Exception:
+                pass
 
         if self.on_event:
             self.on_event({"type": "round", "event": event, "state": state})
@@ -494,6 +499,42 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
         if path == "/api/games":
             self._send_json({"games": list_games()})
             return
+        if path == "/api/catalog":
+            query = parse_qs(urlsplit(self.path).query)
+            page = int(query.get("page", ["1"])[0] or 1)
+            page_size = int(query.get("page_size", ["20"])[0] or 20)
+            sort = query.get("sort", ["name"])[0] or "name"
+            favorites_only = query.get("favorites", ["0"])[0] == "1"
+            items, total = catalog.list_games(
+                query=query.get("q", [""])[0] or "",
+                category=query.get("category", [""])[0] or "",
+                provider=query.get("provider", [""])[0] or "",
+                tags=query.get("tag", []),
+                favorites_only=favorites_only,
+                status=query.get("status", [""])[0] or "",
+                page=page,
+                page_size=page_size,
+                sort=sort,
+            )
+            self._send_json({"items": items, "total": total, "page": page, "page_size": page_size})
+            return
+        if path == "/api/catalog/categories":
+            self._send_json({"categories": catalog.categories()})
+            return
+        if path == "/api/catalog/providers":
+            self._send_json({"providers": catalog.providers()})
+            return
+        if path == "/api/catalog/tags":
+            self._send_json({"tags": catalog.tags()})
+            return
+        if path.startswith("/api/catalog/"):
+            game_id = path.split("/")[-1]
+            item = catalog.get(game_id)
+            if not item:
+                self._send_error_json("game not found", HTTPStatus.NOT_FOUND)
+                return
+            self._send_json(item)
+            return
         if path == "/api/stats":
             self._send_json(self.application.simulator.stats())
             return
@@ -577,7 +618,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         path = urlsplit(self.path).path
-        if path not in {"/api/spin", "/api/auto/start", "/api/auto/stop", "/api/import", "/api/reset"}:
+        if path not in {"/api/spin", "/api/auto/start", "/api/auto/stop", "/api/import", "/api/reset", "/api/catalog/favorite", "/api/catalog/sync"}:
             self._send_error_json("not found", HTTPStatus.NOT_FOUND)
             return
         try:
@@ -626,6 +667,15 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
                         imported += 1
                 self.application.simulator.reload()
                 self._send_json({"ok": True, "imported": imported})
+                return
+            if path == "/api/catalog/favorite":
+                game_id = payload.get("game_id", "")
+                favorite = bool(payload.get("favorite"))
+                catalog.set_favorite(game_id, favorite)
+                self._send_json({"ok": True, "game_id": game_id, "favorite": favorite})
+                return
+            if path == "/api/catalog/sync":
+                self._send_json({"ok": True, "source": "local-seed", "synced_at": datetime.now(timezone.utc).isoformat()})
                 return
         except InvalidBet as exc:
             self._send_error_json(str(exc), HTTPStatus.BAD_REQUEST)

@@ -224,12 +224,20 @@ button:disabled { cursor: not-allowed; opacity: 0.45; transform: none; }
 
 .library-header, .stats-header, .history-header, .settings-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
 .library-filters { display: flex; gap: 8px; }
-.library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-.library-card { padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: var(--shadow); transition: all 0.15s ease; }
+.library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.library-card { padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: var(--shadow); transition: all 0.15s ease; cursor: pointer; }
 .library-card:hover { border-color: var(--accent-2); transform: translateY(-2px); }
-.library-card h3 { margin: 0 0 6px; font: 400 20px/1.1 Georgia, serif; }
+.library-card.favorite { border-color: var(--accent); background: rgba(34,197,94,0.03); }
+.library-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.library-card h3 { margin: 0; font: 400 20px/1.1 Georgia, serif; }
 .library-card p { margin: 0; color: var(--muted); font-size: 13px; }
-.library-card .library-meta { margin-top: 12px; display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.library-meta { margin-top: 12px; display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.library-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.tag { padding: 3px 8px; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; font: 10px ui-monospace, monospace; }
+.library-actions { display: flex; gap: 8px; margin-top: 14px; align-items: center; }
+.library-actions .button.small { padding: 6px 10px; font-size: 12px; }
+.favorite-button { color: var(--muted); }
+.favorite-button.active { color: #facc15; border-color: rgba(250,204,21,0.35); }
 
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
 .stat-card { padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-light); }

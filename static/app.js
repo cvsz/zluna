@@ -343,26 +343,61 @@
 
   async function loadLibrary() {
     try {
-      const res = await fetch("/api/games");
+      const query = new URLSearchParams(window.location.hash.replace("#library", "").trim());
+      const res = await fetch(`/api/catalog?${query.toString()}`);
       const data = await res.json();
       const grid = $("library-grid");
       if (!grid) return;
-      grid.innerHTML = data.games.map((game) => `
-        <div class="library-card" data-game-id="${game.id}">
-          <h3>${game.name}</h3>
+      if (!data.items.length) {
+        grid.innerHTML = '<div class="empty-state"><span>No games found</span><small>Try adjusting your filters.</small></div>';
+        return;
+      }
+      grid.innerHTML = data.items.map((game) => `
+        <div class="library-card ${game.favorite ? "favorite" : ""}" data-game-id="${game.game_id}">
+          <div class="library-card-header">
+            <h3>${game.name}</h3>
+            <span class="badge">${game.category}</span>
+          </div>
           <p>${game.description}</p>
           <div class="library-meta">
             <span>Bet: ${game.min_bet}-${game.max_bet} FC</span>
-            <span>${game.category || "game"}</span>
+            <span>${game.provider}</span>
+          </div>
+          <div class="library-tags">
+            ${(game.tags || []).slice(0, 4).map(tag => `<span class="tag">${tag}</span>`).join("")}
+          </div>
+          <div class="library-actions">
+            <button class="button button-secondary small play-library" data-game-id="${game.game_id}">Play</button>
+            <button class="icon-button small favorite-button ${game.favorite ? "active" : ""}" data-game-id="${game.game_id}" title="Favorite">★</button>
           </div>
         </div>
       `).join("");
+      grid.querySelectorAll(".play-library").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          currentGameId = btn.dataset.gameId;
+          showView("run");
+          renderGameSelector();
+          renderGameFields();
+        });
+      });
       grid.querySelectorAll(".library-card").forEach((card) => {
         card.addEventListener("click", () => {
           currentGameId = card.dataset.gameId;
           showView("run");
           renderGameSelector();
           renderGameFields();
+        });
+      });
+      grid.querySelectorAll(".favorite-button").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const gameId = btn.dataset.gameId;
+          const isFav = btn.classList.contains("active");
+          await request("/api/catalog/favorite", { game_id: gameId, favorite: !isFav });
+          btn.classList.toggle("active");
+          const card = btn.closest(".library-card");
+          if (card) card.classList.toggle("favorite");
         });
       });
     } catch (_) {}
@@ -604,10 +639,10 @@
     .then(renderState)
     .catch(() => setConnected(false));
 
-  fetch("/api/games")
+  fetch("/api/catalog")
     .then((r) => r.json())
     .then((data) => {
-      games = data.games;
+      games = data.items || [];
       renderGameSelector();
       renderGameFields();
     })
