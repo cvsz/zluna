@@ -33,6 +33,7 @@ a { color: inherit; text-decoration: none; }
   top: 0;
   height: 100vh;
 }
+.sidebar.mobile-open { display: flex; position: fixed; inset: 0; z-index: 50; width: 100%; }
 .brand {
   display: flex;
   gap: 12px;
@@ -69,6 +70,7 @@ a { color: inherit; text-decoration: none; }
 .nav-icon { width: 18px; text-align: center; font-size: 14px; }
 
 .sidebar-footer { padding: 20px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.mobile-close { display: none; align-self: flex-end; }
 .live-indicator { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
 .live-indicator i, .pulse { display: inline-block; width: 7px; height: 7px; border-radius: 99px; background: var(--coral); box-shadow: 0 0 0 4px rgba(248,113,113,0.12); }
 .live-indicator i.connected, .pulse { background: var(--accent); box-shadow: 0 0 0 4px rgba(34,197,94,0.1); }
@@ -276,6 +278,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; transform: none; }
   .sidebar.mobile-open { display: flex; position: fixed; inset: 0; z-index: 50; width: 100%; }
   .main { padding: 20px; }
   .mobile-menu { display: inline-flex; }
+  .mobile-close { display: inline-flex; }
   .metrics { grid-template-columns: 1fr 1fr; }
   .library-grid { grid-template-columns: 1fr; }
 }
@@ -285,3 +288,15 @@ button:disabled { cursor: not-allowed; opacity: 0.45; transform: none; }
   .event-result { display: block; }
   .event-result small { display: block; margin-top: 4px; }
 }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--panel-light) 25%, rgba(255,255,255,0.04) 50%, var(--panel-light) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+  color: transparent !important;
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.skeleton-text { height: 12px; margin-bottom: 8px; }
+.skeleton-title { height: 18px; width: 60%; margin-bottom: 12px; }
+.skeleton-card { height: 120px; }

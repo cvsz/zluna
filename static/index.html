@@ -9,42 +9,45 @@
   </head>
   <body>
     <div class="app">
-      <aside class="sidebar">
-        <div class="brand">
-          <span class="brand-mark">Z</span>
-          <div>
-            <strong>zslog</strong>
-            <small>synthetic telemetry</small>
+      <aside class="sidebar" id="sidebar">
+        <div>
+          <div class="brand">
+            <span class="brand-mark">Z</span>
+            <div>
+              <strong>zslog</strong>
+              <small>synthetic telemetry</small>
+            </div>
           </div>
+          <nav class="nav">
+            <a class="nav-item active" href="#run">
+              <span class="nav-icon">◉</span>
+              <span>Run</span>
+            </a>
+            <a class="nav-item" href="#library">
+              <span class="nav-icon">☰</span>
+              <span>Library</span>
+            </a>
+            <a class="nav-item" href="#stats">
+              <span class="nav-icon">◫</span>
+              <span>Statistics</span>
+            </a>
+            <a class="nav-item" href="#history">
+              <span class="nav-icon">☷</span>
+              <span>History</span>
+            </a>
+            <a class="nav-item" href="#settings">
+              <span class="nav-icon">⚙</span>
+              <span>Settings</span>
+            </a>
+          </nav>
         </div>
-        <nav class="nav">
-          <a class="nav-item active" href="#run">
-            <span class="nav-icon">◉</span>
-            <span>Run</span>
-          </a>
-          <a class="nav-item" href="#library">
-            <span class="nav-icon">☰</span>
-            <span>Library</span>
-          </a>
-          <a class="nav-item" href="#stats">
-            <span class="nav-icon">◫</span>
-            <span>Statistics</span>
-          </a>
-          <a class="nav-item" href="#history">
-            <span class="nav-icon">☷</span>
-            <span>History</span>
-          </a>
-          <a class="nav-item" href="#settings">
-            <span class="nav-icon">⚙</span>
-            <span>Settings</span>
-          </a>
-        </nav>
         <div class="sidebar-footer">
           <span class="live-indicator">
             <i id="connection-dot"></i>
             <span id="connection-label">connecting</span>
           </span>
           <span class="demo-badge">DEMO ONLY</span>
+          <button class="icon-button mobile-close" id="mobile-close-button" title="Close menu">✕</button>
         </div>
       </aside>
 
@@ -206,9 +209,10 @@
             </div>
           </div>
           <div class="library-grid" id="library-grid">
-            <div class="empty-state">
-              <span>Loading games...</span>
-            </div>
+            <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:80%"></div></div>
+            <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:70%"></div></div>
+            <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:90%"></div></div>
+            <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:75%"></div></div>
           </div>
         </section>
 

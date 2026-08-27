@@ -358,6 +358,15 @@
   }
 
   async function loadLibrary() {
+    const grid = $("library-grid");
+    if (grid) {
+      grid.innerHTML = `
+        <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:80%"></div></div>
+        <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:70%"></div></div>
+        <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:90%"></div></div>
+        <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:75%"></div></div>
+      `;
+    }
     try {
       const query = new URLSearchParams();
       if (libraryFilterState.q) query.set("q", libraryFilterState.q);
@@ -666,10 +675,24 @@
 
   if (mobileMenuButton) {
     mobileMenuButton.addEventListener("click", () => {
-      const sidebar = document.querySelector(".sidebar");
-      if (sidebar) sidebar.classList.toggle("mobile-open");
+      const sidebar = document.getElementById("sidebar");
+      if (sidebar) sidebar.classList.add("mobile-open");
     });
   }
+  const mobileCloseButton = $("mobile-close-button");
+  if (mobileCloseButton) {
+    mobileCloseButton.addEventListener("click", () => {
+      const sidebar = document.getElementById("sidebar");
+      if (sidebar) sidebar.classList.remove("mobile-open");
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    const sidebar = document.getElementById("sidebar");
+    if (!sidebar || !sidebar.classList.contains("mobile-open")) return;
+    if (sidebar.contains(e.target) || e.target === mobileMenuButton || e.target === mobileCloseButton) return;
+    sidebar.classList.remove("mobile-open");
+  });
 
   const librarySearch = $("library-search");
   const libraryCategory = $("library-category");
