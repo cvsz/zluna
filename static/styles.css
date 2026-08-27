@@ -87,6 +87,7 @@ h2 { margin: 0; font: 400 24px/1.1 Georgia, serif; letter-spacing: -0.02em; }
 .icon-button:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
 .icon-button.small { padding: 6px; font-size: 12px; }
 .mobile-menu { display: none; }
+#theme-toggle { font-size: 16px; }
 
 .view { display: none; }
 .view.active { display: block; animation: fadeIn 0.25s ease; }

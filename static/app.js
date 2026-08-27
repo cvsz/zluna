@@ -21,7 +21,61 @@
   const pageTitle = $("page-title");
   const pageEyebrow = $("page-eyebrow");
   const mobileMenuButton = $("mobile-menu-button");
+  const themeToggle = $("theme-toggle");
   let libraryFilterState = { q: "", category: "", provider: "", favoritesOnly: false };
+
+  function applyTheme(theme) {
+    if (theme === "light") {
+      document.documentElement.style.setProperty("--bg", "#f8fafc");
+      document.documentElement.style.setProperty("--panel", "#ffffff");
+      document.documentElement.style.setProperty("--panel-light", "#f1f5f9");
+      document.documentElement.style.setProperty("--line", "rgba(0, 0, 0, 0.08)");
+      document.documentElement.style.setProperty("--muted", "#64748b");
+      document.documentElement.style.setProperty("--text", "#0f172a");
+      document.documentElement.style.setProperty("--accent", "#16a34a");
+      document.documentElement.style.setProperty("--accent-2", "#2563eb");
+      document.documentElement.style.setProperty("--coral", "#dc2626");
+      document.documentElement.style.setProperty("--violet", "#7c3aed");
+      document.documentElement.style.setProperty("--shadow", "0 10px 30px rgba(0, 0, 0, 0.08)");
+    } else {
+      document.documentElement.style.setProperty("--bg", "#0b0f19");
+      document.documentElement.style.setProperty("--panel", "#111827");
+      document.documentElement.style.setProperty("--panel-light", "#1f2937");
+      document.documentElement.style.setProperty("--line", "rgba(255, 255, 255, 0.08)");
+      document.documentElement.style.setProperty("--muted", "#9ca3af");
+      document.documentElement.style.setProperty("--text", "#f9fafb");
+      document.documentElement.style.setProperty("--accent", "#22c55e");
+      document.documentElement.style.setProperty("--accent-2", "#3b82f6");
+      document.documentElement.style.setProperty("--coral", "#f87171");
+      document.documentElement.style.setProperty("--violet", "#a78bfa");
+      document.documentElement.style.setProperty("--shadow", "0 10px 30px rgba(0, 0, 0, 0.25)");
+    }
+  }
+
+  function loadTheme() {
+    try {
+      const saved = localStorage.getItem("zslog-theme");
+      if (saved) {
+        applyTheme(saved);
+      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+        applyTheme("light");
+      }
+    } catch (_) {}
+  }
+
+  function saveTheme(theme) {
+    try { localStorage.setItem("zslog-theme", theme); } catch (_) {}
+  }
+
+  if (themeToggle) {
+    loadTheme();
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.style.getPropertyValue("--bg").trim();
+      const next = current === "#f8fafc" ? "dark" : "light";
+      applyTheme(next);
+      saveTheme(next);
+    });
+  }
   let knownIds = new Set();
   let games = [];
   let currentGameId = "slots";
