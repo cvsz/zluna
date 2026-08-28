@@ -105,7 +105,12 @@
                 <span class="nav-txt">Table Classics</span>
               </a>
               
-              <div class="menu-group-label">CASINO CONSOLE</div>
+              <div class="menu-group-label">CASINO CONSOLE & FEEDS</div>
+              <a class="luna-nav-link" href="#luckyconnect">
+                <span class="nav-ico">🌐</span>
+                <span class="nav-txt">LuckyConnect Hub</span>
+                <span class="nav-badge-gold">6,000+ Games</span>
+              </a>
               <a class="luna-nav-link" href="#play-station">
                 <span class="nav-ico">🎮</span>
                 <span class="nav-txt">Live Game Deck</span>
@@ -408,6 +413,52 @@
                   </div>
                 </div>
               </div>
+            </section>
+
+            <!-- VIEW: LUCKYCONNECT CASINO AGGREGATOR HUB -->
+            <section class="view" id="view-luckyconnect">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">LuckyStreak Aggregation Platform</p>
+                  <h2>LuckyConnect 6,000+ Unified Games Hub</h2>
+                </div>
+                <span class="badge-accent">60+ Studios Aggregated</span>
+              </div>
+
+              <!-- Aggregator Provider Filter Pills -->
+              <div class="category-tabs-bar mt-3" id="lc-provider-pills">
+                <button class="cat-pill active" data-provider="all">All Studios (60+)</button>
+                <button class="cat-pill" data-provider="LuckyStreak Live">🎥 LuckyStreak Live Studio</button>
+                <button class="cat-pill" data-provider="Pragmatic Play">⚡ Pragmatic Play</button>
+                <button class="cat-pill" data-provider="PG Soft">🀄 PG Soft</button>
+                <button class="cat-pill" data-provider="Yggdrasil">⚔️ Yggdrasil</button>
+                <button class="cat-pill" data-provider="RubyPlay">💎 RubyPlay</button>
+                <button class="cat-pill" data-provider="PlayEola">🚀 PlayEola</button>
+              </div>
+
+              <!-- Aggregated Game Cards Grid -->
+              <div class="games-grid mt-4" id="lc-games-grid">
+                <!-- Dynamically populated -->
+              </div>
+
+              <!-- LuckyConnect Seamless Webhook Test Console -->
+              <div class="deck-card mt-4">
+                <div class="deck-card-header">
+                  <div>
+                    <p class="card-eyebrow">B2B Integration Gateway</p>
+                    <h3 class="card-title">LuckyConnect Seamless Wallet Webhook Simulator</h3>
+                  </div>
+                  <span class="badge-green">Latency: 14ms</span>
+                </div>
+                <p class="text-muted" style="font-size:13px;">Simulates LuckyStreak B2B callback webhooks executing debit (Bet) and credit (Win) transactions directly into the Lunaland balance ledger.</p>
+                <div class="d-flex gap-2 mt-3">
+                  <button class="btn-spin-primary flex-1" id="btn-sim-lc-debit">Simulate Debit Bet (50 LC)</button>
+                  <button class="btn-store-glow flex-1" id="btn-sim-lc-credit">Simulate Credit Win (150 LC)</button>
+                </div>
+                <p id="lc-webhook-status" class="console-status-text mt-2"></p>
+              </div>
+            </section>
+
             <!-- VIEW: ZWALLET WEB3 CRYPTO TREASURY -->
             <section class="view" id="view-zwallet">
               <div class="page-title-banner">

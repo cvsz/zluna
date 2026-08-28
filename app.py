@@ -13,6 +13,7 @@ import json
 import os
 import queue
 import random
+import secrets
 import threading
 import time
 import uuid
@@ -28,6 +29,7 @@ from catalog import catalog
 from members import member_manager, Member
 from zwallet import zwallet, ZWalletEngine, SUPPORTED_NETWORKS, CRYPTO_RATES_USD
 from tournaments import tournaments, TournamentEngine
+from luckyconnect import luckyconnect, LuckyConnectAggregator
 
 
 HOST = os.environ.get("ZSLOG_HOST", "127.0.0.1")
@@ -729,6 +731,17 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
                 "service_status": "HEALTHY_OPTIMAL",
             })
             return
+        if path == "/api/luckyconnect/games":
+            query = parse_qs(urlsplit(self.path).query)
+            provider = query.get("provider", [""])[0] or None
+            category = query.get("category", [""])[0] or None
+            search = query.get("q", [""])[0] or None
+            games = luckyconnect.list_games(provider=provider, category=category, search=search)
+            self._send_json({"ok": True, "games": games, "count": len(games)})
+            return
+        if path == "/api/luckyconnect/providers":
+            self._send_json({"ok": True, "summary": luckyconnect.get_providers_summary()})
+            return
         if path == "/api/state":
             self._send_json(self.application.state())
             return
@@ -823,6 +836,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             "/api/members/register", "/api/members/login", "/api/members/logout",
             "/api/members/kyc", "/api/members/2fa/setup", "/api/members/2fa/verify",
             "/api/tournaments/drop",
+            "/api/luckyconnect/launch", "/api/luckyconnect/webhook",
             "/api/zwallet/deposit", "/api/zwallet/withdraw", "/api/zwallet/stake"
         }
         if path not in allowed_paths:
@@ -830,6 +844,29 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             return
         try:
             payload = self._request_json()
+            if path == "/api/luckyconnect/launch":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                member_id = member.id if member else "lunacommander"
+                game_id = payload.get("game_id", "ls_live_blackjack_vip")
+                curr = payload.get("currency", "LC")
+                is_demo = bool(payload.get("demo", True))
+                try:
+                    res = luckyconnect.get_game_launch_url(game_id, member_id, curr, is_demo)
+                    self._send_json(res)
+                except ValueError as err:
+                    self._send_error_json(str(err), HTTPStatus.BAD_REQUEST)
+                return
+            if path == "/api/luckyconnect/webhook":
+                action = payload.get("action", "credit")
+                sess = payload.get("session_token", "")
+                amt = float(payload.get("amount", 0.0))
+                tx_id = payload.get("transaction_id", f"TX-{secrets.token_hex(6)}")
+                round_id = payload.get("round_id", f"RND-{secrets.token_hex(6)}")
+                res = luckyconnect.process_seamless_webhook(action, sess, amt, tx_id, round_id)
+                self._send_json(res)
+                return
             if path == "/api/members/kyc":
                 auth_hdr = self.headers.get("Authorization", "")
                 token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()

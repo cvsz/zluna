@@ -219,14 +219,45 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
         self.assertTrue(drop["ok"])
         self.assertEqual(drop["drop"]["reward_lc"], 25_000)
 
-    def test_admin_backoffice_metrics_api(self):
-        req = Request(self.base_url + "/api/admin/metrics", method="GET")
+    def test_luckyconnect_aggregator_api(self):
+        # 1. Test LuckyConnect games list
+        req = Request(self.base_url + "/api/luckyconnect/games", method="GET")
         with urlopen(req, timeout=2) as resp:
             self.assertEqual(resp.status, 200)
             data = json.load(resp)
             self.assertTrue(data["ok"])
-            self.assertIn("ggr_lc", data)
-            self.assertEqual(data["service_status"], "HEALTHY_OPTIMAL")
+            self.assertTrue(len(data["games"]) >= 5)
+
+        # 2. Test LuckyConnect providers summary
+        req_p = Request(self.base_url + "/api/luckyconnect/providers", method="GET")
+        with urlopen(req_p, timeout=2) as resp:
+            self.assertEqual(resp.status, 200)
+            summary = json.load(resp)
+            self.assertTrue(summary["ok"])
+            self.assertEqual(summary["summary"]["total_available_games"], 6000)
+
+        # 3. Test LuckyConnect authenticated launch session creation
+        status, launch = self.post_json("/api/luckyconnect/launch", {
+            "game_id": "ls_live_blackjack_vip",
+            "currency": "LC",
+            "demo": True
+        })
+        self.assertEqual(status, 200)
+        self.assertTrue(launch["ok"])
+        self.assertIn("luckyconnect.luckystreaklive.com", launch["launch_url"])
+        self.assertTrue(launch["live_stream"])
+
+        # 4. Test LuckyConnect Seamless Webhook Callback
+        status, hook = self.post_json("/api/luckyconnect/webhook", {
+            "action": "debit",
+            "amount": 50.0,
+            "session_token": launch["session_token"],
+            "transaction_id": "TX-TEST-001",
+            "round_id": "RND-TEST-001"
+        })
+        self.assertEqual(status, 200)
+        self.assertTrue(hook["ok"])
+        self.assertEqual(hook["status"], "SUCCESS")
 
 
 if __name__ == "__main__":

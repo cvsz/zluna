@@ -1262,12 +1262,128 @@
         }
       } catch (_) {}
     }
-    if (btnRefreshAdmin) btnRefreshAdmin.addEventListener("click", loadAdminMetrics);
+    // --- LUCKYCONNECT CASINO GAMES AGGREGATOR ---
+    const lcGamesGrid = $("lc-games-grid");
+    const lcProviderPills = $("lc-provider-pills");
+    const btnSimLcDebit = $("btn-sim-lc-debit");
+    const btnSimLcCredit = $("btn-sim-lc-credit");
+    const lcWebhookStatus = $("lc-webhook-status");
+
+    let currentLcProvider = "all";
+
+    async function loadLuckyConnectGames(provider = "all") {
+      try {
+        let url = "/api/luckyconnect/games";
+        if (provider && provider !== "all") {
+          url += `?provider=${encodeURIComponent(provider)}`;
+        }
+        const res = await fetch(url);
+        const data = await res.json();
+        if (res.ok && data.ok && data.games && lcGamesGrid) {
+          lcGamesGrid.innerHTML = "";
+          data.games.forEach((g) => {
+            const card = document.createElement("div");
+            card.className = "game-card";
+            card.innerHTML = `
+              <div class="game-thumb-placeholder">
+                <span class="game-thumb-icon">${g.type === "live_dealer" ? "🎥" : "🎰"}</span>
+                <span class="game-provider-badge">${g.provider}</span>
+                ${g.live_stream_supported ? '<span class="badge-accent" style="position:absolute; top:8px; right:8px; font-size:10px;">LIVE HD</span>' : ''}
+              </div>
+              <div class="game-info">
+                <h4 class="game-title">${g.name}</h4>
+                <div class="game-meta">
+                  <span class="game-rtp">RTP ${g.rtp}%</span>
+                  <span class="game-vol">${g.volatility}</span>
+                </div>
+                <button class="btn-play-game mt-2" data-lc-game="${g.game_id}">LAUNCH FEED</button>
+              </div>
+            `;
+            lcGamesGrid.appendChild(card);
+          });
+
+          // Bind Launch Buttons
+          lcGamesGrid.querySelectorAll("[data-lc-game]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const gid = btn.getAttribute("data-lc-game");
+              try {
+                const lRes = await fetch("/api/luckyconnect/launch", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+                  },
+                  body: JSON.stringify({ game_id: gid, currency: activeCurrency, demo: true }),
+                });
+                const lData = await lRes.json();
+                if (lRes.ok && lData.ok) {
+                  alert(`🎮 LuckyConnect Session Created for ${lData.name} (${lData.provider})\n\n🔗 Authenticated Launcher URL:\n${lData.launch_url}`);
+                }
+              } catch (_) {}
+            });
+          });
+        }
+      } catch (_) {}
+    }
+
+    if (lcProviderPills) {
+      lcProviderPills.querySelectorAll(".cat-pill").forEach((pill) => {
+        pill.addEventListener("click", () => {
+          lcProviderPills.querySelectorAll(".cat-pill").forEach((p) => p.classList.remove("active"));
+          pill.classList.add("active");
+          currentLcProvider = pill.getAttribute("data-provider");
+          loadLuckyConnectGames(currentLcProvider);
+        });
+      });
+    }
+
+    if (btnSimLcDebit) {
+      btnSimLcDebit.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/luckyconnect/webhook", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "debit",
+              amount: 50.0,
+              session_token: "LS-SESS-DEMO-001",
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok && lcWebhookStatus) {
+            lcWebhookStatus.textContent = `✅ LuckyConnect Debit Webhook Settled: -50 LC (Tx: ${data.tx_id})`;
+            lcWebhookStatus.style.color = "#10b981";
+          }
+        } catch (_) {}
+      });
+    }
+
+    if (btnSimLcCredit) {
+      btnSimLcCredit.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/luckyconnect/webhook", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "credit",
+              amount: 150.0,
+              session_token: "LS-SESS-DEMO-001",
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok && lcWebhookStatus) {
+            lcWebhookStatus.textContent = `🎉 LuckyConnect Credit Webhook Settled: +150 LC Payout (Tx: ${data.tx_id})`;
+            lcWebhookStatus.style.color = "#fbbf24";
+          }
+        } catch (_) {}
+      });
+    }
 
     loadCurrentMember();
     loadZwInfo();
     loadTournaments();
     loadAdminMetrics();
+    loadLuckyConnectGames();
     updateZwDepositPreview();
 
     // Hash check on load
