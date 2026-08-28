@@ -291,6 +291,31 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
             self.assertTrue(r_data["ok"])
             self.assertIn("LuckyStreak Live", r_data["studios_pnl"])
 
+    def test_ai_dealer_voice_host_api(self):
+        # 1. Test AI Dealer Status GET
+        req = Request(self.base_url + "/api/ai-dealer/status", method="GET")
+        with urlopen(req, timeout=2) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.load(resp)
+            self.assertTrue(data["ok"])
+            self.assertEqual(data["status"], "STREAMING_ONLINE")
+            self.assertIn("Gemini 2.5", data["model_engine"])
+
+        # 2. Test Dynamic Voice Commentary POST
+        status, comm = self.post_json("/api/ai-dealer/commentary", {
+            "event_kind": "spin",
+            "game_name": "Gates of Olympus 1000",
+            "multiplier": 15.0,
+            "payout": 30000,
+            "currency": "LC",
+            "player_name": "LunaWinner"
+        })
+        self.assertEqual(status, 200)
+        self.assertTrue(comm["ok"])
+        self.assertIn("commentary", comm)
+        self.assertEqual(comm["commentary"]["emotion"], "excited")
+        self.assertEqual(comm["commentary"]["audio_cue"], "fanfare")
+
 
 if __name__ == "__main__":
     unittest.main()

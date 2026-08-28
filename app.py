@@ -33,6 +33,7 @@ from luckyconnect import luckyconnect, LuckyConnectAggregator
 from keyless_gaming import keyless_hub, KeylessGamingHub
 from marketing import marketing_engine, MarketingEngine
 from risk_analytics import risk_engine, RiskAndAnalyticsEngine
+from ai_dealer import ai_dealer, AIDealerHost
 
 
 HOST = os.environ.get("ZSLOG_HOST", "127.0.0.1")
@@ -756,6 +757,9 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
         if path == "/api/marketing/summary":
             self._send_json({"ok": True, "marketing": marketing_engine.get_campaigns_summary()})
             return
+        if path == "/api/ai-dealer/status":
+            self._send_json(ai_dealer.get_live_host_status())
+            return
         if path == "/api/risk/dashboard":
             self._send_json(risk_engine.get_risk_and_pnl_dashboard())
             return
@@ -868,13 +872,25 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             "/api/tournaments/drop",
             "/api/luckyconnect/launch", "/api/luckyconnect/webhook",
             "/api/marketing/redeem", "/api/marketing/wheel", "/api/risk/ocr",
-            "/api/zwallet/deposit", "/api/zwallet/withdraw", "/api/zwallet/stake"
+            "/api/zwallet/deposit", "/api/zwallet/withdraw", "/api/zwallet/stake",
+            "/api/ai-dealer/commentary"
         }
         if path not in allowed_paths:
             self._send_error_json("not found", HTTPStatus.NOT_FOUND)
             return
         try:
             payload = self._request_json()
+            if path == "/api/ai-dealer/commentary":
+                res = ai_dealer.generate_commentary(
+                    event_kind=str(payload.get("event_kind", "spin")),
+                    game_name=str(payload.get("game_name", "Classic Slots")),
+                    multiplier=float(payload.get("multiplier", 0.0)),
+                    payout=float(payload.get("payout", 0.0)),
+                    currency=str(payload.get("currency", "LC")),
+                    player_name=str(payload.get("player_name", "VIP Player")),
+                )
+                self._send_json({"ok": True, "commentary": res.__dict__})
+                return
             if path == "/api/marketing/redeem":
                 auth_hdr = self.headers.get("Authorization", "")
                 token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()

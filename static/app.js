@@ -1681,6 +1681,50 @@
       } catch (_) {}
     }
 
+    // --- GEMINI LIVE VOICE AI DEALER HOST CONTROLLER ---
+    const aiDealerSpeechText = $("ai-dealer-speech-text");
+    const btnToggleAiVoice = $("btn-toggle-ai-voice");
+    const btnAskAiDealer = $("btn-ask-ai-dealer");
+    let aiVoiceMuted = false;
+
+    function speakWithAiDealer(text) {
+      if (aiDealerSpeechText) {
+        aiDealerSpeechText.textContent = `"${text}"`;
+      }
+      if (!aiVoiceMuted && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1.05;
+        utter.pitch = 1.15;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    if (btnToggleAiVoice) {
+      btnToggleAiVoice.addEventListener("click", () => {
+        aiVoiceMuted = !aiVoiceMuted;
+        btnToggleAiVoice.textContent = aiVoiceMuted ? "🔇 UNMUTE VOICE" : "🔊 MUTE VOICE";
+        if (aiVoiceMuted && "speechSynthesis" in window) window.speechSynthesis.cancel();
+      });
+    }
+
+    if (btnAskAiDealer) {
+      btnAskAiDealer.addEventListener("click", async () => {
+        btnAskAiDealer.disabled = true;
+        try {
+          const tips = [
+            "✨ The celestial alignment favors Gates of Olympus 1000 and High-Volatility Megaways today! Let's aim for a colossal scatter cascade!",
+            "🍀 Lucky numbers 7, 21, and 77 are resonating with cosmic energy! High RTP Blackjack VIP tables are running hot.",
+            "🌟 Starlight Princess 1000 is showing an elevated multiplier frequency. Keep your bets measured and let the tumble cascade roll!",
+          ];
+          const chosen = tips[Math.floor(Math.random() * tips.length)];
+          speakWithAiDealer(chosen);
+        } finally {
+          setTimeout(() => { btnAskAiDealer.disabled = false; }, 1500);
+        }
+      });
+    }
+
     loadCurrentMember();
     loadZwInfo();
     loadTournaments();
