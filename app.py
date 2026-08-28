@@ -559,7 +559,15 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
         self._serve_static(path)
 
     def _serve_static(self, path: str) -> None:
-        filenames = {"/": "index.html", "/index.html": "index.html", "/app.js": "app.js", "/styles.css": "styles.css"}
+        filenames = {
+            "/": "index.html",
+            "/index.html": "index.html",
+            "/app.js": "app.js",
+            "/styles.css": "styles.css",
+            "/tabler.min.css": "tabler.min.css",
+            "/tabler.min.js": "tabler.min.js",
+            "/apexcharts.min.js": "apexcharts.min.js",
+        }
         filename = filenames.get(path)
         if not filename:
             self._send_error_json("not found", HTTPStatus.NOT_FOUND)
@@ -573,6 +581,9 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             "index.html": "text/html; charset=utf-8",
             "app.js": "text/javascript; charset=utf-8",
             "styles.css": "text/css; charset=utf-8",
+            "tabler.min.css": "text/css; charset=utf-8",
+            "tabler.min.js": "text/javascript; charset=utf-8",
+            "apexcharts.min.js": "text/javascript; charset=utf-8",
         }[filename]
         self.send_response(HTTPStatus.OK)
         self._headers(content_type, len(body))

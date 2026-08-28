@@ -1,0 +1,28 @@
+{
+  "name": "zslog",
+  "version": "1.0.0",
+  "description": "`zslog` is a safe, self-contained fake-credit simulator and realtime event dashboard. It is intentionally designed without external gambling connections, real-money handling, or browser automation.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cvsz/zslog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cvsz/zslog/issues"
+  },
+  "homepage": "https://github.com/cvsz/zslog#readme",
+  "dependencies": {
+    "@tabler/core": "^1.4.0",
+    "apexcharts": "^7.0.0"
+  }
+}

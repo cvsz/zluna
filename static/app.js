@@ -26,29 +26,31 @@
 
   function applyTheme(theme) {
     if (theme === "light") {
-      document.documentElement.style.setProperty("--bg", "#f8fafc");
-      document.documentElement.style.setProperty("--panel", "#ffffff");
-      document.documentElement.style.setProperty("--panel-light", "#f1f5f9");
-      document.documentElement.style.setProperty("--line", "rgba(0, 0, 0, 0.08)");
-      document.documentElement.style.setProperty("--muted", "#64748b");
-      document.documentElement.style.setProperty("--text", "#0f172a");
-      document.documentElement.style.setProperty("--accent", "#16a34a");
-      document.documentElement.style.setProperty("--accent-2", "#2563eb");
-      document.documentElement.style.setProperty("--coral", "#dc2626");
-      document.documentElement.style.setProperty("--violet", "#7c3aed");
-      document.documentElement.style.setProperty("--shadow", "0 10px 30px rgba(0, 0, 0, 0.08)");
+      document.documentElement.style.setProperty("--zs-bg", "#f8fafc");
+      document.documentElement.style.setProperty("--zs-panel", "#ffffff");
+      document.documentElement.style.setProperty("--zs-panel-light", "#f1f5f9");
+      document.documentElement.style.setProperty("--zs-line", "rgba(0, 0, 0, 0.08)");
+      document.documentElement.style.setProperty("--zs-muted", "#64748b");
+      document.documentElement.style.setProperty("--zs-text", "#0f172a");
+      document.documentElement.style.setProperty("--zs-accent", "#16a34a");
+      document.documentElement.style.setProperty("--zs-accent-2", "#2563eb");
+      document.documentElement.style.setProperty("--zs-coral", "#dc2626");
+      document.documentElement.style.setProperty("--zs-violet", "#7c3aed");
+      document.documentElement.style.setProperty("--zs-shadow", "0 10px 30px rgba(0, 0, 0, 0.08)");
+      document.documentElement.setAttribute("data-bs-theme", "light");
     } else {
-      document.documentElement.style.setProperty("--bg", "#0b0f19");
-      document.documentElement.style.setProperty("--panel", "#111827");
-      document.documentElement.style.setProperty("--panel-light", "#1f2937");
-      document.documentElement.style.setProperty("--line", "rgba(255, 255, 255, 0.08)");
-      document.documentElement.style.setProperty("--muted", "#9ca3af");
-      document.documentElement.style.setProperty("--text", "#f9fafb");
-      document.documentElement.style.setProperty("--accent", "#22c55e");
-      document.documentElement.style.setProperty("--accent-2", "#3b82f6");
-      document.documentElement.style.setProperty("--coral", "#f87171");
-      document.documentElement.style.setProperty("--violet", "#a78bfa");
-      document.documentElement.style.setProperty("--shadow", "0 10px 30px rgba(0, 0, 0, 0.25)");
+      document.documentElement.style.setProperty("--zs-bg", "#0b0f19");
+      document.documentElement.style.setProperty("--zs-panel", "#111827");
+      document.documentElement.style.setProperty("--zs-panel-light", "#1f2937");
+      document.documentElement.style.setProperty("--zs-line", "rgba(255, 255, 255, 0.08)");
+      document.documentElement.style.setProperty("--zs-muted", "#9ca3af");
+      document.documentElement.style.setProperty("--zs-text", "#f9fafb");
+      document.documentElement.style.setProperty("--zs-accent", "#22c55e");
+      document.documentElement.style.setProperty("--zs-accent-2", "#3b82f6");
+      document.documentElement.style.setProperty("--zs-coral", "#f87171");
+      document.documentElement.style.setProperty("--zs-violet", "#a78bfa");
+      document.documentElement.style.setProperty("--zs-shadow", "0 10px 30px rgba(0, 0, 0, 0.25)");
+      document.documentElement.setAttribute("data-bs-theme", "dark");
     }
   }
 
@@ -70,45 +72,155 @@
   if (themeToggle) {
     loadTheme();
     themeToggle.addEventListener("click", () => {
-      const current = document.documentElement.style.getPropertyValue("--bg").trim();
+      const current = document.documentElement.style.getPropertyValue("--zs-bg").trim();
       const next = current === "#f8fafc" ? "dark" : "light";
       applyTheme(next);
       saveTheme(next);
     });
   }
-  let knownIds = new Set();
-  let games = [];
+  const GAME_ICONS = {
+    slots: "🎰", dice: "🎲", coin: "🪙", roulette: "🎡", blackjack: "🃏",
+    crash: "📈", plinko: "🏐", keno: "🔢", baccarat: "💎", hilo: "🔼",
+  };
+  const CATEGORY_GRADIENTS = {
+    "Table Games": "linear-gradient(135deg, rgba(59,130,246,0.15), transparent)",
+    "Instant Win": "linear-gradient(135deg, rgba(34,197,94,0.15), transparent)",
+    "Strategy": "linear-gradient(135deg, rgba(167,139,250,0.15), transparent)",
+    "Classic": "linear-gradient(135deg, rgba(245,158,11,0.15), transparent)",
+  };
+
+  function gameIcon(gameId) {
+    return GAME_ICONS[gameId] || "🎮";
+  }
+  function categoryGradient(category) {
+    return CATEGORY_GRADIENTS[category] || "linear-gradient(135deg, rgba(100,116,139,0.12), transparent)";
+  }
+  let balanceChart = null;
+  let sparklines = {};
+  let balanceHistory = [];
+  let roundsHistory = [];
+  let hitRateHistory = [];
+  let profitHistory = [];
+  const MAX_CHART_POINTS = 50;
+
+  function initCharts() {
+    const chartEl = document.getElementById("balance-chart");
+    if (!chartEl || typeof ApexCharts === "undefined") return;
+    balanceChart = new ApexCharts(chartEl, {
+      chart: {
+        type: "area",
+        height: 220,
+        background: "transparent",
+        toolbar: { show: false },
+        animations: { enabled: true, easing: "easeinout", speed: 400 },
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      },
+      series: [{ name: "Balance", data: [] }],
+      xaxis: { type: "datetime", labels: { style: { colors: "#9ca3af", fontSize: "10px" } }, axisBorder: { show: false }, axisTicks: { show: false } },
+      yaxis: { labels: { style: { colors: "#9ca3af", fontSize: "10px" }, formatter: (v) => Math.round(v).toLocaleString() } },
+      grid: { borderColor: "rgba(255,255,255,0.06)", strokeDashArray: 4 },
+      stroke: { curve: "smooth", width: 2.5, colors: ["#22c55e"] },
+      fill: { type: "gradient", gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100], colorStops: [{ offset: 0, color: "#22c55e", opacity: 0.35 }, { offset: 100, color: "#22c55e", opacity: 0 }] } },
+      tooltip: { theme: "dark", x: { format: "HH:mm:ss" } },
+      dataLabels: { enabled: false },
+    });
+    balanceChart.render();
+  }
+
+  function initSparklines() {
+    const trendIds = ["balance-trend", "rounds-trend", "hit-rate-trend", "profit-trend"];
+    const colors = ["#22c55e", "#3b82f6", "#a78bfa", "#f59e0b"];
+    trendIds.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (!el || typeof ApexCharts === "undefined") return;
+      sparklines[id] = new ApexCharts(el, {
+        chart: { type: "area", height: 32, sparkline: { enabled: true }, animations: { enabled: true, speed: 300 } },
+        series: [{ data: [] }],
+        stroke: { curve: "smooth", width: 1.5, colors: [colors[i]] },
+        fill: { type: "gradient", gradient: { opacityFrom: 0.5, opacityTo: 0.1, colorStops: [{ offset: 0, color: colors[i], opacity: 0.4 }, { offset: 100, color: colors[i], opacity: 0 }] } },
+        tooltip: { enabled: false },
+      });
+      sparklines[id].render();
+    });
+  }
+
+  function updateCharts(state, event) {
+    const now = Date.now();
+    balanceHistory.push({ x: now, y: state.balance });
+    roundsHistory.push({ x: now, y: state.rounds });
+    hitRateHistory.push({ x: now, y: state.rounds ? Math.round((state.wins / state.rounds) * 100) : 0 });
+    profitHistory.push({ x: now, y: state.total_payout - state.total_bet });
+    if (balanceHistory.length > MAX_CHART_POINTS) balanceHistory.shift();
+    if (roundsHistory.length > MAX_CHART_POINTS) roundsHistory.shift();
+    if (hitRateHistory.length > MAX_CHART_POINTS) hitRateHistory.shift();
+    if (profitHistory.length > MAX_CHART_POINTS) profitHistory.shift();
+    if (balanceChart) balanceChart.updateSeries([{ data: [...balanceHistory] }]);
+    if (sparklines["balance-trend"]) sparklines["balance-trend"].updateSeries([{ data: balanceHistory.map((p) => p.y) }]);
+    if (sparklines["rounds-trend"]) sparklines["rounds-trend"].updateSeries([{ data: roundsHistory.map((p) => p.y) }]);
+    if (sparklines["hit-rate-trend"]) sparklines["hit-rate-trend"].updateSeries([{ data: hitRateHistory.map((p) => p.y) }]);
+    if (sparklines["profit-trend"]) sparklines["profit-trend"].updateSeries([{ data: profitHistory.map((p) => p.y) }]);
+  }
   let currentGameId = "slots";
   let currentPayload = {};
   let settings = { sound: true, startingBalance: 1000 };
   let currentProfile = "default";
 
   const AUDIO = new (window.AudioContext || window.webkitAudioContext)();
+  let audioUnlocked = false;
+  function unlockAudio() {
+    if (audioUnlocked) return;
+    AUDIO.resume().then(() => { audioUnlocked = true; });
+  }
+  document.addEventListener("click", unlockAudio, { once: true });
 
-  function playTone(freq, duration = 0.1, type = "square") {
+  function playTone(freq, duration = 0.1, type = "sine", volume = 0.08, delay = 0) {
     if (!settings.sound) return;
     try {
       const osc = AUDIO.createOscillator();
       const gain = AUDIO.createGain();
       osc.type = type;
       osc.frequency.value = freq;
-      gain.gain.value = 0.05;
+      gain.gain.value = 0;
       osc.connect(gain).connect(AUDIO.destination);
-      osc.start();
-      gain.gain.exponentialRampToValueAtTime(0.0001, AUDIO.currentTime + duration);
-      osc.stop(AUDIO.currentTime + duration);
+      const start = AUDIO.currentTime + delay;
+      osc.start(start);
+      gain.gain.linearRampToValueAtTime(volume, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      osc.stop(start + duration + 0.05);
     } catch (_) {}
   }
 
   function playOutcomeSound(outcome) {
-    const map = {
-      JACKPOT: [523, 659, 784, 1047], SURGE: [440, 554, 659], WIN: [660, 880],
-      RETURN: [330, 440], OVER: [440, 554], UNDER: [330, 294], SEVEN: [392, 440, 494, 523, 587],
-      CASHOUT: [523, 659, 784], STRAIGHT: [523, 659, 784, 1047, 1319], HEADS: [440], TAILS: [330],
-      RED: [440], BLACK: [330], GREEN: [392],
-    };
-    const notes = map[outcome] || [440];
-    notes.forEach((f, i) => setTimeout(() => playTone(f, 0.15, "square"), i * 80));
+    const t = AUDIO.currentTime;
+    if (["JACKPOT", "STRAIGHT"].includes(outcome)) {
+      [523, 659, 784, 1047, 1319].forEach((f, i) => playTone(f, 0.25, "sine", 0.1, i * 0.08));
+    } else if (["SURGE", "WIN", "SEVEN", "CASHOUT"].includes(outcome)) {
+      [660, 880, 1047].forEach((f, i) => playTone(f, 0.18, "sine", 0.08, i * 0.06));
+    } else if (["RETURN", "PUSH"].includes(outcome)) {
+      playTone(440, 0.15, "triangle", 0.06);
+      playTone(554, 0.15, "triangle", 0.06, 0.1);
+    } else if (["MISS", "BUST", "CRASHED"].includes(outcome)) {
+      playTone(220, 0.2, "sawtooth", 0.05);
+      playTone(165, 0.25, "sawtooth", 0.04, 0.08);
+    } else if (["OVER", "UNDER", "HEADS", "TAILS"].includes(outcome)) {
+      playTone(outcome.includes("OVER") || outcome === "HEADS" ? 523 : 392, 0.12, "sine", 0.06);
+    } else if (["RED", "BLACK", "GREEN"].includes(outcome)) {
+      playTone(outcome === "GREEN" ? 784 : outcome === "RED" ? 660 : 494, 0.15, "triangle", 0.06);
+    } else {
+      playTone(440, 0.1, "sine", 0.05);
+    }
+  }
+
+  function playSpinSound() {
+    if (!settings.sound) return;
+    for (let i = 0; i < 6; i++) {
+      playTone(800 + Math.random() * 400, 0.05, "square", 0.03, i * 0.04);
+    }
+  }
+
+  function playBonusSound() {
+    if (!settings.sound) return;
+    [784, 988, 1175, 1568].forEach((f, i) => playTone(f, 0.2, "sine", 0.08, i * 0.1));
   }
 
   const formatNumber = (value) => new Intl.NumberFormat("en-US").format(value || 0);
@@ -155,9 +267,25 @@
 
   function renderSignal(event) {
     const symbols = GAME_SYMBOLS[event.outcome] || ["·", "·", "·"];
-    $("reel-a").textContent = symbols[0];
-    $("reel-b").textContent = symbols[1];
-    $("reel-c").textContent = symbols[2];
+    const reels = [document.getElementById("reel-1"), document.getElementById("reel-2"), document.getElementById("reel-3")];
+    const spans = [document.getElementById("reel-a"), document.getElementById("reel-b"), document.getElementById("reel-c")];
+    const stage = document.querySelector(".reel-stage");
+    const isWin = !["MISS", "BUST", "CRASHED"].includes(event.outcome);
+    reels.forEach((reel) => {
+      reel.classList.add("spinning");
+      reel.classList.remove("win", "loss");
+    });
+    setTimeout(() => {
+      spans.forEach((span, i) => { span.textContent = symbols[i]; });
+      reels.forEach((reel) => { reel.classList.remove("spinning"); });
+      if (isWin) {
+        reels.forEach((reel) => { reel.classList.add("win"); });
+        stage.classList.add("win-flash");
+        setTimeout(() => stage.classList.remove("win-flash"), 600);
+      } else {
+        reels.forEach((reel) => { reel.classList.add("loss"); });
+      }
+    }, 400);
     signalCounter.textContent = String(event.round || 0).padStart(4, "0");
     playOutcomeSound(event.outcome);
   }
@@ -436,11 +564,12 @@
         return;
       }
       grid.innerHTML = data.items.map((game) => `
-        <div class="library-card ${game.favorite ? "favorite" : ""}" data-game-id="${game.game_id}">
+        <div class="library-card ${game.favorite ? "favorite" : ""}" data-game-id="${game.game_id}" style="background: ${categoryGradient(game.category)}">
           <div class="library-card-header">
-            <h3>${game.name}</h3>
+            <div class="library-card-icon">${gameIcon(game.game_id)}</div>
             <span class="badge">${game.category}</span>
           </div>
+          <h3>${game.name}</h3>
           <p>${game.description}</p>
           <div class="library-meta">
             <span>Bet: ${game.min_bet}-${game.max_bet} FC</span>
@@ -619,6 +748,7 @@
 
   spinButton.addEventListener("click", async () => {
     spinButton.disabled = true;
+    playSpinSound();
     try {
       const payload = readPayload();
       const result = await request("/api/spin", { bet: readBet(), game: currentGameId, ...payload });
@@ -627,6 +757,8 @@
       addEvent(result.event);
       addHistoryEvent(result.event);
       renderGameDetails(result.event);
+      updateCharts(result.state, result.event);
+      if (result.event.bonus_awarded) playBonusSound();
       setStatus(`${result.event.outcome} · +${formatNumber(result.event.payout)} payout`, "success");
     } catch (error) { setStatus(error.message, "error"); }
     finally { spinButton.disabled = false; }
@@ -698,10 +830,7 @@
       await request("/api/reset", {});
       knownIds.clear();
       eventList.replaceChildren();
-      const empty = document.createElement("div");
-      empty.className = "empty-state";
-      empty.innerHTML = 'Waiting for the first event<span>Run a synthetic round to light up the stream.</span>';
-      eventList.appendChild(empty);
+      eventList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎲</div><span>No rounds yet</span><small>Run a synthetic round or start an auto-run to see events here.</small></div>';
       setStatus("Balance reset.", "success");
     } catch (error) { setStatus(error.message, "error"); }
   });
@@ -780,6 +909,22 @@
     renderState(payload.state);
     payload.events.slice().reverse().forEach((event) => addEvent(event, false));
     if (payload.events[0]) renderSignal(payload.events[0]);
+    balanceHistory = [];
+    roundsHistory = [];
+    hitRateHistory = [];
+    profitHistory = [];
+    payload.events.forEach((event) => {
+      const ts = new Date(event.timestamp).getTime();
+      balanceHistory.push({ x: ts, y: event.balance });
+      roundsHistory.push({ x: ts, y: event.round });
+      hitRateHistory.push({ x: ts, y: event.round ? Math.round((event.wins / event.round) * 100) : 0 });
+      profitHistory.push({ x: ts, y: event.total_payout - event.total_bet });
+    });
+    if (balanceHistory.length > MAX_CHART_POINTS) balanceHistory = balanceHistory.slice(-MAX_CHART_POINTS);
+    if (roundsHistory.length > MAX_CHART_POINTS) roundsHistory = roundsHistory.slice(-MAX_CHART_POINTS);
+    if (hitRateHistory.length > MAX_CHART_POINTS) hitRateHistory = hitRateHistory.slice(-MAX_CHART_POINTS);
+    if (profitHistory.length > MAX_CHART_POINTS) profitHistory = profitHistory.slice(-MAX_CHART_POINTS);
+    updateCharts(payload.state, payload.events[0]);
   });
   stream.addEventListener("update", (message) => {
     const payload = JSON.parse(message.data);
@@ -789,6 +934,7 @@
       addEvent(payload.event);
       addHistoryEvent(payload.event);
       renderGameDetails(payload.event);
+      updateCharts(payload.state, payload.event);
     }
     if (payload.type === "auto")
       setStatus(
@@ -811,5 +957,7 @@
     })
     .catch(() => setConnected(false));
 
+  initCharts();
+  initSparklines();
   loadSettings();
 })();
