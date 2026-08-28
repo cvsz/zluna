@@ -716,12 +716,13 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             # GGR/NGR, RTP telemetry, total active members, system vault
             st = self.application.simulator.stats()
             total_members = len(member_manager._members)
+            rtp = round((st["total_payout"] / st["total_bet"] * 100), 2) if st["total_bet"] > 0 else 96.50
             self._send_json({
                 "ok": True,
                 "ggr_lc": st["total_bet"],
                 "payout_lc": st["total_payout"],
                 "ngr_lc": st["net_profit"],
-                "system_rtp": st["rtp_percent"],
+                "system_rtp": rtp,
                 "total_rounds": st["rounds"],
                 "total_members": total_members,
                 "server_time": datetime.now(timezone.utc).isoformat(),
