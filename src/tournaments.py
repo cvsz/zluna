@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-DEFAULT_TOURNAMENTS_DB = Path(__file__).resolve().parent / "data" / "tournaments.jsonl"
+DEFAULT_TOURNAMENTS_DB = Path(__file__).resolve().parent.parent / "data" / "tournaments.jsonl"
 
 
 @dataclass

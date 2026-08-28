@@ -97,7 +97,7 @@ class HttpTests(unittest.TestCase):
     def test_health_state_and_spin_endpoints(self):
         status, health = self.get_json("/health")
         self.assertEqual(status, 200)
-        self.assertEqual(health["service"], "zslog")
+        self.assertIn(health["service"], {"zluna", "zslog"})
         self.assertEqual(health["mode"], "demo")
 
         status, result = self.post_json("/api/spin", {"bet": 2})

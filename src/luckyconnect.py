@@ -25,8 +25,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-DEFAULT_LUCKYCONNECT_DB = Path(__file__).resolve().parent / "data" / "luckyconnect.jsonl"
-DEFAULT_WEBHOOKS_DB = Path(__file__).resolve().parent / "data" / "luckyconnect_webhooks.jsonl"
+DEFAULT_LUCKYCONNECT_DB = Path(__file__).resolve().parent.parent / "data" / "luckyconnect.jsonl"
+DEFAULT_WEBHOOKS_DB = Path(__file__).resolve().parent.parent / "data" / "luckyconnect_webhooks.jsonl"
 
 HAWK_KEY_ID = "LUNALAND-HAWK-KEY-2026"
 HAWK_SECRET = "9f823a7e4b5c1d6e0f8a2b4c6e8d0f2a"

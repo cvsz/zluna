@@ -23,8 +23,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-DEFAULT_MEMBERS_DB = Path(__file__).resolve().parent / "data" / "members.jsonl"
-DEFAULT_SESSIONS_DB = Path(__file__).resolve().parent / "data" / "sessions.jsonl"
+DEFAULT_MEMBERS_DB = Path(__file__).resolve().parent.parent / "data" / "members.jsonl"
+DEFAULT_SESSIONS_DB = Path(__file__).resolve().parent.parent / "data" / "sessions.jsonl"
 
 HASH_ITERATIONS = 100_000
 SESSION_DURATION_SECS = 86400 * 7  # 7 days

@@ -43,7 +43,7 @@ DEFAULT_DATA_PATH = Path(
         "ZLUNA_DATA_PATH",
         os.environ.get(
             "ZSLOG_DATA_PATH",
-            str(Path(__file__).resolve().parent / "data" / "events.jsonl"),
+            str(Path(__file__).resolve().parent.parent / "data" / "events.jsonl"),
         ),
     )
 )
@@ -581,12 +581,12 @@ class EventHub:
                 pass
 
 
-class ZslogApplication:
+class ZlunaApplication:
     def __init__(self, data_path: Path | str | None = None) -> None:
         self.hub = EventHub()
         self.simulator = Simulator(data_path, on_event=self._on_simulator_event)
         self.runner = AutoRunner(self.simulator, self.hub)
-        self.static_root = Path(__file__).resolve().parent / "static"
+        self.static_root = Path(__file__).resolve().parent.parent / "static"
 
     def _on_simulator_event(self, event: dict, state: dict) -> None:
         self.hub.publish("round", {"event": event, "state": state})
@@ -606,11 +606,15 @@ class ZslogApplication:
         }
 
 
-class ZslogRequestHandler(BaseHTTPRequestHandler):
+# Alias for backward compatibility
+ZslogApplication = ZlunaApplication
+
+
+class ZlunaRequestHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
     @property
-    def application(self) -> ZslogApplication:
+    def application(self) -> ZlunaApplication:
         return self.server.app  # type: ignore[attr-defined]
 
     def _headers(self, content_type: str, length: int | None = None) -> None:
@@ -650,7 +654,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802
         path = urlsplit(self.path).path
         if path == "/health":
-            self._send_json({"ok": True, "service": "zslog", "mode": "demo", "platform": "lunaland-grade"})
+            self._send_json({"ok": True, "service": "zluna", "alias": "zslog", "mode": "demo", "platform": "lunaland-grade"})
             return
         if path == "/api/games":
             self._send_json({"games": list_games()})
@@ -1175,9 +1179,14 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
         super().log_message("%s", format % args)
 
 
-class ZslogHTTPServer(ThreadingHTTPServer):
+class ZlunaHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
     daemon_threads = True
+
+
+# Alias for backward compatibility
+ZslogHTTPServer = ZlunaHTTPServer
+ZslogRequestHandler = ZlunaRequestHandler
 
 
 def create_server(
@@ -1185,16 +1194,16 @@ def create_server(
     port: int = PORT,
     *,
     data_path: Path | str | None = None,
-) -> ZslogHTTPServer:
-    application = ZslogApplication(data_path=data_path)
-    server = ZslogHTTPServer((host, port), ZslogRequestHandler)
+) -> ZlunaHTTPServer:
+    application = ZlunaApplication(data_path=data_path)
+    server = ZlunaHTTPServer((host, port), ZlunaRequestHandler)
     server.app = application  # type: ignore[attr-defined]
     return server
 
 
 def main() -> None:
     server = create_server()
-    print(f"zslog Lunaland-grade social casino listening on http://{HOST}:{server.server_port}", flush=True)
+    print(f"zluna (Lunaland Next-Gen) social casino suite listening on http://{HOST}:{server.server_port}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

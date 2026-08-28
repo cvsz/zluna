@@ -72,4 +72,4 @@ jobs:
 
       - name: Run Test Suite
         run: |
-          PYTHONPATH=. pytest tests/ -v
+          PYTHONPATH=src pytest tests/ -v

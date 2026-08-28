@@ -5,11 +5,11 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/cvsz/zslog
-ExecStart=/usr/bin/python3 /home/cvsz/zslog/app.py
+WorkingDirectory=/home/cvsz/zluna
+ExecStart=/usr/bin/python3 /home/cvsz/zluna/src/app.py
 Environment=ZLUNA_HOST=127.0.0.1
 Environment=ZLUNA_PORT=9581
-Environment=ZLUNA_DATA_PATH=/home/cvsz/zslog/data/events.jsonl
+Environment=ZLUNA_DATA_PATH=/home/cvsz/zluna/data/events.jsonl
 Restart=always
 RestartSec=3
 UMask=0077
@@ -18,7 +18,7 @@ PrivateTmp=true
 ProtectSystem=full
 ProtectHome=read-only
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-ReadWritePaths=/home/cvsz/zslog/data
+ReadWritePaths=/home/cvsz/zluna/data
 
 [Install]
 WantedBy=default.target

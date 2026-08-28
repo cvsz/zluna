@@ -23,8 +23,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-DEFAULT_WALLET_DB = Path(__file__).resolve().parent / "data" / "zwallet_ledger.jsonl"
-DEFAULT_VAULT_DB = Path(__file__).resolve().parent / "data" / "zwallet_vaults.jsonl"
+DEFAULT_WALLET_DB = Path(__file__).resolve().parent.parent / "data" / "zwallet_ledger.jsonl"
+DEFAULT_VAULT_DB = Path(__file__).resolve().parent.parent / "data" / "zwallet_vaults.jsonl"
 
 SUPPORTED_NETWORKS = {
     "ERC20": {"name": "Ethereum (ERC-20)", "chain_id": 1, "native_symbol": "ETH"},
