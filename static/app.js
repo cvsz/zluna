@@ -385,6 +385,11 @@
       const lobby = $("view-lobby");
       if (lobby) lobby.classList.add("active");
       filterCatalogByCategory(viewId);
+    } else if (viewId === "auto-engine") {
+      const playDeck = $("view-play-station");
+      if (playDeck) playDeck.classList.add("active");
+      const autoSection = document.querySelector(".auto-fields");
+      if (autoSection) autoSection.scrollIntoView({ behavior: "smooth" });
     } else {
       const target = $(`view-${viewId}`);
       if (target) target.classList.add("active");
@@ -476,12 +481,58 @@
     if (provSelect) provSelect.addEventListener("change", applyCatalogFilters);
     if (sortSelect) sortSelect.addEventListener("change", applyCatalogFilters);
 
-    // Hero launch button
-    const heroBtn = $("btn-hero-launch");
-    if (heroBtn) heroBtn.addEventListener("click", () => { launchGame("ancient_tumble"); });
-
     // Spin Button
     if (spinButton) spinButton.addEventListener("click", spinRound);
+
+    // Auto-Run Start & Stop Buttons
+    if (autoStartButton) {
+      autoStartButton.addEventListener("click", async () => {
+        const betInput = $("bet-input");
+        const roundsInput = $("rounds-input");
+        const intervalInput = $("interval-input");
+        const bet = parseInt(betInput ? betInput.value : "2", 10) || 2;
+        const autoRounds = parseInt(roundsInput ? roundsInput.value : "10", 10) || 10;
+        const intervalMs = parseInt(intervalInput ? intervalInput.value : "400", 10) || 400;
+
+        try {
+          const res = await fetch("/api/auto/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              rounds: autoRounds,
+              bet,
+              interval_ms: intervalMs,
+              game: currentGameId,
+              currency: activeCurrency,
+              ...currentPayload,
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.running) {
+            autoStartButton.disabled = true;
+            if (autoStopButton) autoStopButton.disabled = false;
+            if (status) status.textContent = `⚡ Auto-run active: ${autoRounds} rounds pacing...`;
+          }
+        } catch (_) {}
+      });
+    }
+
+    if (autoStopButton) {
+      autoStopButton.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/auto/stop", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+          const data = await res.json();
+          if (res.ok) {
+            if (autoStartButton) autoStartButton.disabled = false;
+            autoStopButton.disabled = true;
+            if (status) status.textContent = "Auto-run halted.";
+          }
+        } catch (_) {}
+      });
+    }
 
     // Quick Bet Buttons
     document.querySelectorAll(".btn-quick-bet").forEach((b) => {
