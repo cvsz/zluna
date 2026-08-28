@@ -62,6 +62,10 @@
             <span class="vip-crown">👑</span>
             <span class="vip-level-txt" id="header-vip-tier">Bronze Stardust</span>
           </a>
+          <button class="btn-daily-claim" id="btn-auth-open" title="Member Login & Register">
+            <span class="btn-icon">👤</span>
+            <span id="btn-auth-label">LOGIN</span>
+          </button>
           <button class="icon-btn-luna" id="theme-toggle" title="Toggle Light/Dark Theme">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </button>
@@ -633,6 +637,54 @@
     </div>
 
     <!-- Modals -->
+    <div class="modal-backdrop-luna" id="auth-modal" style="display:none;">
+      <div class="modal-dialog-luna">
+        <div class="modal-dialog-header">
+          <h3 id="auth-modal-title">🔐 Lunaland Member Portal</h3>
+          <button class="icon-btn-sm" id="close-auth-modal">✕</button>
+        </div>
+        <div class="modal-dialog-body text-start">
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn-deck-curr active flex-1" id="tab-auth-login">Sign In</button>
+            <button class="btn-deck-curr flex-1" id="tab-auth-register">Create Account</button>
+          </div>
+
+          <!-- Login Form -->
+          <form id="form-login" onsubmit="return false;">
+            <div class="field-wrap mb-2">
+              <label class="field-label">Username or Email</label>
+              <input type="text" id="login-username" class="luna-input-field" placeholder="Enter username / email" required />
+            </div>
+            <div class="field-wrap mb-3">
+              <label class="field-label">Password</label>
+              <input type="password" id="login-password" class="luna-input-field" placeholder="Enter password" required />
+            </div>
+            <button class="btn-spin-primary w-100" id="btn-submit-login">SIGN IN TO LUNALAND</button>
+          </form>
+
+          <!-- Register Form -->
+          <form id="form-register" style="display:none;" onsubmit="return false;">
+            <div class="field-wrap mb-2">
+              <label class="field-label">Desired Username</label>
+              <input type="text" id="reg-username" class="luna-input-field" placeholder="e.g. StarGazer" required minlength="3" />
+            </div>
+            <div class="field-wrap mb-2">
+              <label class="field-label">Email Address (Optional)</label>
+              <input type="email" id="reg-email" class="luna-input-field" placeholder="user@domain.com" />
+            </div>
+            <div class="field-wrap mb-3">
+              <label class="field-label">Create Password</label>
+              <input type="password" id="reg-password" class="luna-input-field" placeholder="Min 6 characters" required minlength="6" />
+            </div>
+            <button class="btn-spin-primary w-100" id="btn-submit-register">CREATE MEMBER ACCOUNT (+50,000 LC)</button>
+          </form>
+
+          <p id="auth-status-msg" class="console-status-text mt-2"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bonus Modal -->
     <div class="modal-backdrop-luna" id="bonus-modal" style="display:none;">
       <div class="modal-dialog-luna">
         <div class="modal-dialog-header">

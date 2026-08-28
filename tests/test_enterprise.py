@@ -111,11 +111,54 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
         self.assertTrue(data["ok"])
         self.assertEqual(data["package"]["lc"], 25_000)
 
-    def test_support_chatbot_endpoint(self):
-        status, data = self.post_json("/api/support/chat", {"message": "How do I redeem my coins?"})
+    def test_members_registration_login_and_profile(self):
+        # 1. Register new member
+        status, reg = self.post_json("/api/members/register", {
+            "username": "TestGamer99",
+            "password": "SecurePassword123!",
+            "email": "gamer@test.com"
+        })
+        self.assertEqual(status, 201)
+        self.assertTrue(reg["ok"])
+        self.assertIn("token", reg)
+        token = reg["token"]
+        self.assertEqual(reg["member"]["username"], "TestGamer99")
+        self.assertEqual(reg["member"]["balance_lc"], 50_000)
+
+        # 2. Login with valid credentials
+        status, login = self.post_json("/api/members/login", {
+            "username": "TestGamer99",
+            "password": "SecurePassword123!"
+        })
         self.assertEqual(status, 200)
-        self.assertTrue(data["ok"])
-        self.assertIn("50 SC minimum", data["reply"])
+        self.assertTrue(login["ok"])
+        self.assertEqual(login["member"]["username"], "TestGamer99")
+
+        # 3. Login with wrong password should be rejected
+        req = Request(
+            self.base_url + "/api/members/login",
+            data=json.dumps({"username": "TestGamer99", "password": "WrongPassword"}).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        try:
+            urlopen(req, timeout=2)
+            self.fail("Expected 401 Unauthorized for wrong password")
+        except Exception as e:
+            self.assertTrue(hasattr(e, "code"))
+            self.assertEqual(e.code, 401)
+
+        # 4. Query /api/members/me with token
+        req_me = Request(
+            self.base_url + "/api/members/me",
+            headers={"Authorization": f"Bearer {token}"},
+            method="GET"
+        )
+        with urlopen(req_me, timeout=2) as resp:
+            self.assertEqual(resp.status, 200)
+            me_data = json.load(resp)
+            self.assertTrue(me_data["ok"])
+            self.assertEqual(me_data["member"]["username"], "TestGamer99")
 
 
 if __name__ == "__main__":

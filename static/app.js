@@ -826,6 +826,164 @@
       });
     }
 
+    // --- MEMBERSHIP & AUTHENTICATION SYSTEM ---
+    const authModal = $("auth-modal");
+    const btnAuthOpen = $("btn-auth-open");
+    const btnAuthLabel = $("btn-auth-label");
+    const closeAuthModal = $("close-auth-modal");
+    const tabAuthLogin = $("tab-auth-login");
+    const tabAuthRegister = $("tab-auth-register");
+    const formLogin = $("form-login");
+    const formRegister = $("form-register");
+    const authStatusMsg = $("auth-status-msg");
+    const sidebarUsername = $("sidebar-username");
+    const sidebarVipBadge = $("sidebar-vip-badge");
+
+    let currentMember = null;
+    let sessionToken = localStorage.getItem("luna_session_token") || "";
+
+    async function loadCurrentMember() {
+      if (!sessionToken) {
+        if (btnAuthLabel) btnAuthLabel.textContent = "LOGIN";
+        return;
+      }
+      try {
+        const res = await fetch("/api/members/me", {
+          headers: { Authorization: `Bearer ${sessionToken}` },
+        });
+        const data = await res.json();
+        if (res.ok && data.ok && data.member) {
+          currentMember = data.member;
+          if (sidebarUsername) sidebarUsername.textContent = currentMember.username;
+          if (sidebarVipBadge) sidebarVipBadge.textContent = `${currentMember.vip_tier.split(" ")[0]} Member`;
+          if (btnAuthLabel) btnAuthLabel.textContent = "LOGOUT";
+        } else {
+          sessionToken = "";
+          localStorage.removeItem("luna_session_token");
+          if (btnAuthLabel) btnAuthLabel.textContent = "LOGIN";
+        }
+      } catch (_) {}
+    }
+
+    if (btnAuthOpen) {
+      btnAuthOpen.addEventListener("click", () => {
+        if (currentMember && sessionToken) {
+          if (confirm(`Sign out from account @${currentMember.username}?`)) {
+            fetch("/api/members/logout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ token: sessionToken }),
+            }).finally(() => {
+              sessionToken = "";
+              currentMember = null;
+              localStorage.removeItem("luna_session_token");
+              if (sidebarUsername) sidebarUsername.textContent = "LunaCommander";
+              if (sidebarVipBadge) sidebarVipBadge.textContent = "Bronze Member";
+              if (btnAuthLabel) btnAuthLabel.textContent = "LOGIN";
+            });
+          }
+        } else {
+          if (authModal) authModal.style.display = "flex";
+        }
+      });
+    }
+
+    if (closeAuthModal) {
+      closeAuthModal.addEventListener("click", () => {
+        if (authModal) authModal.style.display = "none";
+      });
+    }
+
+    if (tabAuthLogin && tabAuthRegister) {
+      tabAuthLogin.addEventListener("click", () => {
+        tabAuthLogin.classList.add("active");
+        tabAuthRegister.classList.remove("active");
+        if (formLogin) formLogin.style.display = "block";
+        if (formRegister) formRegister.style.display = "none";
+        if (authStatusMsg) authStatusMsg.textContent = "";
+      });
+      tabAuthRegister.addEventListener("click", () => {
+        tabAuthRegister.classList.add("active");
+        tabAuthLogin.classList.remove("active");
+        if (formLogin) formLogin.style.display = "none";
+        if (formRegister) formRegister.style.display = "block";
+        if (authStatusMsg) authStatusMsg.textContent = "";
+      });
+    }
+
+    // Submit Login
+    const btnSubmitLogin = $("btn-submit-login");
+    if (btnSubmitLogin) {
+      btnSubmitLogin.addEventListener("click", async () => {
+        const u = $("login-username").value.trim();
+        const p = $("login-password").value;
+        if (!u || !p) return;
+        try {
+          const res = await fetch("/api/members/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: u, password: p }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            sessionToken = data.token;
+            localStorage.setItem("luna_session_token", sessionToken);
+            currentMember = data.member;
+            if (authModal) authModal.style.display = "none";
+            if (sidebarUsername) sidebarUsername.textContent = currentMember.username;
+            if (sidebarVipBadge) sidebarVipBadge.textContent = `${currentMember.vip_tier.split(" ")[0]} Member`;
+            if (btnAuthLabel) btnAuthLabel.textContent = "LOGOUT";
+            alert(`🎉 Welcome back, @${currentMember.username}!`);
+          } else {
+            if (authStatusMsg) {
+              authStatusMsg.textContent = `❌ ${data.error || "Login failed"}`;
+              authStatusMsg.style.color = "#f87171";
+            }
+          }
+        } catch (_) {
+          if (authStatusMsg) authStatusMsg.textContent = "Network error connecting to login service";
+        }
+      });
+    }
+
+    // Submit Register
+    const btnSubmitRegister = $("btn-submit-register");
+    if (btnSubmitRegister) {
+      btnSubmitRegister.addEventListener("click", async () => {
+        const u = $("reg-username").value.trim();
+        const e = $("reg-email").value.trim();
+        const p = $("reg-password").value;
+        if (!u || !p) return;
+        try {
+          const res = await fetch("/api/members/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: u, email: e, password: p }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            sessionToken = data.token;
+            localStorage.setItem("luna_session_token", sessionToken);
+            currentMember = data.member;
+            if (authModal) authModal.style.display = "none";
+            if (sidebarUsername) sidebarUsername.textContent = currentMember.username;
+            if (sidebarVipBadge) sidebarVipBadge.textContent = `${currentMember.vip_tier.split(" ")[0]} Member`;
+            if (btnAuthLabel) btnAuthLabel.textContent = "LOGOUT";
+            alert(`🚀 Account registered successfully! +50,000 LC credited to @${currentMember.username}.`);
+          } else {
+            if (authStatusMsg) {
+              authStatusMsg.textContent = `❌ ${data.error || "Registration failed"}`;
+              authStatusMsg.style.color = "#f87171";
+            }
+          }
+        } catch (_) {
+          if (authStatusMsg) authStatusMsg.textContent = "Network error connecting to registration service";
+        }
+      });
+    }
+
+    loadCurrentMember();
+
     // Hash check on load
     const initHash = window.location.hash.replace("#", "") || "lobby";
     activateView(initHash);

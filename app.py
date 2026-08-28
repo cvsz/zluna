@@ -25,6 +25,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from games import GameContext, get_game, list_games, play_game
 from catalog import catalog
+from members import member_manager, Member
 
 
 HOST = os.environ.get("ZSLOG_HOST", "127.0.0.1")
@@ -670,6 +671,18 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             events = self.application.simulator.recent_events(1000)
             self._send_json({"events": events, "count": len(events)})
             return
+        if path == "/api/members/me":
+            auth_hdr = self.headers.get("Authorization", "")
+            token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+            member = member_manager.validate_session(token)
+            if not member:
+                # Default to guest commander
+                member = member_manager.get_member("lunacommander") or next(iter(member_manager._members.values()), None)
+            if member:
+                self._send_json({"ok": True, "member": member.to_dict()})
+            else:
+                self._send_error_json("Unauthorized", HTTPStatus.UNAUTHORIZED)
+            return
         if path == "/api/state":
             self._send_json(self.application.state())
             return
@@ -757,11 +770,41 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         path = urlsplit(self.path).path
-        if path not in {"/api/spin", "/api/auto/start", "/api/auto/stop", "/api/import", "/api/reset", "/api/catalog/favorite", "/api/catalog/sync", "/api/daily-bonus", "/api/store/buy", "/api/redemption", "/api/referral", "/api/support/chat"}:
+        allowed_paths = {
+            "/api/spin", "/api/auto/start", "/api/auto/stop", "/api/import", "/api/reset",
+            "/api/catalog/favorite", "/api/catalog/sync", "/api/daily-bonus", "/api/store/buy",
+            "/api/redemption", "/api/referral", "/api/support/chat",
+            "/api/members/register", "/api/members/login", "/api/members/logout"
+        }
+        if path not in allowed_paths:
             self._send_error_json("not found", HTTPStatus.NOT_FOUND)
             return
         try:
             payload = self._request_json()
+            if path == "/api/members/register":
+                u = payload.get("username", "")
+                p = payload.get("password", "")
+                e = payload.get("email", "")
+                try:
+                    res = member_manager.register(u, p, e)
+                    self._send_json(res, HTTPStatus.CREATED)
+                except ValueError as err:
+                    self._send_error_json(str(err), HTTPStatus.BAD_REQUEST)
+                return
+            if path == "/api/members/login":
+                u = payload.get("username", "") or payload.get("email", "")
+                p = payload.get("password", "")
+                try:
+                    res = member_manager.authenticate(u, p)
+                    self._send_json(res, HTTPStatus.OK)
+                except ValueError as err:
+                    self._send_error_json(str(err), HTTPStatus.UNAUTHORIZED)
+                return
+            if path == "/api/members/logout":
+                token = payload.get("token", "")
+                ok = member_manager.logout(token)
+                self._send_json({"ok": ok})
+                return
             if path == "/api/spin":
                 result = self.application.simulator.spin(
                     payload.get("bet", 2),
