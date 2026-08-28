@@ -115,6 +115,13 @@
                 <span class="nav-txt">Auto-Spin Engine</span>
               </a>
 
+              <div class="menu-group-label">TOURNAMENTS & RACES</div>
+              <a class="luna-nav-link" href="#tournaments">
+                <span class="nav-ico">🏆</span>
+                <span class="nav-txt">Live Tournaments</span>
+                <span class="nav-badge-hot">1,000 SC</span>
+              </a>
+
               <div class="menu-group-label">TREASURY & REWARDS</div>
               <a class="luna-nav-link" href="#zwallet">
                 <span class="nav-ico">💳</span>
@@ -133,6 +140,17 @@
               <a class="luna-nav-link" href="#vip-club">
                 <span class="nav-ico">💎</span>
                 <span class="nav-txt">VIP Club</span>
+              </a>
+
+              <div class="menu-group-label">ENTERPRISE & BACKOFFICE</div>
+              <a class="luna-nav-link" href="#kyc-security">
+                <span class="nav-ico">🛡️</span>
+                <span class="nav-txt">KYC & 2FA Security</span>
+              </a>
+              <a class="luna-nav-link" href="#admin-backoffice">
+                <span class="nav-ico">⚙️</span>
+                <span class="nav-txt">Admin Backoffice</span>
+                <span class="badge-accent">CMS</span>
               </a>
 
               <div class="menu-group-label">INTELLIGENCE & SUPPORT</div>
@@ -755,6 +773,181 @@
                     <input type="text" readonly value="LUNA-LUCK-777" class="luna-input-field font-mono" />
                   </div>
                   <button class="btn-spin-primary mt-3 w-100" id="btn-claim-referral">CLAIM BONUS REFERRAL CODE</button>
+                </div>
+            <!-- VIEW 10: LIVE TOURNAMENTS & RACES -->
+            <section class="view" id="view-tournaments">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Competitive Social Gaming</p>
+                  <h2>Live Tournaments & High-Roller Races</h2>
+                </div>
+                <span class="badge-accent">Grand Pool: 1,000 SC</span>
+              </div>
+
+              <!-- Community Milestone Bar -->
+              <div class="deck-card mt-3">
+                <div class="d-flex justify-content-between mb-2">
+                  <strong>🌍 Global Community Challenge (Target: 10,000 Spins)</strong>
+                  <span id="comm-challenge-pct" class="badge-green">14.2% Completed</span>
+                </div>
+                <div class="vip-track-bar">
+                  <div class="vip-track-fill" id="comm-challenge-fill" style="width: 14.2%;"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 text-muted" style="font-size:12px;">
+                  <span id="comm-spins-val">1,420 / 10,000 Spins Recorded</span>
+                  <span>Unlocks +10,000,000 LC + 2,500 SC Platform-Wide Drop!</span>
+                </div>
+              </div>
+
+              <div class="game-deck-layout mt-4">
+                <div class="deck-control-col">
+                  <div class="deck-card">
+                    <p class="card-eyebrow">Active Race</p>
+                    <h3 class="card-title">🌌 Galaxy High-Roller Sprint</h3>
+                    <p class="text-muted mt-1" style="font-size:13px;">Highest Single Multiplier on Slots wins the 500 SC Top Prize!</p>
+                    <div class="mt-3 p-3" style="background:rgba(255,255,255,0.03); border-radius:12px;">
+                      <div class="d-flex justify-content-between mb-1">
+                        <span>Prize Pool:</span>
+                        <strong class="text-warning">1,000.00 SC + 5M LC</strong>
+                      </div>
+                      <div class="d-flex justify-content-between">
+                        <span>Time Remaining:</span>
+                        <strong class="text-info">2d 14h 22m</strong>
+                      </div>
+                    </div>
+                    <button class="btn-spin-primary mt-3" id="btn-trigger-cash-drop">🎁 CLAIM RANDOM HOURLY DROP</button>
+                    <p id="drop-status-msg" class="console-status-text mt-2"></p>
+                  </div>
+                </div>
+
+                <div class="deck-visual-col">
+                  <div class="deck-card">
+                    <div class="deck-card-header">
+                      <div>
+                        <p class="card-eyebrow">Realtime Leaderboard</p>
+                        <h2 class="card-title">Live Player Standings</h2>
+                      </div>
+                      <span class="badge-green">SSE Live</span>
+                    </div>
+                    <div class="ledger-header-row">
+                      <span>Rank / Player</span>
+                      <span>Points</span>
+                      <span>Best Mult</span>
+                      <span>Reward</span>
+                    </div>
+                    <div class="ledger-stream-box" id="tourney-leaderboard-list">
+                      <div class="empty-state">
+                        <span>🏆 Loading leaderboard standings...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- VIEW 11: KYC & 2FA SECURITY -->
+            <section class="view" id="view-kyc-security">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Enterprise Identity & Protection</p>
+                  <h2>Member KYC & Two-Factor Authentication</h2>
+                </div>
+                <span class="badge-teal">Bank-Grade Compliance</span>
+              </div>
+
+              <div class="game-deck-layout mt-3">
+                <div class="deck-control-col">
+                  <div class="deck-card">
+                    <p class="card-eyebrow">Identity Verification</p>
+                    <h3 class="card-title">Tiered KYC Verification</h3>
+                    <p class="text-muted mt-1" style="font-size:13px;">Verify your identity to unlock higher daily SC redemption limits and fast-track processing.</p>
+
+                    <div class="field-wrap mt-3">
+                      <label class="field-label">Current KYC Level</label>
+                      <input type="text" id="kyc-current-level" readonly value="Level 1: Unverified Guest" class="luna-input-field font-bold" />
+                    </div>
+
+                    <div class="field-wrap mt-3">
+                      <label class="field-label">Select ID Document Type</label>
+                      <select id="kyc-doc-type" class="luna-select w-100">
+                        <option value="passport">Passport (International)</option>
+                        <option value="drivers_license">Driver's License / State ID</option>
+                        <option value="national_id">National Identity Card</option>
+                      </select>
+                    </div>
+
+                    <button class="btn-store-glow mt-4 w-100" id="btn-submit-kyc">SUBMIT KYC VERIFICATION (LEVEL 2)</button>
+                    <p id="kyc-status-msg" class="console-status-text mt-2"></p>
+                  </div>
+                </div>
+
+                <div class="deck-visual-col">
+                  <div class="deck-card">
+                    <p class="card-eyebrow">Account Hardening</p>
+                    <h3 class="card-title">Two-Factor Authentication (TOTP / 2FA)</h3>
+                    <p class="text-muted mt-1" style="font-size:13px;">Protect your account and crypto withdrawals with Google Authenticator or Authy.</p>
+
+                    <div class="field-wrap mt-3">
+                      <label class="field-label">2FA Secret Key</label>
+                      <input type="text" id="twofa-secret-key" readonly value="Click enable to generate secret" class="luna-input-field font-mono" />
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                      <input type="text" id="twofa-code-input" maxlength="6" placeholder="Enter 6-digit code" class="luna-input-field flex-1 text-center font-mono" />
+                      <button class="btn-play-headliner" id="btn-enable-2fa">ENABLE 2FA</button>
+                    </div>
+                    <p id="twofa-status-msg" class="console-status-text mt-2"></p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- VIEW 12: ADMIN BACKOFFICE & CMS -->
+            <section class="view" id="view-admin-backoffice">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Backoffice Management</p>
+                  <h2>Lunaland Admin Console & CMS</h2>
+                </div>
+                <span class="badge-accent">Live Telemetry</span>
+              </div>
+
+              <div class="telemetry-grid mt-3">
+                <div class="telemetry-card">
+                  <span class="telemetry-label">Gross Gaming Rev (GGR)</span>
+                  <div class="telemetry-num" id="admin-ggr">0 LC</div>
+                </div>
+                <div class="telemetry-card">
+                  <span class="telemetry-label">Player Payouts</span>
+                  <div class="telemetry-num" id="admin-payout">0 LC</div>
+                </div>
+                <div class="telemetry-card highlight-card">
+                  <span class="telemetry-label">Net Gaming Rev (NGR)</span>
+                  <div class="telemetry-num" id="admin-ngr">0 LC</div>
+                </div>
+                <div class="telemetry-card">
+                  <span class="telemetry-label">System RTP</span>
+                  <div class="telemetry-num text-success" id="admin-rtp">96.5%</div>
+                </div>
+              </div>
+
+              <div class="deck-card mt-4">
+                <div class="deck-card-header">
+                  <div>
+                    <p class="card-eyebrow">System Telemetry & Controls</p>
+                    <h2 class="card-title">Operational Controls</h2>
+                  </div>
+                  <button class="btn-store-glow" id="btn-refresh-admin">Refresh Telemetry</button>
+                </div>
+                <div class="d-flex gap-3 mt-3">
+                  <div class="p-3 flex-1" style="background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+                    <strong>Total Registered Members:</strong>
+                    <div class="telemetry-num mt-1" id="admin-members-count">1</div>
+                  </div>
+                  <div class="p-3 flex-1" style="background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+                    <strong>Service Ingress Health:</strong>
+                    <div class="telemetry-num text-success mt-1">HEALTHY_200_OK</div>
+                  </div>
                 </div>
               </div>
             </section>

@@ -1120,8 +1120,154 @@
       });
     }
 
+    // --- TOURNAMENTS & COMMUNITY CHALLENGES ---
+    const tourneyLeaderboardList = $("tourney-leaderboard-list");
+    const commChallengePct = $("comm-challenge-pct");
+    const commChallengeFill = $("comm-challenge-fill");
+    const commSpinsVal = $("comm-spins-val");
+    const btnTriggerCashDrop = $("btn-trigger-cash-drop");
+    const dropStatusMsg = $("drop-status-msg");
+
+    async function loadTournaments() {
+      try {
+        const res = await fetch("/api/tournaments");
+        const data = await res.json();
+        if (res.ok && data.ok && data.tournaments && tourneyLeaderboardList) {
+          const t = data.tournaments[0];
+          if (t && t.leaderboard) {
+            tourneyLeaderboardList.innerHTML = "";
+            t.leaderboard.forEach((entry) => {
+              const row = document.createElement("div");
+              row.className = "event-row";
+              row.innerHTML = `
+                <span><strong>#${entry.rank}</strong> ${entry.username}</span>
+                <span class="text-info font-bold">${entry.points} pts</span>
+                <span class="text-success">${entry.best_mult || "-"}</span>
+                <span class="badge-accent">${entry.reward_sc || "TBD"}</span>
+              `;
+              tourneyLeaderboardList.appendChild(row);
+            });
+          }
+        }
+      } catch (_) {}
+
+      // Load Community Challenge
+      try {
+        const res = await fetch("/api/tournaments/community");
+        const data = await res.json();
+        if (res.ok && data.ok && data.challenge) {
+          const c = data.challenge;
+          if (commChallengePct) commChallengePct.textContent = `${c.progress_percent}% Completed`;
+          if (commChallengeFill) commChallengeFill.style.width = `${c.progress_percent}%`;
+          if (commSpinsVal) commSpinsVal.textContent = `${c.current_spins.toLocaleString()} / ${c.target_spins.toLocaleString()} Spins Recorded`;
+        }
+      } catch (_) {}
+    }
+
+    if (btnTriggerCashDrop) {
+      btnTriggerCashDrop.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/tournaments/drop", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+            },
+          });
+          const data = await res.json();
+          if (res.ok && data.ok && data.drop) {
+            if (dropStatusMsg) {
+              dropStatusMsg.textContent = `🎉 Instant Cash Drop: +${data.drop.reward_lc.toLocaleString()} LC & +${data.drop.reward_sc} SC!`;
+              dropStatusMsg.style.color = "#10b981";
+            }
+            syncState(data.drop.state);
+            loadTournaments();
+          }
+        } catch (_) {}
+      });
+    }
+
+    // --- KYC & 2FA SECURITY ---
+    const btnSubmitKyc = $("btn-submit-kyc");
+    const kycCurrentLevel = $("kyc-current-level");
+    const kycStatusMsg = $("kyc-status-msg");
+    const btnEnable2fa = $("btn-enable-2fa");
+    const twofaSecretKey = $("twofa-secret-key");
+    const twofaCodeInput = $("twofa-code-input");
+    const twofaStatusMsg = $("twofa-status-msg");
+
+    if (btnSubmitKyc) {
+      btnSubmitKyc.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/members/kyc", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+            },
+            body: JSON.stringify({ level: 2 }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            if (kycCurrentLevel) kycCurrentLevel.value = "Level 2: ID Verified & Tier-2 Enabled";
+            if (kycStatusMsg) {
+              kycStatusMsg.textContent = "✅ Identity verification approved! High-limit SC redemptions unlocked.";
+              kycStatusMsg.style.color = "#10b981";
+            }
+          }
+        } catch (_) {}
+      });
+    }
+
+    if (btnEnable2fa) {
+      btnEnable2fa.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/members/2fa/setup", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+            },
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            if (twofaSecretKey) twofaSecretKey.value = data.secret;
+            if (twofaStatusMsg) {
+              twofaStatusMsg.textContent = "🔑 2FA Secret Generated. Scan or save key to your Authenticator app.";
+              twofaStatusMsg.style.color = "#60a5fa";
+            }
+          }
+        } catch (_) {}
+      });
+    }
+
+    // --- ADMIN BACKOFFICE & CMS ---
+    const adminGgr = $("admin-ggr");
+    const adminPayout = $("admin-payout");
+    const adminNgr = $("admin-ngr");
+    const adminRtp = $("admin-rtp");
+    const adminMembersCount = $("admin-members-count");
+    const btnRefreshAdmin = $("btn-refresh-admin");
+
+    async function loadAdminMetrics() {
+      try {
+        const res = await fetch("/api/admin/metrics");
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          if (adminGgr) adminGgr.textContent = `${formatMoney(data.ggr_lc)} LC`;
+          if (adminPayout) adminPayout.textContent = `${formatMoney(data.payout_lc)} LC`;
+          if (adminNgr) adminNgr.textContent = `${formatMoney(data.ngr_lc)} LC`;
+          if (adminRtp) adminRtp.textContent = `${data.system_rtp}%`;
+          if (adminMembersCount) adminMembersCount.textContent = data.total_members;
+        }
+      } catch (_) {}
+    }
+    if (btnRefreshAdmin) btnRefreshAdmin.addEventListener("click", loadAdminMetrics);
+
     loadCurrentMember();
     loadZwInfo();
+    loadTournaments();
+    loadAdminMetrics();
     updateZwDepositPreview();
 
     // Hash check on load

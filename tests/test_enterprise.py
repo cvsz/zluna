@@ -196,6 +196,38 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
             self.assertTrue(txs["ok"])
             self.assertTrue(len(txs["transactions"]) >= 2)
 
+    def test_tournaments_and_community_challenge_api(self):
+        # 1. List tournaments
+        req = Request(self.base_url + "/api/tournaments", method="GET")
+        with urlopen(req, timeout=2) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.load(resp)
+            self.assertTrue(data["ok"])
+            self.assertTrue(len(data["tournaments"]) >= 1)
+
+        # 2. Community Challenge
+        req_c = Request(self.base_url + "/api/tournaments/community", method="GET")
+        with urlopen(req_c, timeout=2) as resp:
+            self.assertEqual(resp.status, 200)
+            c = json.load(resp)
+            self.assertTrue(c["ok"])
+            self.assertIn("target_spins", c["challenge"])
+
+        # 3. Cash drop trigger
+        status, drop = self.post_json("/api/tournaments/drop", {})
+        self.assertEqual(status, 200)
+        self.assertTrue(drop["ok"])
+        self.assertEqual(drop["drop"]["reward_lc"], 25_000)
+
+    def test_admin_backoffice_metrics_api(self):
+        req = Request(self.base_url + "/api/admin/metrics", method="GET")
+        with urlopen(req, timeout=2) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.load(resp)
+            self.assertTrue(data["ok"])
+            self.assertIn("ggr_lc", data)
+            self.assertEqual(data["service_status"], "HEALTHY_OPTIMAL")
+
 
 if __name__ == "__main__":
     unittest.main()

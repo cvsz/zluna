@@ -27,6 +27,7 @@ from games import GameContext, get_game, list_games, play_game
 from catalog import catalog
 from members import member_manager, Member
 from zwallet import zwallet, ZWalletEngine, SUPPORTED_NETWORKS, CRYPTO_RATES_USD
+from tournaments import tournaments, TournamentEngine
 
 
 HOST = os.environ.get("ZSLOG_HOST", "127.0.0.1")
@@ -705,6 +706,28 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             ledger = zwallet.get_ledger(member_id=member_id)
             self._send_json({"ok": True, "transactions": ledger})
             return
+        if path == "/api/tournaments":
+            self._send_json({"ok": True, "tournaments": tournaments.list_tournaments()})
+            return
+        if path == "/api/tournaments/community":
+            self._send_json({"ok": True, "challenge": tournaments.get_community_challenge()})
+            return
+        if path == "/api/admin/metrics":
+            # GGR/NGR, RTP telemetry, total active members, system vault
+            st = self.application.simulator.stats()
+            total_members = len(member_manager._members)
+            self._send_json({
+                "ok": True,
+                "ggr_lc": st["total_bet"],
+                "payout_lc": st["total_won"],
+                "ngr_lc": st["net_profit"],
+                "system_rtp": st["rtp_percent"],
+                "total_rounds": st["rounds"],
+                "total_members": total_members,
+                "server_time": datetime.now(timezone.utc).isoformat(),
+                "service_status": "HEALTHY_OPTIMAL",
+            })
+            return
         if path == "/api/state":
             self._send_json(self.application.state())
             return
@@ -797,6 +820,8 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             "/api/catalog/favorite", "/api/catalog/sync", "/api/daily-bonus", "/api/store/buy",
             "/api/redemption", "/api/referral", "/api/support/chat",
             "/api/members/register", "/api/members/login", "/api/members/logout",
+            "/api/members/kyc", "/api/members/2fa/setup", "/api/members/2fa/verify",
+            "/api/tournaments/drop",
             "/api/zwallet/deposit", "/api/zwallet/withdraw", "/api/zwallet/stake"
         }
         if path not in allowed_paths:
@@ -804,6 +829,50 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             return
         try:
             payload = self._request_json()
+            if path == "/api/members/kyc":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                if not member:
+                    self._send_error_json("Unauthorized", HTTPStatus.UNAUTHORIZED)
+                    return
+                lvl = int(payload.get("level", 2))
+                res = member_manager.update_kyc(member.id, lvl)
+                self._send_json(res)
+                return
+            if path == "/api/members/2fa/setup":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                if not member:
+                    self._send_error_json("Unauthorized", HTTPStatus.UNAUTHORIZED)
+                    return
+                res = member_manager.setup_2fa(member.id)
+                self._send_json(res)
+                return
+            if path == "/api/members/2fa/verify":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                if not member:
+                    self._send_error_json("Unauthorized", HTTPStatus.UNAUTHORIZED)
+                    return
+                code = payload.get("code", "")
+                ok = member_manager.verify_2fa(member.id, code)
+                self._send_json({"ok": ok})
+                return
+            if path == "/api/tournaments/drop":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                username = member.username if member else "LunaCommander"
+                drop = tournaments.trigger_random_drop(username)
+                # Credit player
+                self.application.simulator._state["balance_lc"] += drop["reward_lc"]
+                self.application.simulator._state["balance_sc"] = round(self.application.simulator._state["balance_sc"] + drop["reward_sc"], 2)
+                drop["state"] = self.application.state()
+                self._send_json({"ok": True, "drop": drop})
+                return
             if path == "/api/zwallet/deposit":
                 auth_hdr = self.headers.get("Authorization", "")
                 token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()

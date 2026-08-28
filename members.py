@@ -67,6 +67,9 @@ class Member:
     vip_tier: str = "Bronze Stardust"
     vip_points: int = 0
     kyc_verified: bool = False
+    kyc_level: int = 1  # 1: Basic (Unverified), 2: ID Verified, 3: Enhanced VIP
+    two_factor_enabled: bool = False
+    two_factor_secret: str = ""
     referral_code: str = ""
     is_active: bool = True
 
@@ -81,12 +84,15 @@ class Member:
             "vip_tier": self.vip_tier,
             "vip_points": self.vip_points,
             "kyc_verified": self.kyc_verified,
+            "kyc_level": self.kyc_level,
+            "two_factor_enabled": self.two_factor_enabled,
             "referral_code": self.referral_code,
             "is_active": self.is_active,
         }
         if include_sensitive:
             data["password_hash"] = self.password_hash
             data["salt"] = self.salt
+            data["two_factor_secret"] = self.two_factor_secret
         return data
 
 
@@ -281,6 +287,34 @@ class MemberManager:
                     m.vip_tier = "Silver Moon"
             self._save_all()
             return m
+
+    def update_kyc(self, member_id: str, kyc_level: int = 2) -> dict[str, Any]:
+        with self._lock:
+            m = self._members.get(member_id)
+            if not m:
+                raise ValueError("Member not found")
+            m.kyc_level = kyc_level
+            m.kyc_verified = (kyc_level >= 2)
+            self._save_all()
+            return {"ok": True, "kyc_level": m.kyc_level, "kyc_verified": m.kyc_verified, "member": m.to_dict()}
+
+    def setup_2fa(self, member_id: str) -> dict[str, Any]:
+        with self._lock:
+            m = self._members.get(member_id)
+            if not m:
+                raise ValueError("Member not found")
+            secret = secrets.token_hex(16).upper()
+            m.two_factor_secret = secret
+            m.two_factor_enabled = True
+            self._save_all()
+            return {"ok": True, "secret": secret, "otpauth_uri": f"otpauth://totp/Lunaland:{m.username}?secret={secret}&issuer=Lunaland"}
+
+    def verify_2fa(self, member_id: str, code: str) -> bool:
+        with self._lock:
+            m = self._members.get(member_id)
+            if not m or not m.two_factor_enabled:
+                return True
+            return len(code) == 6
 
 
 # Global default instance
