@@ -388,20 +388,20 @@
     } else if (viewId === "auto-engine") {
       const playDeck = $("view-play-station");
       if (playDeck) playDeck.classList.add("active");
-      const autoSection = document.querySelector(".auto-fields");
+      const autoSection = document.querySelector(".auto-config-grid");
       if (autoSection) autoSection.scrollIntoView({ behavior: "smooth" });
     } else {
       const target = $(`view-${viewId}`);
       if (target) target.classList.add("active");
     }
 
-    document.querySelectorAll(".nav-item").forEach((n) => {
+    document.querySelectorAll(".luna-nav-link").forEach((n) => {
       n.classList.toggle("active", n.getAttribute("href") === `#${viewId}`);
     });
   }
 
   function filterCatalogByCategory(cat) {
-    document.querySelectorAll(".cat-pill").forEach((p) => {
+    document.querySelectorAll(".cat-pill-btn").forEach((p) => {
       p.classList.toggle("active", p.dataset.filter === cat);
     });
     const filtered = cat ? gamesList.filter((g) => g.category === cat) : gamesList;
@@ -445,7 +445,7 @@
     }
 
     // Category Filter Pills
-    document.querySelectorAll(".cat-pill").forEach((pill) => {
+    document.querySelectorAll(".cat-pill-btn").forEach((pill) => {
       pill.addEventListener("click", () => {
         const cat = pill.dataset.filter || "";
         filterCatalogByCategory(cat);

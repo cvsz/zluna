@@ -3,262 +3,279 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#070a13" />
+    <meta name="theme-color" content="#060913" />
     <title>Lunaland • Next-Gen Social Casino & Realtime Gaming Engine</title>
     <link rel="stylesheet" href="/tabler.min.css" />
     <link rel="stylesheet" href="/styles.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div class="page">
-      <!-- Lunaland Cosmic Header Bar -->
-      <header class="luna-topbar">
-        <div class="topbar-left">
-          <button class="icon-button mobile-menu d-lg-none" id="mobile-menu-button" title="Menu">☰</button>
-          <div class="luna-logo">
-            <div class="luna-orb">🌙</div>
-            <div class="luna-brand-text">
-              <span class="luna-title">LUNALAND</span>
-              <span class="luna-sub">SWEEPSTAKES & SOCIAL CASINO</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Currency Selector & Balances -->
-        <div class="topbar-center">
-          <div class="currency-toggle-pill">
-            <button class="curr-tab active" id="tab-curr-lc" data-currency="LC">
-              <span class="curr-badge lc-badge">LC</span>
-              <span class="curr-amt" id="header-lc-balance">50,000</span>
-              <small class="curr-label">Luna Coins</small>
-            </button>
-            <button class="curr-tab" id="tab-curr-sc" data-currency="SC">
-              <span class="curr-badge sc-badge">SC</span>
-              <span class="curr-amt" id="header-sc-balance">10.00</span>
-              <small class="curr-label">Sweeps Coins</small>
-            </button>
-          </div>
-        </div>
-
-        <div class="topbar-right">
-          <button class="btn-daily-bonus" id="btn-daily-bonus">
-            <span class="gift-icon">🎁</span>
-            <span class="bonus-text">DAILY REWARD</span>
+    <div class="luna-app">
+      <!-- 1. GLASSMORPHIC APEX HEADER -->
+      <header class="luna-header">
+        <div class="header-left">
+          <button class="icon-btn-luna d-lg-none" id="mobile-menu-button" title="Toggle Navigation">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
           </button>
-          <div class="vip-pill" id="vip-pill" title="Lunaland VIP Club">
-            <span class="vip-icon">👑</span>
-            <span class="vip-name" id="header-vip-tier">Bronze Stardust</span>
+          <a href="#lobby" class="brand-link">
+            <div class="brand-orb">🌙</div>
+            <div class="brand-text-col">
+              <span class="brand-logo-title">LUNALAND</span>
+              <span class="brand-logo-badge">SWEEPSTAKES CASINO</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Floating Dual Wallet Selector -->
+        <div class="header-center">
+          <div class="wallet-pill-container">
+            <button class="wallet-tab active" id="tab-curr-lc" data-currency="LC">
+              <span class="wallet-pill-icon lc-glow">🪙</span>
+              <div class="wallet-text">
+                <span class="wallet-val" id="header-lc-balance">50,000</span>
+                <span class="wallet-name">Luna Coins (LC)</span>
+              </div>
+            </button>
+            <div class="wallet-divider"></div>
+            <button class="wallet-tab" id="tab-curr-sc" data-currency="SC">
+              <span class="wallet-pill-icon sc-glow">⭐</span>
+              <div class="wallet-text">
+                <span class="wallet-val" id="header-sc-balance">10.00</span>
+                <span class="wallet-name">Sweeps Coins (SC)</span>
+              </div>
+            </button>
           </div>
-          <button class="icon-button" id="theme-toggle" title="Toggle theme">◐</button>
+        </div>
+
+        <div class="header-right">
+          <a href="#store" class="btn-store-glow">
+            <span class="btn-icon">🛒</span>
+            <span>GET COINS</span>
+          </a>
+          <button class="btn-daily-claim" id="btn-daily-bonus">
+            <span class="btn-icon">🎁</span>
+            <span class="d-none d-md-inline">DAILY BONUS</span>
+          </button>
+          <a href="#vip-club" class="vip-level-badge" id="vip-pill" title="VIP Loyalty Status">
+            <span class="vip-crown">👑</span>
+            <span class="vip-level-txt" id="header-vip-tier">Bronze Stardust</span>
+          </a>
+          <button class="icon-btn-luna" id="theme-toggle" title="Toggle Light/Dark Theme">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
         </div>
       </header>
 
-      <div class="luna-layout">
-        <!-- Sidebar Navigation -->
-        <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark" id="sidebar">
-          <div class="container-fluid">
-            <div class="sidebar-user-card">
-              <div class="user-avatar">🧑‍🚀</div>
-              <div class="user-meta">
+      <div class="luna-body-frame">
+        <!-- 2. STREAMLINED NAVIGATION DRAWER / SIDEBAR -->
+        <aside class="luna-sidebar" id="sidebar">
+          <div class="sidebar-scroll-wrap">
+            <div class="user-profile-strip">
+              <div class="profile-avatar">👨‍🚀</div>
+              <div class="profile-info">
                 <strong id="sidebar-username">LunaCommander</strong>
-                <span class="badge-vip" id="sidebar-vip-badge">Bronze</span>
+                <span class="profile-tier-tag" id="sidebar-vip-badge">Bronze Member</span>
               </div>
             </div>
 
-            <div class="collapse navbar-collapse" id="sidebar-menu">
-              <nav class="nav">
-                <div class="nav-category">GAMES & LOBBY</div>
-                <a class="nav-item active" href="#lobby">
-                  <span class="nav-icon">🎰</span>
-                  <span>Featured Lobby</span>
-                  <span class="nav-count">Hot</span>
-                </a>
-                <a class="nav-item" href="#slots">
-                  <span class="nav-icon">⭐</span>
-                  <span>Slots & Megaways</span>
-                  <span class="nav-count">700+</span>
-                </a>
-                <a class="nav-item" href="#instant">
-                  <span class="nav-icon">🚀</span>
-                  <span>Instant & Arcade</span>
-                </a>
-                <a class="nav-item" href="#table">
-                  <span class="nav-icon">🃏</span>
-                  <span>Table Games</span>
-                </a>
-                
-                <div class="nav-category">PLAY & SIMULATOR</div>
-                <a class="nav-item" href="#play-station">
-                  <span class="nav-icon">🎮</span>
-                  <span>Live Game Deck</span>
-                </a>
-                <a class="nav-item" href="#auto-engine">
-                  <span class="nav-icon">⚡</span>
-                  <span>Auto-Run Engine</span>
-                </a>
+            <nav class="luna-nav-menu">
+              <div class="menu-group-label">GAMES & LOBBY</div>
+              <a class="luna-nav-link active" href="#lobby">
+                <span class="nav-ico">🎰</span>
+                <span class="nav-txt">Featured Lobby</span>
+                <span class="nav-badge-hot">Hot</span>
+              </a>
+              <a class="luna-nav-link" href="#slots">
+                <span class="nav-ico">⭐</span>
+                <span class="nav-txt">Slots & Megaways</span>
+                <span class="nav-badge-dim">700+</span>
+              </a>
+              <a class="luna-nav-link" href="#instant">
+                <span class="nav-ico">🚀</span>
+                <span class="nav-txt">Instant & Arcade</span>
+              </a>
+              <a class="luna-nav-link" href="#table">
+                <span class="nav-ico">🃏</span>
+                <span class="nav-txt">Table Classics</span>
+              </a>
+              
+              <div class="menu-group-label">CASINO CONSOLE</div>
+              <a class="luna-nav-link" href="#play-station">
+                <span class="nav-ico">🎮</span>
+                <span class="nav-txt">Live Game Deck</span>
+              </a>
+              <a class="luna-nav-link" href="#auto-engine">
+                <span class="nav-ico">⚡</span>
+                <span class="nav-txt">Auto-Spin Engine</span>
+              </a>
 
-                <div class="nav-category">INTELLIGENCE & AUDIT</div>
-                <a class="nav-item" href="#vip-club">
-                  <span class="nav-icon">💎</span>
-                  <span>VIP Rewards</span>
-                </a>
-                <a class="nav-item" href="#fairness">
-                  <span class="nav-icon">🛡️</span>
-                  <span>Provably Fair</span>
-                </a>
-                <a class="nav-item" href="#stats">
-                  <span class="nav-icon">📊</span>
-                  <span>Analytics & RTP</span>
-                </a>
-                <div class="nav-category">BANKING & ACCOUNT</div>
-                <a class="nav-item" href="#store">
-                  <span class="nav-icon">🪙</span>
-                  <span>Coin Store</span>
-                  <span class="nav-count bg-warning text-dark">Buy</span>
-                </a>
-                <a class="nav-item" href="#redemption">
-                  <span class="nav-icon">🎁</span>
-                  <span>Redeem Prizes</span>
-                </a>
-                <a class="nav-item" href="#support">
-                  <span class="nav-icon">💬</span>
-                  <span>24/7 AI Support</span>
-                </a>
-            </div>
+              <div class="menu-group-label">TREASURY & REWARDS</div>
+              <a class="luna-nav-link" href="#store">
+                <span class="nav-ico">🪙</span>
+                <span class="nav-txt">Coin Store</span>
+                <span class="nav-badge-gold">Free SC</span>
+              </a>
+              <a class="luna-nav-link" href="#redemption">
+                <span class="nav-ico">🎁</span>
+                <span class="nav-txt">Redeem Prizes</span>
+              </a>
+              <a class="luna-nav-link" href="#vip-club">
+                <span class="nav-ico">💎</span>
+                <span class="nav-txt">VIP Club</span>
+              </a>
 
-            <div class="sidebar-footer">
-              <div class="telemetry-bar">
-                <span class="live-indicator">
-                  <i id="connection-dot"></i>
-                  <span id="connection-label">ONLINE</span>
-                </span>
-                <span class="demo-badge">DEMO ONLY</span>
-              </div>
-              <button class="icon-button mobile-close" id="mobile-close-button" title="Close menu">✕</button>
+              <div class="menu-group-label">INTELLIGENCE & SUPPORT</div>
+              <a class="luna-nav-link" href="#fairness">
+                <span class="nav-ico">🛡️</span>
+                <span class="nav-txt">Provably Fair</span>
+              </a>
+              <a class="luna-nav-link" href="#stats">
+                <span class="nav-ico">📊</span>
+                <span class="nav-txt">Analytics & RTP</span>
+              </a>
+              <a class="luna-nav-link" href="#history">
+                <span class="nav-ico">📜</span>
+                <span class="nav-txt">Audit Ledger</span>
+              </a>
+              <a class="luna-nav-link" href="#support">
+                <span class="nav-ico">💬</span>
+                <span class="nav-txt">24/7 AI Support</span>
+              </a>
+            </nav>
+          </div>
+
+          <div class="sidebar-status-bar">
+            <div class="status-live-col">
+              <span class="pulse-indicator" id="connection-dot"></span>
+              <span class="status-txt" id="connection-label">ONLINE</span>
             </div>
+            <span class="demo-tag">DEMO ONLY</span>
+            <button class="icon-btn-luna d-lg-none" id="mobile-close-button" title="Close Menu">✕</button>
           </div>
         </aside>
 
-        <!-- Main Content Area -->
-        <main class="content">
-          <div class="container-fluid">
+        <!-- 3. DYNAMIC WORKSPACE CONTENT -->
+        <main class="luna-main-viewport">
+          <div class="viewport-inner">
             
-            <!-- VIEW 1: LUNALAND LOBBY (Banner Hero + Filterable Catalog) -->
+            <!-- VIEW 1: LOBBY -->
             <section class="view active" id="view-lobby">
-              <!-- Hero Banner -->
-              <div class="hero-banner">
-                <div class="hero-content">
-                  <span class="hero-tag">🌟 LUNALAND EXCLUSIVE</span>
-                  <h1 class="hero-title">ANCIENT TUMBLE MEGAWAYS</h1>
-                  <p class="hero-desc">117,649 Ways to Win • Cascading Multipliers • Colossal Free Spins</p>
-                  <div class="hero-actions">
-                    <button class="btn-play-hero" id="btn-hero-launch" data-game="ancient_tumble">
-                      <span>PLAY NOW (LC/SC)</span>
-                      <b>▶</b>
+              <!-- Hero Stage -->
+              <div class="hero-stage-card">
+                <div class="hero-backdrop-glow"></div>
+                <div class="hero-meta-col">
+                  <span class="hero-eyebrow">✨ FEATURED HEADLINER</span>
+                  <h1 class="hero-headline">ANCIENT TUMBLE MEGAWAYS</h1>
+                  <p class="hero-summary">117,649 Ways to Win • Cascading Multipliers • Colossal Free Spins Frenzy</p>
+                  <div class="hero-cta-group">
+                    <button class="btn-play-headliner" id="btn-hero-launch" data-game="ancient_tumble">
+                      <span>SPIN TO WIN</span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                     </button>
-                    <span class="hero-provider">Powered by Relax Gaming & NetEnt</span>
+                    <span class="hero-provider-tag">Powered by Relax Gaming & NetEnt</span>
                   </div>
                 </div>
-                <div class="hero-graphics">
-                  <div class="floating-art">🏺✨💎</div>
+                <div class="hero-visual-col">
+                  <div class="floating-art-cluster">
+                    <span class="float-sym float-1">🏺</span>
+                    <span class="float-sym float-2">💎</span>
+                    <span class="float-sym float-3">⭐</span>
+                  </div>
                 </div>
               </div>
 
-              <!-- Realtime Quick Stats Strip -->
-              <div class="metrics metrics-grid-4">
-                <article class="metric metric-primary">
-                  <span class="metric-label">Active Wallet</span>
-                  <strong id="balance">50,000</strong>
-                  <small id="balance-sub">Luna Coins (LC)</small>
-                  <div class="metric-trend" id="balance-trend"></div>
-                </article>
-                <article class="metric">
-                  <span class="metric-label">Total Rounds</span>
-                  <strong id="rounds">0</strong>
-                  <small id="rounds-note">Awaiting spin</small>
-                  <div class="metric-trend" id="rounds-trend"></div>
-                </article>
-                <article class="metric">
-                  <span class="metric-label">RTP / Hit Rate</span>
-                  <strong id="hit-rate">0%</strong>
-                  <small>Provably Fair Randomness</small>
-                  <div class="metric-trend" id="hit-rate-trend"></div>
-                </article>
-                <article class="metric">
-                  <span class="metric-label">Net Profit</span>
-                  <strong id="net-profit">0</strong>
-                  <small>Aggregated Payout</small>
-                  <div class="metric-trend" id="profit-trend"></div>
-                </article>
+              <!-- Quick Telemetry Strip -->
+              <div class="telemetry-grid">
+                <div class="telemetry-card highlight-card">
+                  <span class="telemetry-label">Active Wallet</span>
+                  <div class="telemetry-num" id="balance">50,000</div>
+                  <span class="telemetry-sub" id="balance-sub">Luna Coins (LC)</span>
+                </div>
+                <div class="telemetry-card">
+                  <span class="telemetry-label">Total Rounds</span>
+                  <div class="telemetry-num" id="rounds">0</div>
+                  <span class="telemetry-sub" id="rounds-note">Awaiting spin</span>
+                </div>
+                <div class="telemetry-card">
+                  <span class="telemetry-label">Hit Rate / RTP</span>
+                  <div class="telemetry-num" id="hit-rate">0%</div>
+                  <span class="telemetry-sub">Provably Fair SHA-256</span>
+                </div>
+                <div class="telemetry-card">
+                  <span class="telemetry-label">Net Profit</span>
+                  <div class="telemetry-num" id="net-profit">0</div>
+                  <span class="telemetry-sub">Total Yield</span>
+                </div>
               </div>
 
-              <!-- Filter Bar & Game Grid -->
-              <div class="catalog-section">
-                <div class="catalog-nav-tabs">
-                  <button class="cat-pill active" data-filter="">🔥 All Games</button>
-                  <button class="cat-pill" data-filter="slots">🎰 Slots</button>
-                  <button class="cat-pill" data-filter="instant">🚀 Instant Win</button>
-                  <button class="cat-pill" data-filter="table">🃏 Table Games</button>
-                  <button class="cat-pill" data-filter="lottery">🔢 Lottery & Keno</button>
-                </div>
-                <div class="catalog-filters-row">
-                  <div class="search-wrap">
-                    <span class="search-icon">🔍</span>
-                    <input id="library-search" type="search" placeholder="Search 700+ titles (e.g. Sugar Rush, Olympus, Mines)..." />
+              <!-- Filter Bar & Dynamic Catalog Grid -->
+              <div class="catalog-container">
+                <div class="catalog-header-bar">
+                  <div class="cat-pill-tabs">
+                    <button class="cat-pill-btn active" data-filter="">🔥 All Titles</button>
+                    <button class="cat-pill-btn" data-filter="slots">🎰 Slots</button>
+                    <button class="cat-pill-btn" data-filter="instant">🚀 Instant Win</button>
+                    <button class="cat-pill-btn" data-filter="table">🃏 Table Games</button>
+                    <button class="cat-pill-btn" data-filter="lottery">🔢 Lottery</button>
                   </div>
-                  <select id="library-provider" class="form-select-luna">
-                    <option value="">All Providers</option>
-                  </select>
-                  <select id="library-sort" class="form-select-luna">
-                    <option value="popular">Most Popular</option>
-                    <option value="name">Alphabetical (A-Z)</option>
-                    <option value="rtp">Highest RTP</option>
-                    <option value="recent">Recently Played</option>
-                  </select>
-                  <button class="btn-fav-filter" id="library-favorites-only">⭐ Favorites</button>
+                  <div class="cat-filter-controls">
+                    <div class="search-input-box">
+                      <span class="search-ico">🔍</span>
+                      <input id="library-search" type="search" placeholder="Search 700+ titles (Sugar Rush, Olympus, Mines)..." />
+                    </div>
+                    <select id="library-provider" class="luna-select">
+                      <option value="">All Providers</option>
+                    </select>
+                    <select id="library-sort" class="luna-select">
+                      <option value="popular">Most Popular</option>
+                      <option value="name">A-Z Name</option>
+                      <option value="rtp">Highest RTP</option>
+                      <option value="recent">Recently Played</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div class="library-grid" id="library-grid">
-                  <!-- Injected dynamically via app.js -->
+                <div class="games-responsive-grid" id="library-grid">
+                  <!-- Dynamically populated -->
                 </div>
               </div>
             </section>
 
-            <!-- VIEW 2: LIVE GAME DECK (Interactive Console) -->
+            <!-- VIEW 2: LIVE GAME DECK -->
             <section class="view" id="view-play-station">
-              <div class="row">
-                <!-- Left: Control Deck -->
-                <div class="col-lg-5">
-                  <article class="card control-card">
-                    <div class="card-header">
+              <div class="game-deck-layout">
+                <!-- Left Control Panel -->
+                <div class="deck-control-col">
+                  <div class="deck-card">
+                    <div class="deck-card-header">
                       <div>
-                        <p class="eyebrow" id="active-game-provider">NetEnt • 96.5% RTP</p>
-                        <h2 id="active-game-title">Classic Lunar 777</h2>
+                        <p class="card-eyebrow" id="active-game-provider">NetEnt • 96.5% RTP</p>
+                        <h2 class="card-title" id="active-game-title">Classic Lunar 777</h2>
                       </div>
-                      <span class="badge" id="active-game-cat">SLOTS</span>
+                      <span class="category-badge" id="active-game-cat">SLOTS</span>
                     </div>
 
-                    <div class="currency-selector-row">
-                      <label>Currency Mode:</label>
-                      <div class="currency-switch-mini">
-                        <button class="btn-curr-select active" id="btn-mode-lc" data-mode="LC">🪙 LC (Standard)</button>
-                        <button class="btn-curr-select" id="btn-mode-sc" data-mode="SC">⭐ SC (Sweeps)</button>
+                    <div class="currency-toggle-wrapper">
+                      <span class="field-label">Select Playing Currency:</span>
+                      <div class="currency-switch-deck">
+                        <button class="btn-deck-curr active" id="btn-mode-lc" data-mode="LC">🪙 LC (Standard)</button>
+                        <button class="btn-deck-curr" id="btn-mode-sc" data-mode="SC">⭐ SC (Sweeps)</button>
                       </div>
                     </div>
 
-                    <div class="field mt-3">
-                      <label>Select Title</label>
-                      <div class="game-selector" id="game-selector"></div>
+                    <div class="field-wrap mt-3">
+                      <label class="field-label">Game Settings & Title</label>
+                      <div id="game-selector"></div>
                     </div>
 
-                    <div class="game-fields" id="game-fields"></div>
+                    <div id="game-fields"></div>
 
-                    <div class="field">
+                    <div class="field-wrap mt-3">
                       <div class="d-flex justify-content-between align-items-center mb-1">
-                        <label for="bet-input">Stake Amount</label>
-                        <div class="quick-bet-pills">
+                        <label class="field-label" for="bet-input">Stake Amount</label>
+                        <div class="quick-stake-pills">
                           <button class="btn-quick-bet" data-amount="1">Min</button>
                           <button class="btn-quick-bet" data-amount="5">5</button>
                           <button class="btn-quick-bet" data-amount="20">20</button>
@@ -266,396 +283,368 @@
                           <button class="btn-quick-bet" data-amount="100">Max</button>
                         </div>
                       </div>
-                      <div class="input-wrap">
-                        <input id="bet-input" type="number" min="1" max="100" value="2" inputmode="numeric" />
-                        <span class="input-suffix" id="bet-currency-suffix">LC</span>
+                      <div class="input-addon-group">
+                        <input id="bet-input" type="number" min="1" max="100" value="2" class="luna-input-field" />
+                        <span class="input-addon-text" id="bet-currency-suffix">LC</span>
                       </div>
                     </div>
 
-                    <button class="button button-primary spin-pulse-btn" id="spin-button" type="button">
+                    <button class="btn-spin-primary" id="spin-button" type="button">
                       <span>SPIN / PLAY ROUND</span>
-                      <b>▶</b>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                     </button>
 
-                    <div class="divider"><span>AUTOMATED PACER</span></div>
-                    <div class="auto-fields">
-                      <label>
-                        <span>Rounds</span>
-                        <input id="rounds-input" type="number" min="1" max="100" value="10" />
-                      </label>
-                      <label>
-                        <span>Pace</span>
-                        <input id="interval-input" type="number" min="0" max="5000" step="100" value="400" />
-                        <span class="input-suffix">ms</span>
-                      </label>
+                    <div class="section-divider"><span>AUTO-RUN ENGINE</span></div>
+                    <div class="auto-config-grid">
+                      <div class="field-wrap">
+                        <label class="field-label">Rounds</label>
+                        <input id="rounds-input" type="number" min="1" max="100" value="10" class="luna-input-field" />
+                      </div>
+                      <div class="field-wrap">
+                        <label class="field-label">Pace (ms)</label>
+                        <input id="interval-input" type="number" min="0" max="5000" step="100" value="400" class="luna-input-field" />
+                      </div>
                     </div>
-                    <div class="button-row">
-                      <button class="button button-secondary" id="auto-start-button" type="button">Start Auto-Spin</button>
-                      <button class="button button-stop" id="auto-stop-button" type="button" disabled>Stop</button>
+                    <div class="auto-btn-row">
+                      <button class="btn-auto-start" id="auto-start-button" type="button">Start Auto-Spin</button>
+                      <button class="btn-auto-stop" id="auto-stop-button" type="button" disabled>Halt</button>
                     </div>
-                    <p class="control-status" id="control-status">Ready for next round.</p>
-                  </article>
+                    <p class="console-status-text" id="control-status">Ready for next round.</p>
+                  </div>
                 </div>
 
-                <!-- Right: Visualizer & Live Feed -->
-                <div class="col-lg-7">
-                  <article class="card signal-card">
-                    <div class="card-header">
+                <!-- Right Visualizer & Realtime Ledger -->
+                <div class="deck-visual-col">
+                  <div class="deck-card">
+                    <div class="deck-card-header">
                       <div>
-                        <p class="eyebrow">Visualizer Matrix</p>
-                        <h2 id="visualizer-heading">Live Game Stage</h2>
+                        <p class="card-eyebrow">Realtime Rendering</p>
+                        <h2 class="card-title">Live Stage Matrix</h2>
                       </div>
-                      <span class="signal-counter" id="signal-counter">0000</span>
+                      <span class="counter-display" id="signal-counter">0000</span>
                     </div>
 
-                    <div class="reel-stage" id="reel-stage" aria-label="synthetic outcome display">
-                      <div class="scan-line"></div>
-                      <div class="reel" id="reel-1"><span class="reel-symbol" id="reel-a">🌙</span><small>REEL 1</small></div>
-                      <div class="reel" id="reel-2"><span class="reel-symbol" id="reel-b">💎</span><small>REEL 2</small></div>
-                      <div class="reel" id="reel-3"><span class="reel-symbol" id="reel-c">⭐</span><small>REEL 3</small></div>
+                    <div class="stage-reel-box" id="reel-stage">
+                      <div class="scanning-laser"></div>
+                      <div class="stage-reel-cell"><span class="symbol-txt" id="reel-a">🌙</span><small>REEL 1</small></div>
+                      <div class="stage-reel-cell"><span class="symbol-txt" id="reel-b">💎</span><small>REEL 2</small></div>
+                      <div class="stage-reel-cell"><span class="symbol-txt" id="reel-c">⭐</span><small>REEL 3</small></div>
                     </div>
 
-                    <div class="visualizer-hud" id="visualizer-hud">
-                      <div class="hud-item">
-                        <span>Last Outcome:</span>
+                    <div class="stage-hud-bar">
+                      <div class="hud-stat-unit">
+                        <span>Outcome</span>
                         <strong id="hud-outcome">—</strong>
                       </div>
-                      <div class="hud-item">
-                        <span>Multiplier:</span>
+                      <div class="hud-stat-unit">
+                        <span>Multiplier</span>
                         <strong id="hud-mult">0x</strong>
                       </div>
-                      <div class="hud-item">
-                        <span>Payout:</span>
+                      <div class="hud-stat-unit">
+                        <span>Payout</span>
                         <strong id="hud-payout">0</strong>
                       </div>
                     </div>
 
-                    <div class="signal-footer">
-                      <span><i class="pulse"></i> PROVABLY FAIR SHA-256</span>
-                      <span id="fairness-hash-indicator">Seed: Verified</span>
+                    <div class="stage-footer-note">
+                      <span><i class="pulse-dot"></i> PROVABLY FAIR SHA-256</span>
+                      <span id="fairness-hash-indicator">Cryptographic Seed: Verified</span>
                     </div>
-                  </article>
+                  </div>
 
-                  <!-- Live Stream Feed -->
-                  <article class="card feed-card">
-                    <div class="card-header">
+                  <!-- Ledger Stream -->
+                  <div class="deck-card mt-3">
+                    <div class="deck-card-header">
                       <div>
-                        <p class="eyebrow">Audited Realtime Ledger</p>
-                        <h2>Live Feed</h2>
+                        <p class="card-eyebrow">Append-Only Transaction Ledger</p>
+                        <h2 class="card-title">Live Event Stream</h2>
                       </div>
-                      <span class="badge">SSE Live</span>
-                      <div class="card-actions">
-                        <button class="icon-button small" id="export-button" title="Export events">⬇</button>
-                        <label class="icon-button small" title="Import events" for="import-file">⬆</label>
+                      <div class="card-action-btns">
+                        <button class="icon-btn-sm" id="export-button" title="Export Ledger">⬇</button>
+                        <label class="icon-btn-sm" title="Import Ledger" for="import-file">⬆</label>
                         <input type="file" id="import-file" accept=".json" style="display:none" />
-                        <button class="icon-button small" id="reset-button" title="Reset balance">↺</button>
+                        <button class="icon-btn-sm" id="reset-button" title="Reset Wallet Balance">↺</button>
                       </div>
                     </div>
-                    <div class="feed-head">
+                    <div class="ledger-header-row">
                       <span>Time</span>
-                      <span>Game / Multiplier</span>
+                      <span>Game / Mult</span>
                       <span>Outcome</span>
                       <span>Wallet Balance</span>
                     </div>
-                    <div class="event-list" id="event-list" aria-live="polite">
+                    <div class="ledger-stream-box" id="event-list">
                       <div class="empty-state">
-                        <div class="empty-state-icon">🎲</div>
-                        <span>Ready to launch</span>
+                        <span>🎲 Ready to launch</span>
                         <small>Run a spin to start generating append-only ledger events.</small>
                       </div>
                     </div>
-                  </article>
-                </div>
-              </div>
-            </section>
-
-            <!-- VIEW 3: PROVABLY FAIR AUDIT & CRYPTOGRAPHY -->
-            <section class="view" id="view-fairness">
-              <div class="card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <div>
-                    <p class="eyebrow">Cryptographic Integrity</p>
-                    <h2>Provably Fair SHA-256 Verifier</h2>
-                  </div>
-                  <span class="badge bg-success">100% Verifiable</span>
-                </div>
-                <p class="text-muted">Every outcome is generated using an unalterable HMAC-SHA256 hash combining the Server Seed, Client Seed, and Nonce counter.</p>
-                <div class="fairness-checker-box">
-                  <div class="field">
-                    <label>Client Seed</label>
-                    <input type="text" id="fairness-client-seed" value="lunaland-fair-seed" class="form-control-luna" />
-                  </div>
-                  <div class="field mt-3">
-                    <label>Latest Server Seed Hash (SHA-256)</label>
-                    <input type="text" id="fairness-server-hash" readonly value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" class="form-control-luna font-mono" />
-                  </div>
-                  <div class="field mt-3">
-                    <label>Generated Result Hash</label>
-                    <input type="text" id="fairness-result-hash" readonly value="7a8f12c...verified" class="form-control-luna font-mono" />
                   </div>
                 </div>
               </div>
             </section>
 
-            <!-- VIEW 4: VIP CLUB & REWARDS -->
+            <!-- VIEW 3: COIN STORE -->
+            <section class="view" id="view-store">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Treasury & Store</p>
+                  <h2>Get Luna Coins & Complimentary Sweeps Coins</h2>
+                </div>
+                <span class="badge-accent">100% Free SC Included</span>
+              </div>
+              <div class="store-packs-grid">
+                <div class="store-card">
+                  <span class="pack-badge-tag">Starter</span>
+                  <div class="pack-orb">🪙</div>
+                  <div class="pack-name">Lunar Stardust</div>
+                  <div class="pack-lc">25,000 LC</div>
+                  <div class="pack-sc-bonus">+ FREE 5.00 SC</div>
+                  <button class="btn-buy-pack btn-buy-luna" data-pack="starter">$4.99 USD</button>
+                </div>
+                <div class="store-card popular-highlight">
+                  <span class="pack-badge-tag hot-tag">Most Popular</span>
+                  <div class="pack-orb">🚀</div>
+                  <div class="pack-name">Nebula Explorer</div>
+                  <div class="pack-lc">120,000 LC</div>
+                  <div class="pack-sc-bonus">+ FREE 21.00 SC</div>
+                  <button class="btn-buy-pack btn-buy-luna pulse-glow" data-pack="popular">$19.99 USD</button>
+                </div>
+                <div class="store-card">
+                  <span class="pack-badge-tag">High Roller</span>
+                  <div class="pack-orb">💎</div>
+                  <div class="pack-name">Cosmic Voyager</div>
+                  <div class="pack-lc">350,000 LC</div>
+                  <div class="pack-sc-bonus">+ FREE 52.50 SC</div>
+                  <button class="btn-buy-pack btn-buy-luna" data-pack="highroller">$49.99 USD</button>
+                </div>
+                <div class="store-card">
+                  <span class="pack-badge-tag vip-tag">VIP Whale</span>
+                  <div class="pack-orb">👑</div>
+                  <div class="pack-name">Supernova VIP</div>
+                  <div class="pack-lc">800,000 LC</div>
+                  <div class="pack-sc-bonus">+ FREE 105.00 SC</div>
+                  <button class="btn-buy-pack btn-buy-luna" data-pack="whale">$99.99 USD</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- VIEW 4: PRIZE REDEMPTION -->
+            <section class="view" id="view-redemption">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Sweeps Prizes</p>
+                  <h2>Redeem Sweeps Coins (SC)</h2>
+                </div>
+                <span class="badge-teal">Minimum: 50.00 SC</span>
+              </div>
+              <div class="redemption-card-wrap">
+                <div class="redemption-form-box">
+                  <div class="field-wrap">
+                    <label class="field-label">Redeem Amount (SC)</label>
+                    <input type="number" id="redeem-amount-input" min="50" step="5" value="50.00" class="luna-input-field" />
+                  </div>
+                  <div class="field-wrap mt-3">
+                    <label class="field-label">Payout Method</label>
+                    <select id="redeem-method-select" class="luna-select w-100">
+                      <option value="crypto">USDT / USDC (Instant Crypto Transfer)</option>
+                      <option value="bank">Direct Bank Transfer / ACH</option>
+                      <option value="giftcard">Instant Digital Gift Card</option>
+                    </select>
+                  </div>
+                  <button class="btn-spin-primary mt-4" id="btn-submit-redemption">SUBMIT REDEMPTION REQUEST</button>
+                  <p id="redemption-status-msg" class="status-callout"></p>
+                </div>
+                <div class="redemption-info-box">
+                  <h4>Sweepstakes Rules & Compliance</h4>
+                  <ul class="rule-list">
+                    <li>Minimum prize redemption threshold: 50.00 SC</li>
+                    <li>1x playthrough requirement on promotional Sweeps Coins</li>
+                    <li>Complies with US social gaming and sweepstakes laws</li>
+                    <li>Instant verification and average payout in under 24 hours</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <!-- VIEW 5: VIP CLUB -->
             <section class="view" id="view-vip-club">
-              <div class="vip-header-card">
-                <div class="vip-badge-col">
-                  <div class="vip-large-icon">👑</div>
+              <div class="vip-hero-banner">
+                <div class="vip-status-col">
+                  <div class="vip-crown-large">👑</div>
                   <h2 id="vip-current-title">Bronze Stardust</h2>
-                  <span class="text-muted">VIP Tier Progression</span>
+                  <span class="vip-subtitle">VIP Tier Progression</span>
                 </div>
-                <div class="vip-progress-col">
+                <div class="vip-bar-col">
                   <div class="d-flex justify-content-between mb-2">
                     <span id="vip-points-text">Points: 0 / 5,000</span>
                     <span id="vip-next-tier">Next: Silver Moon</span>
                   </div>
-                  <div class="vip-progress-bar">
-                    <div class="vip-progress-fill" id="vip-progress-fill" style="width: 5%;"></div>
+                  <div class="vip-track-bar">
+                    <div class="vip-track-fill" id="vip-progress-fill" style="width: 5%;"></div>
                   </div>
                 </div>
               </div>
 
-              <div class="row mt-4">
-                <div class="col-md-3">
-                  <div class="vip-tier-card">
-                    <h3>🥉 Bronze</h3>
-                    <p>Standard 96% RTP</p>
-                    <small>0+ Points</small>
-                  </div>
+              <div class="vip-tiers-grid mt-4">
+                <div class="vip-level-card">
+                  <h3>🥉 Bronze</h3>
+                  <p>Standard 96% RTP</p>
+                  <small>0+ Points</small>
                 </div>
-                <div class="col-md-3">
-                  <div class="vip-tier-card">
-                    <h3>🥈 Silver Moon</h3>
-                    <p>+5% Bonus Sweeps Coins</p>
-                    <small>5,000+ Points</small>
-                  </div>
+                <div class="vip-level-card">
+                  <h3>🥈 Silver Moon</h3>
+                  <p>+5% Bonus Sweeps Coins</p>
+                  <small>5,000+ Points</small>
                 </div>
-                <div class="col-md-3">
-                  <div class="vip-tier-card">
-                    <h3>🥇 Gold Nebula</h3>
-                    <p>+10% Daily Spin Boost</p>
-                    <small>15,000+ Points</small>
-                  </div>
+                <div class="vip-level-card">
+                  <h3>🥇 Gold Nebula</h3>
+                  <p>+10% Daily Spin Boost</p>
+                  <small>15,000+ Points</small>
                 </div>
-                <div class="col-md-3">
-                  <div class="vip-tier-card highlight">
-                    <h3>💎 Diamond Orbit</h3>
-                    <p>Exclusive High-Limit Tables</p>
-                    <small>100,000+ Points</small>
-                  </div>
+                <div class="vip-level-card highlight-tier">
+                  <h3>💎 Diamond Orbit</h3>
+                  <p>Exclusive VIP Host & Tables</p>
+                  <small>100,000+ Points</small>
                 </div>
               </div>
             </section>
 
-            <!-- VIEW 5: ANALYTICS & STATS -->
-            <section class="view" id="view-stats">
-              <div class="stats-header">
+            <!-- VIEW 6: PROVABLY FAIR AUDIT -->
+            <section class="view" id="view-fairness">
+              <div class="page-title-banner">
                 <div>
-                  <p class="eyebrow">Telemetry & Telematics</p>
+                  <p class="card-eyebrow">Cryptographic Integrity</p>
+                  <h2>Provably Fair SHA-256 Verifier</h2>
+                </div>
+                <span class="badge-green">100% Verifiable</span>
+              </div>
+              <div class="fairness-card">
+                <p class="text-muted mb-3">Every round's randomness is generated via deterministic HMAC-SHA256 hashing. You can audit any round against the unalterable server seed hash.</p>
+                <div class="field-wrap">
+                  <label class="field-label">Client Seed</label>
+                  <input type="text" id="fairness-client-seed" value="lunaland-fair-seed" class="luna-input-field" />
+                </div>
+                <div class="field-wrap mt-3">
+                  <label class="field-label">Latest Server Seed Hash (SHA-256)</label>
+                  <input type="text" id="fairness-server-hash" readonly value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" class="luna-input-field font-mono" />
+                </div>
+                <div class="field-wrap mt-3">
+                  <label class="field-label">Deterministic Result Hash</label>
+                  <input type="text" id="fairness-result-hash" readonly value="7a8f12c...verified" class="luna-input-field font-mono" />
+                </div>
+              </div>
+            </section>
+
+            <!-- VIEW 7: ANALYTICS & STATS -->
+            <section class="view" id="view-stats">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Telemetry & RTP</p>
                   <h2>Performance Analytics</h2>
                 </div>
-                <button class="button button-secondary" id="refresh-stats">Refresh Metrics</button>
+                <button class="btn-store-glow" id="refresh-stats">Refresh Metrics</button>
               </div>
 
-              <div class="stats-grid" id="stats-grid">
-                <div class="stat-card"><span class="stat-label">Total Rounds</span><strong id="stat-rounds">0</strong></div>
-                <div class="stat-card"><span class="stat-label">Win Rate</span><strong id="stat-winrate">0%</strong></div>
-                <div class="stat-card"><span class="stat-label">Biggest Win</span><strong id="stat-biggest">0</strong></div>
-                <div class="stat-card"><span class="stat-label">Avg Bet</span><strong id="stat-avgbet">0</strong></div>
-                <div class="stat-card"><span class="stat-label">Net Profit (LC)</span><strong id="stat-profit">0</strong></div>
-                <div class="stat-card"><span class="stat-label">Max Multiplier</span><strong id="stat-maxmult">0x</strong></div>
+              <div class="telemetry-grid mt-3">
+                <div class="telemetry-card"><span class="telemetry-label">Total Rounds</span><div class="telemetry-num" id="stat-rounds">0</div></div>
+                <div class="telemetry-card"><span class="telemetry-label">Win Rate</span><div class="telemetry-num" id="stat-winrate">0%</div></div>
+                <div class="telemetry-card"><span class="telemetry-label">Biggest Win</span><div class="telemetry-num" id="stat-biggest">0</div></div>
+                <div class="telemetry-card"><span class="telemetry-label">Avg Bet</span><div class="telemetry-num" id="stat-avgbet">0</div></div>
+                <div class="telemetry-card"><span class="telemetry-label">Net Profit (LC)</span><div class="telemetry-num" id="stat-profit">0</div></div>
+                <div class="telemetry-card"><span class="telemetry-label">Max Multiplier</span><div class="telemetry-num" id="stat-maxmult">0x</div></div>
               </div>
 
-              <div class="card mt-4">
-                <div class="card-header">
+              <div class="deck-card mt-4">
+                <div class="deck-card-header">
                   <div>
-                    <p class="eyebrow">Realtime Trend</p>
-                    <h2>Balance Progression</h2>
+                    <p class="card-eyebrow">Realtime Progression</p>
+                    <h2 class="card-title">Balance Trend (ApexCharts)</h2>
                   </div>
                 </div>
                 <div id="balance-chart" style="min-height: 260px;"></div>
               </div>
             </section>
 
-            <!-- VIEW 6: AUDIT HISTORY -->
+            <!-- VIEW 8: AUDIT HISTORY -->
             <section class="view" id="view-history">
-              <div class="history-header">
+              <div class="page-title-banner">
                 <div>
-                  <p class="eyebrow">Historical Ledger</p>
-                  <h2>Recent Rounds Audit</h2>
+                  <p class="card-eyebrow">Audited Ledger</p>
+                  <h2>Recent Rounds History</h2>
                 </div>
-                <div class="history-actions">
-                  <button class="icon-button small" id="export-history" title="Export Ledger">⬇</button>
-                  <button class="icon-button small" id="clear-history" title="Clear">🗑</button>
+                <div class="card-action-btns">
+                  <button class="icon-btn-sm" id="export-history" title="Export Ledger">⬇</button>
+                  <button class="icon-btn-sm" id="clear-history" title="Clear Ledger">🗑</button>
                 </div>
               </div>
-              <div class="card">
-                <div class="feed-head">
-                  <span>Timestamp</span>
+              <div class="deck-card mt-3">
+                <div class="ledger-header-row">
+                  <span>Time</span>
                   <span>Game / Outcome</span>
                   <span>Bet / Multiplier</span>
                   <span>Wallet Balance</span>
                 </div>
-                <div class="event-list" id="history-event-list" aria-live="polite">
+                <div class="ledger-stream-box" id="history-event-list">
                   <div class="empty-state">
-                    <div class="empty-state-icon">📜</div>
-                    <span>No history recorded yet</span>
-                  </div>
-                </div>
-              </div>
-            <!-- VIEW 7: LUNALAND COIN STORE -->
-            <section class="view" id="view-store">
-              <div class="card p-4 mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <div>
-                    <p class="eyebrow">Lunaland Coin Store</p>
-                    <h2>Get Luna Coins & Free Sweeps Coins</h2>
-                  </div>
-                  <span class="badge bg-warning text-dark font-bold">100% Free SC Included</span>
-                </div>
-                <p class="text-muted">Purchase Luna Coins for standard recreational play and receive complimentary Sweeps Coins (SC) automatically.</p>
-              </div>
-
-              <div class="row g-4">
-                <div class="col-md-3">
-                  <div class="card store-pack-card">
-                    <div class="pack-badge">Starter</div>
-                    <div class="pack-icon">🪙</div>
-                    <div class="pack-coins">25,000 LC</div>
-                    <div class="pack-free-sc">+ FREE 5.00 SC</div>
-                    <button class="btn-buy-pack btn-buy-luna" data-pack="starter">$4.99 USD</button>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="card store-pack-card popular-pack">
-                    <div class="pack-badge bg-danger">Most Popular</div>
-                    <div class="pack-icon">🚀</div>
-                    <div class="pack-coins">120,000 LC</div>
-                    <div class="pack-free-sc">+ FREE 21.00 SC</div>
-                    <button class="btn-buy-pack btn-buy-luna pulse-gold" data-pack="popular">$19.99 USD</button>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="card store-pack-card">
-                    <div class="pack-badge">High Roller</div>
-                    <div class="pack-icon">💎</div>
-                    <div class="pack-coins">350,000 LC</div>
-                    <div class="pack-free-sc">+ FREE 52.50 SC</div>
-                    <button class="btn-buy-pack btn-buy-luna" data-pack="highroller">$49.99 USD</button>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="card store-pack-card">
-                    <div class="pack-badge bg-primary">VIP Whale</div>
-                    <div class="pack-icon">👑</div>
-                    <div class="pack-coins">800,000 LC</div>
-                    <div class="pack-free-sc">+ FREE 105.00 SC</div>
-                    <button class="btn-buy-pack btn-buy-luna" data-pack="whale">$99.99 USD</button>
+                    <span>📜 No history recorded yet</span>
                   </div>
                 </div>
               </div>
             </section>
 
-            <!-- VIEW 8: SWEEPS PRIZE REDEMPTION -->
-            <section class="view" id="view-redemption">
-              <div class="card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <div>
-                    <p class="eyebrow">Sweeps Prizes</p>
-                    <h2>Redeem Sweeps Coins (SC)</h2>
-                  </div>
-                  <span class="badge bg-teal text-white">Minimum: 50.00 SC</span>
-                </div>
-                <p class="text-muted">1 SC = $1.00 USD value equivalent. All SC played at least 1x can be redeemed to Crypto, Bank Wire, or Gift Cards.</p>
-
-                <div class="redemption-box mt-4">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <div class="field">
-                        <label>Redeem Amount (SC)</label>
-                        <input type="number" id="redeem-amount-input" min="50" step="5" value="50.00" class="form-control-luna" />
-                      </div>
-                      <div class="field mt-3">
-                        <label>Payment Method</label>
-                        <select id="redeem-method-select" class="form-select-luna w-100">
-                          <option value="crypto">USDT / USDC (Instant Crypto Transfer)</option>
-                          <option value="bank">Direct Bank Transfer / ACH</option>
-                          <option value="giftcard">Instant Digital Gift Card</option>
-                        </select>
-                      </div>
-                      <button class="button button-primary mt-4 w-100" id="btn-submit-redemption">SUBMIT REDEMPTION REQUEST</button>
-                      <p id="redemption-status-msg" class="mt-2 text-muted font-bold"></p>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="card bg-darker p-3">
-                        <h4>Redemption Rules</h4>
-                        <ul class="text-muted ps-3 mt-2" style="font-size: 13px; line-height: 1.6;">
-                          <li>Minimum redemption threshold: 50.00 SC</li>
-                          <li>1x playthrough requirement on promotional SC</li>
-                          <li>Available in 40+ legal US jurisdictions</li>
-                          <li>Average payout speed: 10 mins ~ 24 hours</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <!-- VIEW 9: 24/7 AI LIVE SUPPORT & REFERRAL -->
+            <!-- VIEW 9: 24/7 AI SUPPORT & REFERRAL -->
             <section class="view" id="view-support">
-              <div class="row">
-                <div class="col-md-7">
-                  <div class="card p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <div>
-                        <p class="eyebrow">24/7 Virtual Host</p>
-                        <h2>Lunaland Live Assistant</h2>
-                      </div>
-                      <span class="badge bg-success">AI Live</span>
+              <div class="support-split-layout">
+                <div class="deck-card">
+                  <div class="deck-card-header">
+                    <div>
+                      <p class="card-eyebrow">24/7 Virtual Host</p>
+                      <h2 class="card-title">Lunaland AI Assistant</h2>
                     </div>
-                    <div class="chat-window-luna" id="chat-window">
-                      <div class="chat-msg bot">
-                        <strong>🤖 LunaBot:</strong> Welcome to Lunaland! Ask me anything about coins, games, VIP tiers, or payouts!
-                      </div>
+                    <span class="badge-green">AI Active</span>
+                  </div>
+                  <div class="chat-viewport" id="chat-window">
+                    <div class="chat-bubble bot">
+                      <strong>🤖 LunaBot:</strong> Welcome to Lunaland! Ask me anything about coins, games, VIP tiers, or payouts!
                     </div>
-                    <div class="chat-input-row mt-3">
-                      <input type="text" id="chat-input-msg" placeholder="Type your question..." class="form-control-luna flex-1" />
-                      <button class="button button-primary" id="btn-send-chat">Send</button>
-                    </div>
+                  </div>
+                  <div class="chat-input-row">
+                    <input type="text" id="chat-input-msg" placeholder="Ask LunaBot a question..." class="luna-input-field flex-1" />
+                    <button class="btn-play-headliner" id="btn-send-chat">Send</button>
                   </div>
                 </div>
-                <div class="col-md-5">
-                  <div class="card p-4">
-                    <p class="eyebrow">Viral Rewards</p>
-                    <h2>Refer a Friend</h2>
-                    <p class="text-muted mt-2" style="font-size: 13px;">Invite your friends to Lunaland. You receive +50,000 LC + 5.00 SC for every verified friend!</p>
-                    <div class="field mt-3">
-                      <label>Your Referral Code</label>
-                      <input type="text" readonly value="LUNA-LUCK-777" class="form-control-luna font-mono" />
-                    </div>
-                    <button class="button button-secondary mt-3 w-100" id="btn-claim-referral">CLAIM BONUS REFERRAL CODE</button>
+                
+                <div class="deck-card">
+                  <p class="card-eyebrow">Viral Rewards</p>
+                  <h2 class="card-title">Refer a Friend</h2>
+                  <p class="text-muted mt-2">Invite your friends to Lunaland. You receive +50,000 LC + 5.00 SC for every verified friend!</p>
+                  <div class="field-wrap mt-3">
+                    <label class="field-label">Your Referral Code</label>
+                    <input type="text" readonly value="LUNA-LUCK-777" class="luna-input-field font-mono" />
                   </div>
+                  <button class="btn-spin-primary mt-3 w-100" id="btn-claim-referral">CLAIM BONUS REFERRAL CODE</button>
                 </div>
               </div>
             </section>
+
+          </div>
+        </main>
       </div>
     </div>
 
     <!-- Modals -->
-    <div class="modal" id="bonus-modal" style="display:none;">
-      <div class="modal-content bonus-modal-content">
-        <div class="modal-header">
+    <div class="modal-backdrop-luna" id="bonus-modal" style="display:none;">
+      <div class="modal-dialog-luna">
+        <div class="modal-dialog-header">
           <h3>🎉 Daily Bonus Claimed!</h3>
-          <button class="icon-button" id="close-bonus-modal">✕</button>
+          <button class="icon-btn-sm" id="close-bonus-modal">✕</button>
         </div>
-        <div class="modal-body text-center py-4">
-          <div style="font-size: 3rem; margin-bottom: 12px;">🎁✨</div>
+        <div class="modal-dialog-body">
+          <div class="bonus-anim-orb">🎁✨</div>
           <h4>You received:</h4>
-          <p class="text-gold font-bold" style="font-size: 1.4rem;">+10,000 Luna Coins (LC)</p>
-          <p class="text-teal font-bold" style="font-size: 1.4rem;">+1.00 Sweeps Coins (SC)</p>
-          <button class="button button-primary mt-3" id="btn-collect-bonus">COLLECT & SPIN</button>
+          <p class="bonus-amt-lc">+10,000 Luna Coins (LC)</p>
+          <p class="bonus-amt-sc">+1.00 Sweeps Coins (SC)</p>
+          <button class="btn-spin-primary mt-3" id="btn-collect-bonus">COLLECT & SPIN</button>
         </div>
       </div>
     </div>
