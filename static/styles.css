@@ -732,6 +732,88 @@ body {
   font-weight: 600;
 }
 
+/* LUCKYCONNECT & AGGREGATOR CARDS GRID */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.game-card {
+  background: var(--luna-bg-card);
+  border: 1px solid var(--luna-line);
+  border-radius: var(--luna-border-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.game-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.game-thumb-placeholder {
+  height: 130px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #090e1b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.game-thumb-icon {
+  font-size: 44px;
+  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.6));
+}
+
+.game-info {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.game-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--luna-text-muted);
+  margin: 6px 0 10px 0;
+}
+
+.game-vol {
+  font-weight: 700;
+  color: var(--luna-gold);
+}
+
+.btn-play-game {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  color: #ffffff;
+  border: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.5px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.btn-play-game:hover {
+  background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.6);
+  transform: translateY(-1px);
+}
+
 /* GAME DECK LAYOUT */
 .game-deck-layout {
   display: grid;
