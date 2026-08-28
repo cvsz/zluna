@@ -379,12 +379,28 @@
   // --- ROUTING & TABS ---
   function activateView(viewId) {
     document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
-    const target = $(`view-${viewId}`);
-    if (target) target.classList.add("active");
+    
+    // Handle category aliases to lobby with filter
+    if (["slots", "instant", "table", "lottery"].includes(viewId)) {
+      const lobby = $("view-lobby");
+      if (lobby) lobby.classList.add("active");
+      filterCatalogByCategory(viewId);
+    } else {
+      const target = $(`view-${viewId}`);
+      if (target) target.classList.add("active");
+    }
 
     document.querySelectorAll(".nav-item").forEach((n) => {
       n.classList.toggle("active", n.getAttribute("href") === `#${viewId}`);
     });
+  }
+
+  function filterCatalogByCategory(cat) {
+    document.querySelectorAll(".cat-pill").forEach((p) => {
+      p.classList.toggle("active", p.dataset.filter === cat);
+    });
+    const filtered = cat ? gamesList.filter((g) => g.category === cat) : gamesList;
+    renderCatalog(filtered);
   }
 
   window.addEventListener("hashchange", () => {
@@ -422,6 +438,14 @@
         if (suf) suf.textContent = "SC";
       });
     }
+
+    // Category Filter Pills
+    document.querySelectorAll(".cat-pill").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const cat = pill.dataset.filter || "";
+        filterCatalogByCategory(cat);
+      });
+    });
 
     // Hero launch button
     const heroBtn = $("btn-hero-launch");
