@@ -220,6 +220,11 @@
     // Switch view to play-station
     activateView("play-station");
     renderGameControls(game);
+
+    if (gameSelector) {
+      const gSel = gameSelector.querySelector("select");
+      if (gSel) gSel.value = gameId;
+    }
   }
 
   function renderGameControls(game) {
@@ -567,6 +572,23 @@
             opt.textContent = p;
             pSel.appendChild(opt);
           });
+        }
+
+        // Populate game-selector in Live Game Deck
+        if (gameSelector && gameSelector.children.length === 0) {
+          const gSel = document.createElement("select");
+          gSel.className = "luna-select w-100";
+          gamesList.forEach((g) => {
+            const opt = document.createElement("option");
+            opt.value = g.id;
+            opt.textContent = `${g.name} (${g.provider || 'Lunaland'} - ${g.rtp || 96.5}%)`;
+            if (g.id === currentGameId) opt.selected = true;
+            gSel.appendChild(opt);
+          });
+          gSel.addEventListener("change", () => {
+            launchGame(gSel.value);
+          });
+          gameSelector.appendChild(gSel);
         }
 
         syncState(snap.state);
