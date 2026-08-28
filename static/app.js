@@ -447,6 +447,35 @@
       });
     });
 
+    // Dynamic Search & Filters
+    const searchInp = $("library-search");
+    const provSelect = $("library-provider");
+    const sortSelect = $("library-sort");
+
+    function applyCatalogFilters() {
+      const q = (searchInp ? searchInp.value.trim().toLowerCase() : "");
+      const prov = (provSelect ? provSelect.value : "");
+      const sort = (sortSelect ? sortSelect.value : "popular");
+
+      let list = gamesList.filter((g) => {
+        const matchesQ = !q || g.name.toLowerCase().includes(q) || (g.description && g.description.toLowerCase().includes(q));
+        const matchesProv = !prov || g.provider === prov;
+        return matchesQ && matchesProv;
+      });
+
+      if (sort === "name") {
+        list.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (sort === "rtp") {
+        list.sort((a, b) => (b.rtp || 0) - (a.rtp || 0));
+      }
+
+      renderCatalog(list);
+    }
+
+    if (searchInp) searchInp.addEventListener("input", applyCatalogFilters);
+    if (provSelect) provSelect.addEventListener("change", applyCatalogFilters);
+    if (sortSelect) sortSelect.addEventListener("change", applyCatalogFilters);
+
     // Hero launch button
     const heroBtn = $("btn-hero-launch");
     if (heroBtn) heroBtn.addEventListener("click", () => { launchGame("ancient_tumble"); });
@@ -476,6 +505,19 @@
         const snap = JSON.parse(e.data);
         gamesList = snap.games || [];
         renderCatalog(gamesList);
+        
+        // Populate provider dropdown
+        const pSel = $("library-provider");
+        if (pSel && pSel.options.length <= 1) {
+          const provs = [...new Set(gamesList.map((g) => g.provider).filter(Boolean))].sort();
+          provs.forEach((p) => {
+            const opt = document.createElement("option");
+            opt.value = p;
+            opt.textContent = p;
+            pSel.appendChild(opt);
+          });
+        }
+
         syncState(snap.state);
         (snap.events || []).forEach(appendEventRow);
         if (connectionDot) connectionDot.style.background = "#10b981";
