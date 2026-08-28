@@ -236,7 +236,7 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
             self.assertTrue(summary["ok"])
             self.assertEqual(summary["summary"]["total_available_games"], 6000)
 
-        # 3. Test LuckyConnect authenticated launch session creation
+        # 3. Test LuckyConnect authenticated launch session creation with Hawk Security
         status, launch = self.post_json("/api/luckyconnect/launch", {
             "game_id": "ls_live_blackjack_vip",
             "currency": "LC",
@@ -246,6 +246,8 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
         self.assertTrue(launch["ok"])
         self.assertIn("luckyconnect.luckystreaklive.com", launch["launch_url"])
         self.assertTrue(launch["live_stream"])
+        self.assertIn("hawk_auth", launch)
+        self.assertIn("Hawk id=", launch["hawk_auth"]["Authorization"])
 
         # 4. Test LuckyConnect Seamless Webhook Callback
         status, hook = self.post_json("/api/luckyconnect/webhook", {
