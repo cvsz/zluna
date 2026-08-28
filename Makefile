@@ -1,18 +1,15 @@
 SHELL := /bin/sh
 PYTHON := python3
 
-.PHONY: help check test lint run
+.PHONY: help check test run
 
 help:
-	@printf '%s\n' 'Targets: check test lint run'
+	@printf '%s\n' 'Targets: check test run'
 
-check: test lint
+check: test
 
 test:
-	$(PYTHON) -m unittest discover -s tests -v
-
-lint:
-	@echo 'Add project-specific linting here.'
+	PYTHONPATH=src $(PYTHON) -m pytest tests/ -v
 
 run:
-	$(PYTHON) app.py
+	PYTHONPATH=src $(PYTHON) src/app.py
