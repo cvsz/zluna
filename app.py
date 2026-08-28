@@ -795,6 +795,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             "/tabler.min.css": "tabler.min.css",
             "/tabler.min.js": "tabler.min.js",
             "/apexcharts.min.js": "apexcharts.min.js",
+            "/card_games_banner.jpg": "card_games_banner.jpg",
         }
         filename = filenames.get(path)
         if not filename:
@@ -812,6 +813,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             "tabler.min.css": "text/css; charset=utf-8",
             "tabler.min.js": "text/javascript; charset=utf-8",
             "apexcharts.min.js": "text/javascript; charset=utf-8",
+            "card_games_banner.jpg": "image/jpeg",
         }[filename]
         self.send_response(HTTPStatus.OK)
         self._headers(content_type, len(body))
