@@ -30,6 +30,9 @@ from members import member_manager, Member
 from zwallet import zwallet, ZWalletEngine, SUPPORTED_NETWORKS, CRYPTO_RATES_USD
 from tournaments import tournaments, TournamentEngine
 from luckyconnect import luckyconnect, LuckyConnectAggregator
+from keyless_gaming import keyless_hub, KeylessGamingHub
+from marketing import marketing_engine, MarketingEngine
+from risk_analytics import risk_engine, RiskAndAnalyticsEngine
 
 
 HOST = os.environ.get("ZSLOG_HOST", "127.0.0.1")
@@ -315,6 +318,22 @@ class Simulator:
                 "reward_sc": reward_sc,
                 "state": self.state(),
             }
+
+    def deposit(self, amount_lc: int = 0, amount_sc: float = 0.0) -> None:
+        with self._lock:
+            self._state["balance_lc"] += int(amount_lc)
+            self._state["balance_sc"] = round(self._state["balance_sc"] + float(amount_sc), 2)
+            event = {
+                "id": uuid.uuid4().hex,
+                "kind": "deposit_reward",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "reward_lc": amount_lc,
+                "reward_sc": amount_sc,
+                "balance_lc": self._state["balance_lc"],
+                "balance_sc": self._state["balance_sc"],
+            }
+            self._events.append(event)
+            self._append_event(event)
 
     def purchase_coin_package(self, package_id: str) -> dict[str, Any]:
         """Lunaland Store Packages: Buy LC and receive complimentary Sweeps Coins (SC)."""
@@ -731,6 +750,15 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
                 "service_status": "HEALTHY_OPTIMAL",
             })
             return
+        if path == "/api/keyless/hub":
+            self._send_json(keyless_hub.get_all_keyless_feeds())
+            return
+        if path == "/api/marketing/summary":
+            self._send_json({"ok": True, "marketing": marketing_engine.get_campaigns_summary()})
+            return
+        if path == "/api/risk/dashboard":
+            self._send_json(risk_engine.get_risk_and_pnl_dashboard())
+            return
         if path == "/api/luckyconnect/games":
             query = parse_qs(urlsplit(self.path).query)
             provider = query.get("provider", [""])[0] or None
@@ -837,6 +865,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             "/api/members/kyc", "/api/members/2fa/setup", "/api/members/2fa/verify",
             "/api/tournaments/drop",
             "/api/luckyconnect/launch", "/api/luckyconnect/webhook",
+            "/api/marketing/redeem", "/api/marketing/wheel", "/api/risk/ocr",
             "/api/zwallet/deposit", "/api/zwallet/withdraw", "/api/zwallet/stake"
         }
         if path not in allowed_paths:
@@ -844,6 +873,35 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             return
         try:
             payload = self._request_json()
+            if path == "/api/marketing/redeem":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                member_id = member.id if member else "lunacommander"
+                code = str(payload.get("code", ""))
+                try:
+                    res = marketing_engine.redeem_promo_code(member_id, code)
+                    # Credit wallet
+                    self.application.simulator.deposit(res["reward_lc"], res["reward_sc"])
+                    self._send_json(res)
+                except ValueError as err:
+                    self._send_error_json(str(err), HTTPStatus.BAD_REQUEST)
+                return
+            if path == "/api/marketing/wheel":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                member_id = member.id if member else "lunacommander"
+                res = marketing_engine.spin_fortune_wheel(member_id)
+                if res["reward_lc"] > 0 or res["reward_sc"] > 0:
+                    self.application.simulator.deposit(res["reward_lc"], res["reward_sc"])
+                self._send_json(res)
+                return
+            if path == "/api/risk/ocr":
+                doc_type = payload.get("document_type", "PASSPORT")
+                res = risk_engine.parse_kyc_ocr(doc_type)
+                self._send_json(res)
+                return
             if path == "/api/luckyconnect/launch":
                 auth_hdr = self.headers.get("Authorization", "")
                 token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()

@@ -111,6 +111,11 @@
                 <span class="nav-txt">LuckyConnect Hub</span>
                 <span class="nav-badge-gold">6,000+ Games</span>
               </a>
+              <a class="luna-nav-link" href="#keyless-hub">
+                <span class="nav-ico">⚡</span>
+                <span class="nav-txt">Keyless Game Feeds</span>
+                <span class="nav-badge-hot">F2P / Deals</span>
+              </a>
               <a class="luna-nav-link" href="#play-station">
                 <span class="nav-ico">🎮</span>
                 <span class="nav-txt">Live Game Deck</span>
@@ -120,11 +125,16 @@
                 <span class="nav-txt">Auto-Spin Engine</span>
               </a>
 
-              <div class="menu-group-label">TOURNAMENTS & RACES</div>
+              <div class="menu-group-label">TOURNAMENTS & CAMPAIGNS</div>
               <a class="luna-nav-link" href="#tournaments">
                 <span class="nav-ico">🏆</span>
                 <span class="nav-txt">Live Tournaments</span>
                 <span class="nav-badge-hot">1,000 SC</span>
+              </a>
+              <a class="luna-nav-link" href="#lucky-wheel">
+                <span class="nav-ico">🎡</span>
+                <span class="nav-txt">Lucky Fortune Wheel</span>
+                <span class="nav-badge-gold">Daily Free</span>
               </a>
 
               <div class="menu-group-label">TREASURY & REWARDS</div>
@@ -462,6 +472,81 @@
                   <button class="btn-store-glow flex-1" id="btn-sim-lc-credit">Simulate Credit Win (150 LC)</button>
                 </div>
                 <p id="lc-webhook-status" class="console-status-text mt-2"></p>
+              </div>
+            </section>
+
+            <!-- VIEW: KEYLESS PUBLIC GAMING APIS HUB -->
+            <section class="view" id="view-keyless-hub">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Public Keyless Game APIs</p>
+                  <h2>CheapShark, FreeToGame, GamerPower & OpenCritic</h2>
+                </div>
+                <span class="badge-teal">CORS-Native & Keyless</span>
+              </div>
+
+              <!-- Feeds Selector Tabs -->
+              <div class="category-tabs-bar mt-3" id="keyless-tabs">
+                <button class="cat-pill active" data-feed="deals">🏷️ CheapShark Deals</button>
+                <button class="cat-pill" data-feed="f2p">🎮 FreeToGame (400+ F2P)</button>
+                <button class="cat-pill" data-feed="giveaways">🎁 GamerPower Live Giveaways</button>
+                <button class="cat-pill" data-feed="critics">🏆 OpenCritic Top Rated</button>
+              </div>
+
+              <!-- Keyless Feed Content Container -->
+              <div class="games-grid mt-4" id="keyless-feed-grid">
+                <!-- Dynamically populated -->
+              </div>
+            </section>
+
+            <!-- VIEW: LUCKY FORTUNE WHEEL & VIRAL PROMO VOUCHERS -->
+            <section class="view" id="view-lucky-wheel">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Daily Reward & Marketing Engine</p>
+                  <h2>Lucky Fortune Wheel & Promo Vouchers</h2>
+                </div>
+                <span class="badge-gold">Grand Jackpot: 50 SC</span>
+              </div>
+
+              <div class="deck-grid mt-4">
+                <!-- Wheel Column -->
+                <div class="deck-card text-center" style="display:flex; flex-direction:column; align-items:center;">
+                  <h3 class="card-title">Daily Cosmic Fortune Wheel</h3>
+                  <p class="text-muted" style="font-size:13px;">Spin once every 24 hours to win free LC, SC, or the Grand Jackpot!</p>
+                  
+                  <div class="wheel-container mt-3" style="position:relative; width:260px; height:260px; border-radius:50%; border:6px solid #8b5cf6; box-shadow:0 0 30px rgba(139,92,246,0.5); display:flex; align-items:center; justify-content:center; background:radial-gradient(circle, #1e1b4b 0%, #030712 100%);">
+                    <div id="wheel-pointer" style="position:absolute; top:-12px; width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent; border-top:24px solid #fbbf24; z-index:10;"></div>
+                    <div id="wheel-disc" style="font-size:48px; transition:transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);">🎡</div>
+                  </div>
+
+                  <button class="btn-spin-primary mt-4" id="btn-spin-wheel" style="width:220px;">SPIN FORTUNE WHEEL</button>
+                  <p id="wheel-result-msg" class="console-status-text mt-2"></p>
+                </div>
+
+                <!-- Promo Voucher Column -->
+                <div class="deck-card">
+                  <h3 class="card-title">Redeem VIP Promo Voucher</h3>
+                  <p class="text-muted" style="font-size:13px;">Enter your exclusive promotional code to claim instant LC & SC rewards.</p>
+
+                  <div class="field-wrap mt-3">
+                    <label class="field-label">Voucher Promo Code</label>
+                    <div class="input-addon-group">
+                      <input type="text" id="promo-code-input" placeholder="e.g. LUNA2026, WELCOMEVIP, CRYPTOBONUS" class="luna-input-field" style="text-transform:uppercase;" />
+                      <button class="btn-store-glow" id="btn-redeem-promo">REDEEM</button>
+                    </div>
+                  </div>
+                  <p id="promo-status-msg" class="console-status-text mt-2"></p>
+
+                  <div class="mt-4">
+                    <h4 style="font-size:14px; color:#fbbf24;">Active Community Vouchers:</h4>
+                    <ul style="font-size:12px; color:#94a3b8; padding-left:18px; margin-top:8px; line-height:1.8;">
+                      <li><code>LUNA2026</code> — +100,000 LC + 5.00 SC (New Year Drop)</li>
+                      <li><code>WELCOMEVIP</code> — +250,000 LC + 15.00 SC (High Roller Welcome)</li>
+                      <li><code>CRYPTOBONUS</code> — +500,000 LC + 25.00 SC (Web3 Staker Perk)</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -1002,9 +1087,29 @@
                     <div class="telemetry-num mt-1" id="admin-members-count">1</div>
                   </div>
                   <div class="p-3 flex-1" style="background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
-                    <strong>Service Ingress Health:</strong>
-                    <div class="telemetry-num text-success mt-1">HEALTHY_200_OK</div>
+                    <strong>Fraud & Collusion Radar:</strong>
+                    <div class="telemetry-num text-success mt-1">ACTIVE_SHIELD</div>
                   </div>
+                </div>
+              </div>
+
+              <!-- Multi-Studio P&L & Revenue Matrix -->
+              <div class="deck-card mt-4">
+                <div class="deck-card-header">
+                  <div>
+                    <p class="card-eyebrow">Studio Financial Matrix</p>
+                    <h3 class="card-title">Multi-Studio P&L & Revenue Share Breakdown</h3>
+                  </div>
+                  <span class="badge-teal">Realtime BI</span>
+                </div>
+                <div class="ledger-header-row mt-3">
+                  <span>Studio Name</span>
+                  <span>Total Volume (LC)</span>
+                  <span>Gross Gaming Rev</span>
+                  <span>RTP Yield</span>
+                </div>
+                <div class="ledger-stream-box" id="admin-studio-pnl-list">
+                  <!-- Dynamically rendered -->
                 </div>
               </div>
             </section>

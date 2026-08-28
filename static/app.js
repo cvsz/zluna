@@ -1481,11 +1481,155 @@
       });
     }
 
+    // --- KEYLESS PUBLIC GAMING HUB ---
+    const keylessFeedGrid = $("keyless-feed-grid");
+    const keylessTabs = $("keyless-tabs");
+
+    async function loadKeylessFeeds(feedType = "deals") {
+      try {
+        const res = await fetch("/api/keyless/hub");
+        const data = await res.json();
+        if (res.ok && data.ok && keylessFeedGrid) {
+          keylessFeedGrid.innerHTML = "";
+          let items = [];
+          if (feedType === "deals") items = data.deals || [];
+          else if (feedType === "f2p") items = data.f2p_games || [];
+          else if (feedType === "giveaways") items = data.giveaways || [];
+          else if (feedType === "critics") items = data.top_critics || [];
+
+          items.forEach((item) => {
+            const card = document.createElement("div");
+            card.className = "game-card";
+            const title = item.title || item.name || "Game Title";
+            const thumb = item.thumb || item.thumbnail || item.image || "https://images.igdb.com/igdb/image/upload/t_cover_big/co7df4.jpg";
+            const badge = item.salePrice ? `$${item.salePrice} (-${item.savings}%)` : (item.worth ? `FREE (${item.worth})` : (item.topCriticScore ? `Score: ${item.topCriticScore}/100` : (item.genre || "Free to Play")));
+
+            card.innerHTML = `
+              <div class="game-thumb-placeholder">
+                <img src="${thumb}" alt="${title}" style="width:100%; height:100%; object-fit:cover; border-radius:12px 12px 0 0;" onerror="this.style.display='none';">
+                <span class="badge-gold" style="position:absolute; bottom:8px; left:8px; font-size:10px;">${badge}</span>
+              </div>
+              <div class="game-info">
+                <h4 class="game-title">${title}</h4>
+                <div class="game-meta">
+                  <span class="game-rtp">${item.platform || item.platforms || item.tier || "PC / Web"}</span>
+                </div>
+                <button class="btn-play-game mt-2" onclick="window.open('${item.game_url || item.open_giveaway_url || 'https://www.cheapshark.com'}', '_blank')">VIEW DEAL / PLAY</button>
+              </div>
+            `;
+            keylessFeedGrid.appendChild(card);
+          });
+        }
+      } catch (_) {}
+    }
+
+    if (keylessTabs) {
+      keylessTabs.querySelectorAll(".cat-pill").forEach((pill) => {
+        pill.addEventListener("click", () => {
+          keylessTabs.querySelectorAll(".cat-pill").forEach((p) => p.classList.remove("active"));
+          pill.classList.add("active");
+          const feed = pill.getAttribute("data-feed");
+          loadKeylessFeeds(feed);
+        });
+      });
+    }
+
+    // --- LUCKY FORTUNE WHEEL & PROMO VOUCHERS ---
+    const btnSpinWheel = $("btn-spin-wheel");
+    const wheelDisc = $("wheel-disc");
+    const wheelResultMsg = $("wheel-result-msg");
+    const btnRedeemPromo = $("btn-redeem-promo");
+    const promoCodeInput = $("promo-code-input");
+    const promoStatusMsg = $("promo-status-msg");
+    let currentWheelRotation = 0;
+
+    if (btnSpinWheel) {
+      btnSpinWheel.addEventListener("click", async () => {
+        btnSpinWheel.disabled = true;
+        try {
+          const res = await fetch("/api/marketing/wheel", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+            },
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            currentWheelRotation += 1440 + (data.slice_index * 51.4);
+            if (wheelDisc) wheelDisc.style.transform = `rotate(${currentWheelRotation}deg)`;
+            setTimeout(() => {
+              if (wheelResultMsg) {
+                wheelResultMsg.textContent = `🎉 Won: ${data.slice.label}! (+${data.reward_lc.toLocaleString()} LC / +${data.reward_sc} SC)`;
+                wheelResultMsg.style.color = "#fbbf24";
+              }
+              btnSpinWheel.disabled = false;
+            }, 4000);
+          } else {
+            btnSpinWheel.disabled = false;
+          }
+        } catch (_) {
+          btnSpinWheel.disabled = false;
+        }
+      });
+    }
+
+    if (btnRedeemPromo && promoCodeInput) {
+      btnRedeemPromo.addEventListener("click", async () => {
+        const code = promoCodeInput.value.trim().toUpperCase();
+        if (!code) return;
+        try {
+          const res = await fetch("/api/marketing/redeem", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+            },
+            body: JSON.stringify({ code }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok && promoStatusMsg) {
+            promoStatusMsg.textContent = `✅ ${data.message}`;
+            promoStatusMsg.style.color = "#10b981";
+            promoCodeInput.value = "";
+          } else if (promoStatusMsg) {
+            promoStatusMsg.textContent = `❌ ${data.error || "Failed to redeem code"}`;
+            promoStatusMsg.style.color = "#ef4444";
+          }
+        } catch (_) {}
+      });
+    }
+
+    // --- STUDIO P&L RENDERING IN ADMIN CONSOLE ---
+    const adminStudioPnlList = $("admin-studio-pnl-list");
+    async function loadStudioPnl() {
+      try {
+        const res = await fetch("/api/risk/dashboard");
+        const data = await res.json();
+        if (res.ok && data.ok && adminStudioPnlList) {
+          adminStudioPnlList.innerHTML = "";
+          Object.entries(data.studios_pnl || {}).forEach(([name, s]) => {
+            const row = document.createElement("div");
+            row.className = "ledger-row";
+            row.innerHTML = `
+              <strong>${name}</strong>
+              <span class="font-mono">${s.total_bet.toLocaleString()} LC</span>
+              <span class="font-mono text-warning">+${s.ggr.toLocaleString()} LC</span>
+              <span class="font-mono text-success">${s.rtp}%</span>
+            `;
+            adminStudioPnlList.appendChild(row);
+          });
+        }
+      } catch (_) {}
+    }
+
     loadCurrentMember();
     loadZwInfo();
     loadTournaments();
     loadAdminMetrics();
     loadLuckyConnectGames();
+    loadKeylessFeeds();
+    loadStudioPnl();
     updateZwDepositPreview();
 
     // Hash check on load

@@ -261,6 +261,36 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
         self.assertTrue(hook["ok"])
         self.assertEqual(hook["status"], "SUCCESS")
 
+    def test_keyless_gaming_hub_and_marketing_api(self):
+        # 1. Test Keyless Gaming Hub Feed
+        req = Request(self.base_url + "/api/keyless/hub", method="GET")
+        with urlopen(req, timeout=3) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.load(resp)
+            self.assertTrue(data["ok"])
+            self.assertTrue(len(data["providers"]) >= 4)
+            self.assertTrue(len(data["deals"]) >= 1)
+
+        # 2. Test Marketing Promo Voucher Redemption
+        status, v_res = self.post_json("/api/marketing/redeem", {"code": "LUNA2026"})
+        self.assertEqual(status, 200)
+        self.assertTrue(v_res["ok"])
+        self.assertEqual(v_res["reward_lc"], 100_000)
+
+        # 3. Test Lucky Fortune Wheel Spin
+        status_w, w_res = self.post_json("/api/marketing/wheel", {})
+        self.assertEqual(status_w, 200)
+        self.assertTrue(w_res["ok"])
+        self.assertIn("slice", w_res)
+
+        # 4. Test Studio P&L & Fraud Risk Dashboard
+        req_r = Request(self.base_url + "/api/risk/dashboard", method="GET")
+        with urlopen(req_r, timeout=2) as resp_r:
+            self.assertEqual(resp_r.status, 200)
+            r_data = json.load(resp_r)
+            self.assertTrue(r_data["ok"])
+            self.assertIn("LuckyStreak Live", r_data["studios_pnl"])
+
 
 if __name__ == "__main__":
     unittest.main()
