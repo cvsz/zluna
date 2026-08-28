@@ -3,6 +3,7 @@ import tempfile
 import threading
 import time
 import unittest
+import uuid
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -112,32 +113,33 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
         self.assertEqual(data["package"]["lc"], 25_000)
 
     def test_members_registration_login_and_profile(self):
-        # 1. Register new member
+        # 1. Register new member with unique username per test
+        test_user = f"Gamer_{uuid.uuid4().hex[:6]}"
         status, reg = self.post_json("/api/members/register", {
-            "username": "TestGamer99",
+            "username": test_user,
             "password": "SecurePassword123!",
-            "email": "gamer@test.com"
+            "email": f"{test_user.lower()}@test.com"
         })
         self.assertEqual(status, 201)
         self.assertTrue(reg["ok"])
         self.assertIn("token", reg)
         token = reg["token"]
-        self.assertEqual(reg["member"]["username"], "TestGamer99")
+        self.assertEqual(reg["member"]["username"], test_user)
         self.assertEqual(reg["member"]["balance_lc"], 50_000)
 
         # 2. Login with valid credentials
         status, login = self.post_json("/api/members/login", {
-            "username": "TestGamer99",
+            "username": test_user,
             "password": "SecurePassword123!"
         })
         self.assertEqual(status, 200)
         self.assertTrue(login["ok"])
-        self.assertEqual(login["member"]["username"], "TestGamer99")
+        self.assertEqual(login["member"]["username"], test_user)
 
         # 3. Login with wrong password should be rejected
         req = Request(
             self.base_url + "/api/members/login",
-            data=json.dumps({"username": "TestGamer99", "password": "WrongPassword"}).encode(),
+            data=json.dumps({"username": test_user, "password": "WrongPassword"}).encode(),
             headers={"Content-Type": "application/json"},
             method="POST"
         )
@@ -158,7 +160,41 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
             self.assertEqual(resp.status, 200)
             me_data = json.load(resp)
             self.assertTrue(me_data["ok"])
-            self.assertEqual(me_data["member"]["username"], "TestGamer99")
+            self.assertEqual(me_data["member"]["username"], test_user)
+
+    def test_zwallet_crypto_deposit_and_staking(self):
+        # 1. Check zwallet info endpoint
+        req_info = Request(self.base_url + "/api/zwallet/info", method="GET")
+        with urlopen(req_info, timeout=2) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.load(resp)
+            self.assertTrue(data["ok"])
+            self.assertIn("ERC20", data["wallet"]["addresses"])
+
+        # 2. Simulate crypto deposit (20 USDT)
+        status, dep = self.post_json("/api/zwallet/deposit", {
+            "asset": "USDT",
+            "amount": 20.0,
+            "network": "ERC20"
+        })
+        self.assertEqual(status, 200)
+        self.assertTrue(dep["ok"])
+        self.assertEqual(dep["lc_credited"], 120_000)
+        self.assertEqual(dep["sc_credited"], 21.00)
+
+        # 3. Stake 10 SC into vault
+        status, stk = self.post_json("/api/zwallet/stake", {"amount_sc": 10.0})
+        self.assertEqual(status, 200)
+        self.assertTrue(stk["ok"])
+        self.assertEqual(stk["transaction"]["amount_sc"], 10.0)
+
+        # 4. Check zwallet ledger
+        req_tx = Request(self.base_url + "/api/zwallet/ledger", method="GET")
+        with urlopen(req_tx, timeout=2) as resp:
+            self.assertEqual(resp.status, 200)
+            txs = json.load(resp)
+            self.assertTrue(txs["ok"])
+            self.assertTrue(len(txs["transactions"]) >= 2)
 
 
 if __name__ == "__main__":

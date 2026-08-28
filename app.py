@@ -26,6 +26,7 @@ from urllib.parse import parse_qs, urlsplit
 from games import GameContext, get_game, list_games, play_game
 from catalog import catalog
 from members import member_manager, Member
+from zwallet import zwallet, ZWalletEngine, SUPPORTED_NETWORKS, CRYPTO_RATES_USD
 
 
 HOST = os.environ.get("ZSLOG_HOST", "127.0.0.1")
@@ -683,6 +684,27 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             else:
                 self._send_error_json("Unauthorized", HTTPStatus.UNAUTHORIZED)
             return
+        if path == "/api/zwallet/info":
+            auth_hdr = self.headers.get("Authorization", "")
+            token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+            member = member_manager.validate_session(token)
+            member_id = member.id if member else "lunacommander"
+            wallet = zwallet.get_or_create_wallet(member_id)
+            self._send_json({
+                "ok": True,
+                "wallet": wallet.to_dict(),
+                "networks": SUPPORTED_NETWORKS,
+                "rates": CRYPTO_RATES_USD,
+            })
+            return
+        if path == "/api/zwallet/ledger":
+            auth_hdr = self.headers.get("Authorization", "")
+            token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+            member = member_manager.validate_session(token)
+            member_id = member.id if member else None
+            ledger = zwallet.get_ledger(member_id=member_id)
+            self._send_json({"ok": True, "transactions": ledger})
+            return
         if path == "/api/state":
             self._send_json(self.application.state())
             return
@@ -774,13 +796,75 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             "/api/spin", "/api/auto/start", "/api/auto/stop", "/api/import", "/api/reset",
             "/api/catalog/favorite", "/api/catalog/sync", "/api/daily-bonus", "/api/store/buy",
             "/api/redemption", "/api/referral", "/api/support/chat",
-            "/api/members/register", "/api/members/login", "/api/members/logout"
+            "/api/members/register", "/api/members/login", "/api/members/logout",
+            "/api/zwallet/deposit", "/api/zwallet/withdraw", "/api/zwallet/stake"
         }
         if path not in allowed_paths:
             self._send_error_json("not found", HTTPStatus.NOT_FOUND)
             return
         try:
             payload = self._request_json()
+            if path == "/api/zwallet/deposit":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                member_id = member.id if member else "lunacommander"
+                asset = payload.get("asset", "USDT")
+                amt = float(payload.get("amount", 10.0))
+                net = payload.get("network", "ERC20")
+                try:
+                    res = zwallet.deposit(member_id, asset, amt, net)
+                    # Credit member balance & simulator balance
+                    self.application.simulator._state["balance_lc"] += res["lc_credited"]
+                    self.application.simulator._state["balance_sc"] = round(self.application.simulator._state["balance_sc"] + res["sc_credited"], 2)
+                    if member:
+                        member_manager.update_balance(member.id, res["lc_credited"], res["sc_credited"], add_vip_points=int(res["lc_credited"]/100))
+                    res["state"] = self.application.state()
+                    self._send_json(res, HTTPStatus.OK)
+                except ValueError as err:
+                    self._send_error_json(str(err), HTTPStatus.BAD_REQUEST)
+                return
+            if path == "/api/zwallet/withdraw":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                member_id = member.id if member else "lunacommander"
+                amt_sc = float(payload.get("amount_sc", 50.0))
+                target_asset = payload.get("target_asset", "USDT")
+                dest = payload.get("destination_address", "")
+                net = payload.get("network", "ERC20")
+                try:
+                    if self.application.simulator._state["balance_sc"] < amt_sc:
+                        self._send_error_json("Insufficient Sweeps Coins balance for withdrawal", HTTPStatus.BAD_REQUEST)
+                        return
+                    res = zwallet.withdraw_sweeps(member_id, amt_sc, target_asset, dest, net)
+                    self.application.simulator._state["balance_sc"] = round(self.application.simulator._state["balance_sc"] - amt_sc, 2)
+                    if member:
+                        member_manager.update_balance(member.id, 0, -amt_sc)
+                    res["state"] = self.application.state()
+                    self._send_json(res, HTTPStatus.OK)
+                except ValueError as err:
+                    self._send_error_json(str(err), HTTPStatus.BAD_REQUEST)
+                return
+            if path == "/api/zwallet/stake":
+                auth_hdr = self.headers.get("Authorization", "")
+                token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()
+                member = member_manager.validate_session(token)
+                member_id = member.id if member else "lunacommander"
+                amt_sc = float(payload.get("amount_sc", 10.0))
+                try:
+                    if self.application.simulator._state["balance_sc"] < amt_sc:
+                        self._send_error_json("Insufficient Sweeps Coins balance to stake", HTTPStatus.BAD_REQUEST)
+                        return
+                    res = zwallet.stake_sweeps(member_id, amt_sc)
+                    self.application.simulator._state["balance_sc"] = round(self.application.simulator._state["balance_sc"] - amt_sc, 2)
+                    if member:
+                        member_manager.update_balance(member.id, 0, -amt_sc)
+                    res["state"] = self.application.state()
+                    self._send_json(res, HTTPStatus.OK)
+                except ValueError as err:
+                    self._send_error_json(str(err), HTTPStatus.BAD_REQUEST)
+                return
             if path == "/api/members/register":
                 u = payload.get("username", "")
                 p = payload.get("password", "")

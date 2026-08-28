@@ -982,7 +982,147 @@
       });
     }
 
+    // --- ZWALLET CRYPTO TREASURY SYSTEM ---
+    const zwAssetSelect = $("zw-asset-select");
+    const zwNetworkSelect = $("zw-network-select");
+    const zwDepositAmount = $("zw-deposit-amount");
+    const zwDepositCalcPreview = $("zw-deposit-calc-preview");
+    const zwDepositAddress = $("zw-deposit-address");
+    const btnZwSimulateDeposit = $("btn-zw-simulate-deposit");
+    const zwDepStatus = $("zw-dep-status");
+    const btnZwStake = $("btn-zw-stake");
+    const zwStakeAmount = $("zw-stake-amount");
+    const zwStakedSc = $("zw-staked-sc");
+    const zwTotalDep = $("zw-total-dep");
+    const zwTotalWd = $("zw-total-wd");
+    const zwLedgerList = $("zw-ledger-list");
+
+    const CRYPTO_RATES = { USDT: 1.0, USDC: 1.0, SOL: 145.0, ETH: 3450.0, BTC: 64500.0, TRX: 0.16 };
+
+    function updateZwDepositPreview() {
+      const asset = (zwAssetSelect ? zwAssetSelect.value : "USDT");
+      const amt = parseFloat(zwDepositAmount ? zwDepositAmount.value : "20") || 0;
+      const rate = CRYPTO_RATES[asset] || 1.0;
+      const usdVal = amt * rate;
+      const lc = Math.round(usdVal * 6000);
+      const sc = (usdVal * 1.05).toFixed(2);
+      if (zwDepositCalcPreview) {
+        zwDepositCalcPreview.textContent = `≈ $${usdVal.toLocaleString()} USD → Credits +${lc.toLocaleString()} LC & +${sc} Free SC`;
+      }
+    }
+
+    async function loadZwInfo() {
+      try {
+        const res = await fetch("/api/zwallet/info", {
+          headers: sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {},
+        });
+        const data = await res.json();
+        if (res.ok && data.ok && data.wallet) {
+          const w = data.wallet;
+          if (zwStakedSc) zwStakedSc.textContent = `${(w.staked_sc || 0).toFixed(2)} SC`;
+          if (zwTotalDep) zwTotalDep.textContent = `$${(w.total_deposited_usd || 0).toLocaleString()}`;
+          if (zwTotalWd) zwTotalWd.textContent = `$${(w.total_withdrawn_usd || 0).toLocaleString()}`;
+
+          const net = zwNetworkSelect ? zwNetworkSelect.value : "ERC20";
+          if (zwDepositAddress && w.addresses && w.addresses[net]) {
+            zwDepositAddress.value = w.addresses[net];
+          }
+        }
+      } catch (_) {}
+
+      // Load ledger
+      try {
+        const res = await fetch("/api/zwallet/ledger", {
+          headers: sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {},
+        });
+        const data = await res.json();
+        if (res.ok && data.ok && data.transactions && zwLedgerList) {
+          if (data.transactions.length > 0) {
+            zwLedgerList.innerHTML = "";
+            data.transactions.slice(-20).reverse().forEach((tx) => {
+              const row = document.createElement("div");
+              row.className = "event-row";
+              row.innerHTML = `
+                <span class="font-mono text-muted">${tx.tx_id.split("-").slice(-1)[0]}</span>
+                <strong>${tx.kind.toUpperCase()} (${tx.asset || tx.payout_asset || "SC"})</strong>
+                <span class="text-success font-bold">$${(tx.usd_value || tx.amount_sc || 0).toLocaleString()}</span>
+                <span class="badge-green">${tx.status || "DONE"}</span>
+              `;
+              zwLedgerList.appendChild(row);
+            });
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (zwAssetSelect) zwAssetSelect.addEventListener("change", updateZwDepositPreview);
+    if (zwDepositAmount) zwDepositAmount.addEventListener("input", updateZwDepositPreview);
+    if (zwNetworkSelect) {
+      zwNetworkSelect.addEventListener("change", () => {
+        loadZwInfo();
+      });
+    }
+
+    if (btnZwSimulateDeposit) {
+      btnZwSimulateDeposit.addEventListener("click", async () => {
+        const asset = zwAssetSelect ? zwAssetSelect.value : "USDT";
+        const amt = parseFloat(zwDepositAmount ? zwDepositAmount.value : "20") || 20;
+        const net = zwNetworkSelect ? zwNetworkSelect.value : "ERC20";
+
+        try {
+          const res = await fetch("/api/zwallet/deposit", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+            },
+            body: JSON.stringify({ asset, amount: amt, network: net }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            syncState(data.state);
+            loadZwInfo();
+            if (zwDepStatus) {
+              zwDepStatus.textContent = `✅ Confirmed: Credited +${data.lc_credited.toLocaleString()} LC & +${data.sc_credited} SC via ${net}!`;
+              zwDepStatus.style.color = "#10b981";
+            }
+          } else {
+            if (zwDepStatus) {
+              zwDepStatus.textContent = `❌ ${data.error || "Deposit failed"}`;
+              zwDepStatus.style.color = "#f87171";
+            }
+          }
+        } catch (_) {}
+      });
+    }
+
+    if (btnZwStake) {
+      btnZwStake.addEventListener("click", async () => {
+        const amt = parseFloat(zwStakeAmount ? zwStakeAmount.value : "10") || 10;
+        try {
+          const res = await fetch("/api/zwallet/stake", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+            },
+            body: JSON.stringify({ amount_sc: amt }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            syncState(data.state);
+            loadZwInfo();
+            alert(`🔒 Successfully staked ${amt} SC into the 14.5% APR Vault!`);
+          } else {
+            alert(`❌ ${data.error || "Staking failed"}`);
+          }
+        } catch (_) {}
+      });
+    }
+
     loadCurrentMember();
+    loadZwInfo();
+    updateZwDepositPreview();
 
     // Hash check on load
     const initHash = window.location.hash.replace("#", "") || "lobby";

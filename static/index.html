@@ -116,6 +116,11 @@
               </a>
 
               <div class="menu-group-label">TREASURY & REWARDS</div>
+              <a class="luna-nav-link" href="#zwallet">
+                <span class="nav-ico">💳</span>
+                <span class="nav-txt">zWallet Crypto</span>
+                <span class="nav-badge-hot">Web3</span>
+              </a>
               <a class="luna-nav-link" href="#store">
                 <span class="nav-ico">🪙</span>
                 <span class="nav-txt">Coin Store</span>
@@ -380,6 +385,129 @@
                       <div class="empty-state">
                         <span>🎲 Ready to launch</span>
                         <small>Run a spin to start generating append-only ledger events.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <!-- VIEW: ZWALLET WEB3 CRYPTO TREASURY -->
+            <section class="view" id="view-zwallet">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Web3 Multi-Chain Treasury</p>
+                  <h2>zWallet Crypto & Vault Staking</h2>
+                </div>
+                <span class="badge-teal">On-Chain Instant Escrow</span>
+              </div>
+
+              <!-- zWallet Telemetry Matrix -->
+              <div class="telemetry-grid mt-3">
+                <div class="telemetry-card highlight-card">
+                  <span class="telemetry-label">Vault Staked</span>
+                  <div class="telemetry-num" id="zw-staked-sc">0.00 SC</div>
+                  <span class="telemetry-sub">Yielding 14.5% APR</span>
+                </div>
+                <div class="telemetry-card">
+                  <span class="telemetry-label">Total Deposited</span>
+                  <div class="telemetry-num" id="zw-total-dep">$0.00</div>
+                  <span class="telemetry-sub">Fiat Equiv</span>
+                </div>
+                <div class="telemetry-card">
+                  <span class="telemetry-label">Total Redeemed</span>
+                  <div class="telemetry-num" id="zw-total-wd">$0.00</div>
+                  <span class="telemetry-sub">Paid out</span>
+                </div>
+                <div class="telemetry-card">
+                  <span class="telemetry-label">zWallet Status</span>
+                  <div class="telemetry-num text-success">ACTIVE</div>
+                  <span class="telemetry-sub">Multi-Chain Verified</span>
+                </div>
+              </div>
+
+              <div class="game-deck-layout mt-4">
+                <!-- Left: Multi-chain Deposit & Stake -->
+                <div class="deck-control-col">
+                  <div class="deck-card">
+                    <div class="deck-card-header">
+                      <div>
+                        <p class="card-eyebrow">Instant Multi-Asset Transfer</p>
+                        <h2 class="card-title">Crypto Deposit & Credit</h2>
+                      </div>
+                      <span class="category-badge">INSTANT</span>
+                    </div>
+
+                    <div class="field-wrap">
+                      <label class="field-label">Select Crypto Asset</label>
+                      <select id="zw-asset-select" class="luna-select w-100">
+                        <option value="USDT">USDT (Tether USD - 1.00 USD)</option>
+                        <option value="USDC">USDC (USD Coin - 1.00 USD)</option>
+                        <option value="SOL">SOL (Solana - $145.00 USD)</option>
+                        <option value="ETH">ETH (Ethereum - $3,450.00 USD)</option>
+                        <option value="BTC">BTC (Bitcoin - $64,500.00 USD)</option>
+                        <option value="TRX">TRX (Tron - $0.16 USD)</option>
+                      </select>
+                    </div>
+
+                    <div class="field-wrap mt-3">
+                      <label class="field-label">Network / Protocol</label>
+                      <select id="zw-network-select" class="luna-select w-100">
+                        <option value="ERC20">Ethereum (ERC-20)</option>
+                        <option value="TRC20">Tron (TRC-20) [Low Fee]</option>
+                        <option value="SOLANA">Solana SPL</option>
+                        <option value="POLYGON">Polygon PoS</option>
+                      </select>
+                    </div>
+
+                    <div class="field-wrap mt-3">
+                      <label class="field-label">Simulate Deposit Amount (Crypto Units)</label>
+                      <input type="number" id="zw-deposit-amount" min="1" step="0.5" value="20" class="luna-input-field" />
+                      <small class="text-muted mt-1 d-block font-bold" id="zw-deposit-calc-preview">Will credit +120,000 LC + 21.00 Free SC</small>
+                    </div>
+
+                    <div class="field-wrap mt-3">
+                      <label class="field-label">Your Dedicated Deposit Address</label>
+                      <input type="text" id="zw-deposit-address" readonly value="0x71C...generating" class="luna-input-field font-mono" />
+                    </div>
+
+                    <button class="btn-spin-primary mt-4" id="btn-zw-simulate-deposit">CONFIRM ON-CHAIN DEPOSIT</button>
+                    <p id="zw-dep-status" class="console-status-text mt-2"></p>
+                  </div>
+                </div>
+
+                <!-- Right: Sweeps Staking Vault & Live zWallet Ledger -->
+                <div class="deck-visual-col">
+                  <div class="deck-card">
+                    <div class="deck-card-header">
+                      <div>
+                        <p class="card-eyebrow">DeFi Vault Escrow</p>
+                        <h2 class="card-title">Sweeps Coins (SC) Staking Vault</h2>
+                      </div>
+                      <span class="badge-green">14.5% APR</span>
+                    </div>
+                    <p class="text-muted mb-3" style="font-size: 13px;">Stake your Sweeps Coins (SC) into the Lunaland liquidity pool to earn passive rewards. Staked SC remains 100% redeemable anytime.</p>
+                    
+                    <div class="d-flex gap-2">
+                      <input type="number" id="zw-stake-amount" min="1" step="1" value="10" class="luna-input-field flex-1" placeholder="SC amount" />
+                      <button class="btn-store-glow" id="btn-zw-stake">STAKE SC</button>
+                    </div>
+                  </div>
+
+                  <div class="deck-card mt-3">
+                    <div class="deck-card-header">
+                      <div>
+                        <p class="card-eyebrow">Cryptographic Vault Log</p>
+                        <h2 class="card-title">zWallet Transaction History</h2>
+                      </div>
+                    </div>
+                    <div class="ledger-header-row">
+                      <span>Tx ID</span>
+                      <span>Type / Asset</span>
+                      <span>Value (USD)</span>
+                      <span>Status</span>
+                    </div>
+                    <div class="ledger-stream-box" id="zw-ledger-list">
+                      <div class="empty-state">
+                        <span>💳 No zWallet transactions yet</span>
                       </div>
                     </div>
                   </div>
