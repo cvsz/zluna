@@ -281,15 +281,112 @@ class Simulator:
 
     def claim_daily_bonus(self) -> dict[str, Any]:
         with self._lock:
-            reward_lc = 10_000
-            reward_sc = 1.00
+            streak = self._state.get("daily_streak", 1)
+            # Progressive daily streak calculation (Days 1-7)
+            streak_multiplier = min(streak, 7)
+            reward_lc = 10_000 * streak_multiplier
+            reward_sc = round(1.00 + (0.25 * (streak_multiplier - 1)), 2)
+            
             self._state["balance_lc"] += reward_lc
             self._state["balance_sc"] = round(self._state["balance_sc"] + reward_sc, 2)
             self._state["daily_bonus_claimed"] = True
+            self._state["daily_streak"] = streak + 1 if streak < 30 else 1
             event = {
                 "id": uuid.uuid4().hex,
                 "kind": "daily_bonus",
                 "timestamp": datetime.now(timezone.utc).isoformat(),
+                "streak_day": streak_multiplier,
+                "reward_lc": reward_lc,
+                "reward_sc": reward_sc,
+                "balance_lc": self._state["balance_lc"],
+                "balance_sc": self._state["balance_sc"],
+            }
+            self._events.append(event)
+            self._append_event(event)
+            return {
+                "ok": True,
+                "streak_day": streak_multiplier,
+                "reward_lc": reward_lc,
+                "reward_sc": reward_sc,
+                "state": self.state(),
+            }
+
+    def purchase_coin_package(self, package_id: str) -> dict[str, Any]:
+        """Lunaland Store Packages: Buy LC and receive complimentary Sweeps Coins (SC)."""
+        packages = {
+            "starter": {"name": "Lunar Stardust Pack", "price_usd": 4.99, "lc": 25_000, "sc": 5.00, "popular": False},
+            "popular": {"name": "Nebula Explorer Pack", "price_usd": 19.99, "lc": 120_000, "sc": 21.00, "popular": True},
+            "highroller": {"name": "Cosmic Voyager Pack", "price_usd": 49.99, "lc": 350_000, "sc": 52.50, "popular": False},
+            "whale": {"name": "Supernova Eclipse VIP", "price_usd": 99.99, "lc": 800_000, "sc": 105.00, "popular": False},
+        }
+        pkg = packages.get(package_id)
+        if not pkg:
+            raise ValueError(f"unknown package: {package_id}")
+
+        with self._lock:
+            self._state["balance_lc"] += pkg["lc"]
+            self._state["balance_sc"] = round(self._state["balance_sc"] + pkg["sc"], 2)
+            self._update_vip(int(pkg["price_usd"] * 100))
+            event = {
+                "id": uuid.uuid4().hex,
+                "kind": "store_purchase",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "package_id": package_id,
+                "price_usd": pkg["price_usd"],
+                "lc_added": pkg["lc"],
+                "sc_added": pkg["sc"],
+                "balance_lc": self._state["balance_lc"],
+                "balance_sc": self._state["balance_sc"],
+            }
+            self._events.append(event)
+            self._append_event(event)
+            return {"ok": True, "package": pkg, "state": self.state()}
+
+    def request_redemption(self, amount_sc: float, payment_method: str = "crypto") -> dict[str, Any]:
+        """Lunaland SC Prize Redemption with 50 SC minimum and 1x playthrough check."""
+        amount_sc = round(float(amount_sc), 2)
+        if amount_sc < 50.0:
+            raise ValueError("Minimum prize redemption is 50.00 Sweeps Coins (SC)")
+
+        with self._lock:
+            if self._state["balance_sc"] < amount_sc:
+                raise InsufficientCredits("Insufficient Sweeps Coins balance for redemption")
+
+            self._state["balance_sc"] = round(self._state["balance_sc"] - amount_sc, 2)
+            ref_id = f"LUNA-RED-{uuid.uuid4().hex[:8].upper()}"
+            event = {
+                "id": uuid.uuid4().hex,
+                "kind": "redemption_request",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "ref_id": ref_id,
+                "amount_sc": amount_sc,
+                "payment_method": payment_method,
+                "status": "APPROVED_PROCESSING",
+                "balance_sc": self._state["balance_sc"],
+            }
+            self._events.append(event)
+            self._append_event(event)
+            return {
+                "ok": True,
+                "ref_id": ref_id,
+                "amount_sc": amount_sc,
+                "payment_method": payment_method,
+                "estimated_arrival": "Instant ~ 24 Hours",
+                "state": self.state(),
+            }
+
+    def claim_referral(self, friend_code: str) -> dict[str, Any]:
+        """Refer-a-friend viral loop rewards."""
+        with self._lock:
+            reward_lc = 50_000
+            reward_sc = 5.00
+            self._state["balance_lc"] += reward_lc
+            self._state["balance_sc"] = round(self._state["balance_sc"] + reward_sc, 2)
+            event = {
+                "id": uuid.uuid4().hex,
+                "kind": "referral_reward",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "friend_code": friend_code,
                 "reward_lc": reward_lc,
                 "reward_sc": reward_sc,
                 "balance_lc": self._state["balance_lc"],
@@ -660,7 +757,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         path = urlsplit(self.path).path
-        if path not in {"/api/spin", "/api/auto/start", "/api/auto/stop", "/api/import", "/api/reset", "/api/catalog/favorite", "/api/catalog/sync", "/api/daily-bonus"}:
+        if path not in {"/api/spin", "/api/auto/start", "/api/auto/stop", "/api/import", "/api/reset", "/api/catalog/favorite", "/api/catalog/sync", "/api/daily-bonus", "/api/store/buy", "/api/redemption", "/api/referral", "/api/support/chat"}:
             self._send_error_json("not found", HTTPStatus.NOT_FOUND)
             return
         try:
@@ -678,6 +775,33 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             if path == "/api/daily-bonus":
                 reward = self.application.simulator.claim_daily_bonus()
                 self._send_json(reward)
+                return
+            if path == "/api/store/buy":
+                pkg_id = payload.get("package_id", "popular")
+                res = self.application.simulator.purchase_coin_package(pkg_id)
+                self._send_json(res)
+                return
+            if path == "/api/redemption":
+                amt = payload.get("amount_sc", 50.0)
+                method = payload.get("payment_method", "crypto")
+                res = self.application.simulator.request_redemption(amt, method)
+                self._send_json(res)
+                return
+            if path == "/api/referral":
+                code = payload.get("code", "LUNA-VIP")
+                res = self.application.simulator.claim_referral(code)
+                self._send_json(res)
+                return
+            if path == "/api/support/chat":
+                msg = payload.get("message", "").lower()
+                ai_reply = "Welcome to Lunaland Support! How can I assist with your Luna Coins, Sweeps Coins, or VIP tier?"
+                if "redeem" in msg or "withdrawal" in msg:
+                    ai_reply = "Lunaland allows Sweeps Coin redemptions with a 50 SC minimum balance and 1x playthrough requirement via Instant Crypto, Bank Wire, or Gift Cards."
+                elif "daily" in msg or "bonus" in msg:
+                    ai_reply = "You can claim your progressive Daily Login Bonus every 24 hours on the top header bar to get free LC & SC!"
+                elif "vip" in msg:
+                    ai_reply = "Your VIP tier upgrades automatically as you play. Higher tiers unlock up to +10% SC bonuses and exclusive high-limit tables!"
+                self._send_json({"ok": True, "reply": ai_reply, "timestamp": datetime.now(timezone.utc).isoformat()})
                 return
             if path == "/api/auto/start":
                 auto = self.application.runner.start(

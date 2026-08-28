@@ -468,6 +468,114 @@
       });
     } catch (_) {}
 
+    // Coin Store Pack Purchase Handlers
+    document.querySelectorAll(".btn-buy-luna").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const packId = btn.dataset.pack;
+        try {
+          const res = await fetch("/api/store/buy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ package_id: packId }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            syncState(data.state);
+            alert(`🎉 Success! Purchased ${data.package.name} (+${data.package.lc.toLocaleString()} LC & +${data.package.sc} Free SC)`);
+          }
+        } catch (_) {}
+      });
+    });
+
+    // Prize Redemption Request Handler
+    const btnRedeem = $("btn-submit-redemption");
+    if (btnRedeem) {
+      btnRedeem.addEventListener("click", async () => {
+        const amtInput = $("redeem-amount-input");
+        const methodSelect = $("redeem-method-select");
+        const statusMsg = $("redemption-status-msg");
+        const amt = parseFloat(amtInput ? amtInput.value : "50") || 50;
+        const method = methodSelect ? methodSelect.value : "crypto";
+
+        try {
+          const res = await fetch("/api/redemption", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount_sc: amt, payment_method: method }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            syncState(data.state);
+            if (statusMsg) {
+              statusMsg.textContent = `✅ Request ${data.ref_id} submitted for ${data.amount_sc} SC (${data.estimated_arrival})`;
+              statusMsg.style.color = "#10b981";
+            }
+          } else {
+            if (statusMsg) {
+              statusMsg.textContent = `❌ ${data.error || "Failed redemption"}`;
+              statusMsg.style.color = "#f87171";
+            }
+          }
+        } catch (_) {}
+      });
+    }
+
+    // Referral Code Claim Handler
+    const btnReferral = $("btn-claim-referral");
+    if (btnReferral) {
+      btnReferral.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/referral", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: "LUNA-LUCK-777" }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            syncState(data.state);
+            alert("🎁 Referral bonus claimed: +50,000 Luna Coins & +5.00 Sweeps Coins!");
+          }
+        } catch (_) {}
+      });
+    }
+
+    // Live AI Chat Virtual Assistant
+    const btnSendChat = $("btn-send-chat");
+    const chatInput = $("chat-input-msg");
+    const chatWindow = $("chat-window");
+
+    async function sendChatMessage() {
+      const msg = chatInput ? chatInput.value.trim() : "";
+      if (!msg) return;
+
+      const userMsgDiv = document.createElement("div");
+      userMsgDiv.className = "chat-msg user mt-2";
+      userMsgDiv.innerHTML = `<strong>👤 You:</strong> ${msg}`;
+      if (chatWindow) chatWindow.appendChild(userMsgDiv);
+      if (chatInput) chatInput.value = "";
+
+      try {
+        const res = await fetch("/api/support/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg }),
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          const botDiv = document.createElement("div");
+          botDiv.className = "chat-msg bot mt-2";
+          botDiv.innerHTML = `<strong>🤖 LunaBot:</strong> ${data.reply}`;
+          if (chatWindow) {
+            chatWindow.appendChild(botDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (btnSendChat) btnSendChat.addEventListener("click", sendChatMessage);
+    if (chatInput) chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendChatMessage(); });
+
     // Hash check on load
     const initHash = window.location.hash.replace("#", "") || "lobby";
     activateView(initHash);

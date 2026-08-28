@@ -112,11 +112,20 @@
                   <span class="nav-icon">📊</span>
                   <span>Analytics & RTP</span>
                 </a>
-                <a class="nav-item" href="#history">
-                  <span class="nav-icon">📜</span>
-                  <span>Round Audit Trail</span>
+                <div class="nav-category">BANKING & ACCOUNT</div>
+                <a class="nav-item" href="#store">
+                  <span class="nav-icon">🪙</span>
+                  <span>Coin Store</span>
+                  <span class="nav-count bg-warning text-dark">Buy</span>
                 </a>
-              </nav>
+                <a class="nav-item" href="#redemption">
+                  <span class="nav-icon">🎁</span>
+                  <span>Redeem Prizes</span>
+                </a>
+                <a class="nav-item" href="#support">
+                  <span class="nav-icon">💬</span>
+                  <span>24/7 AI Support</span>
+                </a>
             </div>
 
             <div class="sidebar-footer">
@@ -495,10 +504,142 @@
                   </div>
                 </div>
               </div>
+            <!-- VIEW 7: LUNALAND COIN STORE -->
+            <section class="view" id="view-store">
+              <div class="card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <p class="eyebrow">Lunaland Coin Store</p>
+                    <h2>Get Luna Coins & Free Sweeps Coins</h2>
+                  </div>
+                  <span class="badge bg-warning text-dark font-bold">100% Free SC Included</span>
+                </div>
+                <p class="text-muted">Purchase Luna Coins for standard recreational play and receive complimentary Sweeps Coins (SC) automatically.</p>
+              </div>
+
+              <div class="row g-4">
+                <div class="col-md-3">
+                  <div class="card store-pack-card">
+                    <div class="pack-badge">Starter</div>
+                    <div class="pack-icon">🪙</div>
+                    <div class="pack-coins">25,000 LC</div>
+                    <div class="pack-free-sc">+ FREE 5.00 SC</div>
+                    <button class="btn-buy-pack btn-buy-luna" data-pack="starter">$4.99 USD</button>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card store-pack-card popular-pack">
+                    <div class="pack-badge bg-danger">Most Popular</div>
+                    <div class="pack-icon">🚀</div>
+                    <div class="pack-coins">120,000 LC</div>
+                    <div class="pack-free-sc">+ FREE 21.00 SC</div>
+                    <button class="btn-buy-pack btn-buy-luna pulse-gold" data-pack="popular">$19.99 USD</button>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card store-pack-card">
+                    <div class="pack-badge">High Roller</div>
+                    <div class="pack-icon">💎</div>
+                    <div class="pack-coins">350,000 LC</div>
+                    <div class="pack-free-sc">+ FREE 52.50 SC</div>
+                    <button class="btn-buy-pack btn-buy-luna" data-pack="highroller">$49.99 USD</button>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card store-pack-card">
+                    <div class="pack-badge bg-primary">VIP Whale</div>
+                    <div class="pack-icon">👑</div>
+                    <div class="pack-coins">800,000 LC</div>
+                    <div class="pack-free-sc">+ FREE 105.00 SC</div>
+                    <button class="btn-buy-pack btn-buy-luna" data-pack="whale">$99.99 USD</button>
+                  </div>
+                </div>
+              </div>
             </section>
 
-          </div>
-        </main>
+            <!-- VIEW 8: SWEEPS PRIZE REDEMPTION -->
+            <section class="view" id="view-redemption">
+              <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <p class="eyebrow">Sweeps Prizes</p>
+                    <h2>Redeem Sweeps Coins (SC)</h2>
+                  </div>
+                  <span class="badge bg-teal text-white">Minimum: 50.00 SC</span>
+                </div>
+                <p class="text-muted">1 SC = $1.00 USD value equivalent. All SC played at least 1x can be redeemed to Crypto, Bank Wire, or Gift Cards.</p>
+
+                <div class="redemption-box mt-4">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="field">
+                        <label>Redeem Amount (SC)</label>
+                        <input type="number" id="redeem-amount-input" min="50" step="5" value="50.00" class="form-control-luna" />
+                      </div>
+                      <div class="field mt-3">
+                        <label>Payment Method</label>
+                        <select id="redeem-method-select" class="form-select-luna w-100">
+                          <option value="crypto">USDT / USDC (Instant Crypto Transfer)</option>
+                          <option value="bank">Direct Bank Transfer / ACH</option>
+                          <option value="giftcard">Instant Digital Gift Card</option>
+                        </select>
+                      </div>
+                      <button class="button button-primary mt-4 w-100" id="btn-submit-redemption">SUBMIT REDEMPTION REQUEST</button>
+                      <p id="redemption-status-msg" class="mt-2 text-muted font-bold"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card bg-darker p-3">
+                        <h4>Redemption Rules</h4>
+                        <ul class="text-muted ps-3 mt-2" style="font-size: 13px; line-height: 1.6;">
+                          <li>Minimum redemption threshold: 50.00 SC</li>
+                          <li>1x playthrough requirement on promotional SC</li>
+                          <li>Available in 40+ legal US jurisdictions</li>
+                          <li>Average payout speed: 10 mins ~ 24 hours</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- VIEW 9: 24/7 AI LIVE SUPPORT & REFERRAL -->
+            <section class="view" id="view-support">
+              <div class="row">
+                <div class="col-md-7">
+                  <div class="card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <div>
+                        <p class="eyebrow">24/7 Virtual Host</p>
+                        <h2>Lunaland Live Assistant</h2>
+                      </div>
+                      <span class="badge bg-success">AI Live</span>
+                    </div>
+                    <div class="chat-window-luna" id="chat-window">
+                      <div class="chat-msg bot">
+                        <strong>🤖 LunaBot:</strong> Welcome to Lunaland! Ask me anything about coins, games, VIP tiers, or payouts!
+                      </div>
+                    </div>
+                    <div class="chat-input-row mt-3">
+                      <input type="text" id="chat-input-msg" placeholder="Type your question..." class="form-control-luna flex-1" />
+                      <button class="button button-primary" id="btn-send-chat">Send</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <div class="card p-4">
+                    <p class="eyebrow">Viral Rewards</p>
+                    <h2>Refer a Friend</h2>
+                    <p class="text-muted mt-2" style="font-size: 13px;">Invite your friends to Lunaland. You receive +50,000 LC + 5.00 SC for every verified friend!</p>
+                    <div class="field mt-3">
+                      <label>Your Referral Code</label>
+                      <input type="text" readonly value="LUNA-LUCK-777" class="form-control-luna font-mono" />
+                    </div>
+                    <button class="button button-secondary mt-3 w-100" id="btn-claim-referral">CLAIM BONUS REFERRAL CODE</button>
+                  </div>
+                </div>
+              </div>
+            </section>
       </div>
     </div>
 
