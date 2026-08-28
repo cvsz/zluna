@@ -1445,15 +1445,38 @@
                   }),
                 });
                 const data = await res.json();
-                if (res.ok && data.ok && launcherRoundStatus) {
-                  const ev = data.event;
-                  launcherRoundStatus.textContent = `🎉 Round Settled! Outcome: ${ev.outcome} (${ev.multiplier}x) — Won ${ev.payout} ${ev.currency}`;
-                  syncState(data.state);
+                const ev = data.event || data;
+                if (res.ok && ev && ev.outcome) {
+                  if (launcherRoundStatus) {
+                    launcherRoundStatus.textContent = `🎉 Round Settled! Outcome: ${ev.outcome} (${ev.multiplier}x) — Won ${ev.payout} ${ev.currency || activeCurrency}`;
+                  }
+                  if (data.state) syncState(data.state);
                   appendEventRow(ev);
+                  // Dynamic AI Dealer commentary on live launcher spin
+                  try {
+                    const cRes = await fetch("/api/ai-dealer/commentary", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        event_kind: "spin",
+                        game_name: activeLauncherGameId,
+                        multiplier: ev.multiplier || 0,
+                        payout: ev.payout || 0,
+                        currency: ev.currency || activeCurrency,
+                        player_name: currentMember ? currentMember.username : "VIP Explorer",
+                      }),
+                    });
+                    const cData = await cRes.json();
+                    if (cRes.ok && cData.ok && cData.commentary) {
+                      speakWithAiDealer(cData.commentary.text);
+                    }
+                  } catch (_) {}
                 } else if (launcherRoundStatus) {
                   launcherRoundStatus.textContent = `⚠️ ${data.error || "Round could not settle"}`;
                 }
-              } catch (_) {}
+              } catch (err) {
+                if (launcherRoundStatus) launcherRoundStatus.textContent = `⚠️ Network error: ${err.message}`;
+              }
             });
           }
 

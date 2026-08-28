@@ -289,7 +289,7 @@ class Simulator:
 
         if self.on_event:
             self.on_event(event, state)
-        return {"event": event, "state": state, **event}
+        return {"ok": True, "event": event, "state": state, **event}
 
     def claim_daily_bonus(self) -> dict[str, Any]:
         with self._lock:
