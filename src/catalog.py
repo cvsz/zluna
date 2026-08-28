@@ -1,4 +1,4 @@
-"""Local game catalog metadata for zslog synthetic games with Lunaland Providers."""
+"""Local game catalog metadata for zluna synthetic games with Lunaland Providers."""
 
 from __future__ import annotations
 

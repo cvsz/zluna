@@ -155,4 +155,4 @@ AUDIT LOGGING         = ENABLED
 LOCAL CATALOG         = ENABLED
 ```
 
-This allows `zslog` to exercise realistic state transitions, resilience, observability, and catalog features without real-money gambling activity.
+This allows `zluna` to exercise realistic state transitions, resilience, observability, and catalog features without real-money gambling activity.
