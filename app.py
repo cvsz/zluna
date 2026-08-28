@@ -719,7 +719,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             self._send_json({
                 "ok": True,
                 "ggr_lc": st["total_bet"],
-                "payout_lc": st["total_won"],
+                "payout_lc": st["total_payout"],
                 "ngr_lc": st["net_profit"],
                 "system_rtp": st["rtp_percent"],
                 "total_rounds": st["rounds"],
