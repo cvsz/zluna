@@ -1,36 +1,41 @@
 :root {
-  --luna-bg: #060913;
-  --luna-bg-sidebar: #090e1c;
-  --luna-bg-card: #0d1527;
-  --luna-bg-card-hover: #131e38;
-  --luna-bg-card-sub: #090e1b;
-  --luna-line: rgba(255, 255, 255, 0.07);
-  --luna-line-glow: rgba(139, 92, 246, 0.3);
+  --luna-bg: #050811;
+  --luna-bg-gradient: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15) 0%, rgba(5, 8, 17, 1) 70%);
+  --luna-bg-sidebar: rgba(8, 12, 24, 0.95);
+  --luna-bg-card: rgba(13, 20, 38, 0.7);
+  --luna-bg-card-hover: rgba(22, 34, 64, 0.85);
+  --luna-bg-card-sub: rgba(9, 14, 27, 0.8);
+  --luna-line: rgba(255, 255, 255, 0.08);
+  --luna-line-glow: rgba(139, 92, 246, 0.4);
   --luna-text: #f8fafc;
   --luna-text-muted: #94a3b8;
   --luna-gold: #fbbf24;
-  --luna-gold-glow: rgba(251, 191, 36, 0.35);
+  --luna-gold-glow: rgba(251, 191, 36, 0.4);
   --luna-teal: #06b6d4;
-  --luna-teal-glow: rgba(6, 182, 212, 0.3);
+  --luna-teal-glow: rgba(6, 182, 212, 0.35);
   --luna-accent: #8b5cf6;
   --luna-accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%);
   --luna-green: #10b981;
   --luna-red: #ef4444;
-  --luna-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
-  --luna-border-radius: 14px;
+  --luna-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --luna-shadow-glow: 0 0 25px rgba(139, 92, 246, 0.25);
+  --luna-border-radius: 16px;
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme="light"] {
-  --luna-bg: #f1f5f9;
-  --luna-bg-sidebar: #ffffff;
+  --luna-bg: #f8fafc;
+  --luna-bg-gradient: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08) 0%, rgba(248, 250, 252, 1) 70%);
+  --luna-bg-sidebar: rgba(255, 255, 255, 0.96);
   --luna-bg-card: #ffffff;
-  --luna-bg-card-hover: #f8fafc;
+  --luna-bg-card-hover: #f1f5f9;
   --luna-bg-card-sub: #f8fafc;
   --luna-line: rgba(0, 0, 0, 0.08);
-  --luna-line-glow: rgba(139, 92, 246, 0.15);
+  --luna-line-glow: rgba(139, 92, 246, 0.2);
   --luna-text: #0f172a;
   --luna-text-muted: #64748b;
-  --luna-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --luna-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --luna-shadow-glow: 0 0 20px rgba(139, 92, 246, 0.12);
 }
 
 * {
@@ -41,10 +46,13 @@
 
 body {
   background: var(--luna-bg);
+  background-image: var(--luna-bg-gradient);
+  background-attachment: fixed;
   color: var(--luna-text);
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 .luna-app {
@@ -55,18 +63,19 @@ body {
 
 /* 1. TOPBAR HEADER */
 .luna-header {
-  height: 70px;
-  background: rgba(9, 14, 28, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  height: 72px;
+  background: rgba(8, 12, 24, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--luna-line);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 24px;
   position: sticky;
   top: 0;
   z-index: 1000;
+  transition: var(--transition-smooth);
 }
 
 .header-left {
@@ -645,32 +654,52 @@ body {
 
 .games-responsive-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 18px;
 }
 
 .game-card-luna {
   background: var(--luna-bg-card-sub);
   border: 1px solid var(--luna-line);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
 
 .game-card-luna:hover {
-  transform: translateY(-4px);
-  border-color: var(--luna-accent);
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 92, 246, 0.3);
 }
 
 .game-card-cover {
-  height: 110px;
+  height: 120px;
   background: linear-gradient(135deg, #181938 0%, #2b1a4a 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
+  font-size: 42px;
   position: relative;
+  overflow: hidden;
+}
+
+.game-card-cover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transform: skewX(-25deg);
+  transition: 0.75s;
+}
+
+.game-card-luna:hover .game-card-cover::after {
+  left: 150%;
 }
 
 .game-provider-badge {
