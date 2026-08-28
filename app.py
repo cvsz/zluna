@@ -1,12 +1,14 @@
-"""Safe, fake-credit simulator and realtime event dashboard.
+"""Safe, fake-credit Lunaland-grade simulator and realtime event dashboard.
 
-This service is intentionally self-contained.  It does not connect to a
-casino, place bets, control a browser, or handle real currency.  Every round
-uses synthetic credits and writes an append-only local event record.
+This service is intentionally self-contained. It operates under synthetic social
+casino mechanics with Dual-Currency Simulation (Luna Coins 'LC' & Sweeps Coins 'SC'),
+Tier VIP progression, Provably Fair SHA-256 verification, and append-only local ledger.
 """
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import os
 import queue
@@ -33,12 +35,13 @@ DEFAULT_DATA_PATH = Path(
         str(Path(__file__).resolve().parent / "data" / "events.jsonl"),
     )
 )
-STARTING_BALANCE = 1_000
+STARTING_BALANCE_LC = 50_000
+STARTING_BALANCE_SC = 10.00
 MIN_BET = 1
 MAX_BET = 100
 MAX_AUTO_ROUNDS = 100
 MAX_AUTO_INTERVAL_MS = 5_000
-MAX_EVENT_HISTORY = 200
+MAX_EVENT_HISTORY = 300
 
 
 class SimulatorError(Exception):
@@ -54,13 +57,15 @@ class InsufficientCredits(SimulatorError):
 
 
 class Simulator:
-    """Thread-safe, persistent fake-credit round simulator."""
+    """Thread-safe, persistent Lunaland-grade social casino simulator."""
 
     def __init__(
         self,
         data_path: Path | str | None = None,
         *,
-        starting_balance: int = STARTING_BALANCE,
+        starting_balance: int | None = None,
+        starting_balance_lc: int = STARTING_BALANCE_LC,
+        starting_balance_sc: float = STARTING_BALANCE_SC,
         rng: object | None = None,
         on_event=None,
     ) -> None:
@@ -69,26 +74,49 @@ class Simulator:
         self.on_event = on_event
         self._lock = threading.RLock()
         self._events: deque[dict] = deque(maxlen=MAX_EVENT_HISTORY)
+        init_lc = int(starting_balance) if starting_balance is not None else int(starting_balance_lc)
         self._state = {
-            "balance": int(starting_balance),
+            "balance_lc": init_lc,
+            "balance_sc": float(starting_balance_sc),
+            "active_currency": "LC",
+            "vip_tier": "Bronze Stardust",
+            "vip_points": 0,
             "rounds": 0,
             "wins": 0,
-            "total_bet": 0,
-            "total_payout": 0,
+            "total_bet_lc": 0,
+            "total_payout_lc": 0,
+            "total_bet_sc": 0.0,
+            "total_payout_sc": 0.0,
             "bonus_spins": 0,
+            "daily_bonus_claimed": False,
             "last_event": None,
         }
-        if self._state["balance"] < 0:
+        if self._state["balance_lc"] < 0:
             raise ValueError("starting_balance must be non-negative")
         self._load()
 
     @staticmethod
     def validate_bet(bet: object) -> int:
-        if isinstance(bet, bool) or not isinstance(bet, int):
-            raise InvalidBet("bet must be an integer fake-credit amount")
-        if not MIN_BET <= bet <= MAX_BET:
+        if isinstance(bet, bool) or not isinstance(bet, (int, float)):
+            raise InvalidBet("bet must be a numeric amount")
+        bet_int = int(bet)
+        if not MIN_BET <= bet_int <= MAX_BET:
             raise InvalidBet(f"bet must be between {MIN_BET} and {MAX_BET} credits")
-        return bet
+        return bet_int
+
+    def _update_vip(self, bet: int) -> None:
+        self._state["vip_points"] += bet
+        pts = self._state["vip_points"]
+        if pts >= 100_000:
+            self._state["vip_tier"] = "Diamond Orbit"
+        elif pts >= 50_000:
+            self._state["vip_tier"] = "Platinum Eclipse"
+        elif pts >= 15_000:
+            self._state["vip_tier"] = "Gold Nebula"
+        elif pts >= 5_000:
+            self._state["vip_tier"] = "Silver Moon"
+        else:
+            self._state["vip_tier"] = "Bronze Stardust"
 
     def _load(self) -> None:
         if not self.data_path.exists():
@@ -108,19 +136,19 @@ class Simulator:
                 if not isinstance(event.get("round"), int):
                     continue
                 self._events.append(event)
-                self._state["balance"] = int(event["balance"])
+                if "balance_lc" in event:
+                    self._state["balance_lc"] = int(event["balance_lc"])
+                elif "balance" in event:
+                    self._state["balance_lc"] = int(event["balance"])
+                if "balance_sc" in event:
+                    self._state["balance_sc"] = float(event["balance_sc"])
                 self._state["rounds"] = int(event["round"])
                 self._state["wins"] = int(event.get("wins", self._state["wins"]))
-                self._state["total_bet"] = int(
-                    event.get("total_bet", self._state["total_bet"])
-                )
-                self._state["total_payout"] = int(
-                    event.get("total_payout", self._state["total_payout"])
-                )
-                self._state["bonus_spins"] = int(
-                    event.get("bonus_spins", self._state["bonus_spins"])
-                )
+                self._state["total_bet_lc"] = int(event.get("total_bet_lc", event.get("total_bet", self._state["total_bet_lc"])))
+                self._state["total_payout_lc"] = int(event.get("total_payout_lc", event.get("total_payout", self._state["total_payout_lc"])))
+                self._state["bonus_spins"] = int(event.get("bonus_spins", self._state["bonus_spins"]))
                 self._state["last_event"] = event
+                self._update_vip(int(event.get("bet", 2)))
 
     def reload(self) -> None:
         if not self.data_path.exists():
@@ -128,56 +156,24 @@ class Simulator:
                 self._events.clear()
                 self._state.update(
                     {
-                        "balance": int(STARTING_BALANCE),
+                        "balance_lc": int(STARTING_BALANCE_LC),
+                        "balance_sc": float(STARTING_BALANCE_SC),
+                        "active_currency": "LC",
+                        "vip_tier": "Bronze Stardust",
+                        "vip_points": 0,
                         "rounds": 0,
                         "wins": 0,
-                        "total_bet": 0,
-                        "total_payout": 0,
+                        "total_bet_lc": 0,
+                        "total_payout_lc": 0,
+                        "total_bet_sc": 0.0,
+                        "total_payout_sc": 0.0,
                         "bonus_spins": 0,
+                        "daily_bonus_claimed": False,
                         "last_event": None,
                     }
                 )
             return
-        try:
-            lines = self.data_path.read_text(encoding="utf-8").splitlines()
-        except OSError:
-            return
-        with self._lock:
-            self._events.clear()
-            self._state.update(
-                {
-                    "balance": int(STARTING_BALANCE),
-                    "rounds": 0,
-                    "wins": 0,
-                    "total_bet": 0,
-                    "total_payout": 0,
-                    "bonus_spins": 0,
-                    "last_event": None,
-                }
-            )
-            for line in lines:
-                try:
-                    event = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if event.get("kind") != "round":
-                    continue
-                if not isinstance(event.get("round"), int):
-                    continue
-                self._events.append(event)
-                self._state["balance"] = int(event["balance"])
-                self._state["rounds"] = int(event["round"])
-                self._state["wins"] = int(event.get("wins", self._state["wins"]))
-                self._state["total_bet"] = int(
-                    event.get("total_bet", self._state["total_bet"])
-                )
-                self._state["total_payout"] = int(
-                    event.get("total_payout", self._state["total_payout"])
-                )
-                self._state["bonus_spins"] = int(
-                    event.get("bonus_spins", self._state["bonus_spins"])
-                )
-                self._state["last_event"] = event
+        self._load()
 
     def _append_event(self, event: dict) -> None:
         self.data_path.parent.mkdir(parents=True, exist_ok=True)
@@ -193,33 +189,54 @@ class Simulator:
             except OSError:
                 pass
 
-    def spin(self, bet: object = 2, *, source: str = "manual", game_id: str = "slots", payload: dict | None = None) -> dict:
+    def spin(
+        self,
+        bet: object = 2,
+        *,
+        source: str = "manual",
+        game_id: str = "slots",
+        currency: str = "LC",
+        payload: dict | None = None,
+    ) -> dict:
         bet = self.validate_bet(bet)
         if source not in {"manual", "auto"}:
             raise ValueError("source must be manual or auto")
+        currency = "SC" if str(currency).upper() == "SC" else "LC"
         game = get_game(game_id)
         if game is None:
             raise ValueError(f"unknown game: {game_id}")
 
         with self._lock:
-            if self._state["balance"] < bet:
-                raise InsufficientCredits("not enough fake credits for this round")
+            cur_key = "balance_lc" if currency == "LC" else "balance_sc"
+            if self._state[cur_key] < bet:
+                raise InsufficientCredits(f"not enough {currency} balance for this round")
 
-            ctx = GameContext(self.rng, bet, payload or {})
+            # Provably Fair generation
+            server_seed = uuid.uuid4().hex
+            client_seed = (payload or {}).get("client_seed") or "lunaland-fair-seed"
+            nonce = self._state["rounds"] + 1
+            fair_hash = hashlib.sha256(f"{server_seed}:{client_seed}:{nonce}".encode("utf-8")).hexdigest()
+
+            ctx = GameContext(self.rng, bet, payload or {}, currency=currency)
             result = play_game(game_id, ctx)
 
             outcome = result["outcome"]
             multiplier = result["multiplier"]
-            bonus_awarded = result["bonus_awarded"]
-            payout = bet * multiplier
+            bonus_awarded = result.get("bonus_awarded", 0)
+            payout = round(bet * multiplier, 2) if currency == "SC" else int(bet * multiplier)
 
-            self._state["balance"] -= bet
-            self._state["balance"] += payout
+            self._state[cur_key] -= bet
+            self._state[cur_key] += payout
             self._state["rounds"] += 1
             self._state["wins"] += int(payout > bet)
-            self._state["total_bet"] += bet
-            self._state["total_payout"] += payout
+            if currency == "LC":
+                self._state["total_bet_lc"] += bet
+                self._state["total_payout_lc"] += payout
+            else:
+                self._state["total_bet_sc"] += bet
+                self._state["total_payout_sc"] += payout
             self._state["bonus_spins"] += bonus_awarded
+            self._update_vip(bet)
 
             event = {
                 "id": uuid.uuid4().hex,
@@ -228,16 +245,25 @@ class Simulator:
                 "round": self._state["rounds"],
                 "source": source,
                 "game": game_id,
+                "currency": currency,
                 "bet": bet,
                 "outcome": outcome,
                 "multiplier": multiplier,
                 "payout": payout,
                 "bonus_awarded": bonus_awarded,
-                "balance": self._state["balance"],
+                "balance": self._state["balance_lc"],  # backward compatibility
+                "balance_lc": self._state["balance_lc"],
+                "balance_sc": self._state["balance_sc"],
                 "wins": self._state["wins"],
-                "total_bet": self._state["total_bet"],
-                "total_payout": self._state["total_payout"],
+                "total_bet": self._state["total_bet_lc"],
+                "total_payout": self._state["total_payout_lc"],
                 "bonus_spins": self._state["bonus_spins"],
+                "provably_fair": {
+                    "server_seed_hash": hashlib.sha256(server_seed.encode("utf-8")).hexdigest(),
+                    "client_seed": client_seed,
+                    "nonce": nonce,
+                    "result_hash": fair_hash,
+                },
                 "details": {k: v for k, v in result.items() if k not in {"outcome", "multiplier", "bonus_awarded"}},
             }
             self._state["last_event"] = event
@@ -250,208 +276,213 @@ class Simulator:
                 pass
 
         if self.on_event:
-            self.on_event({"type": "round", "event": event, "state": state})
-        return {"event": event, "state": state}
+            self.on_event(event, state)
+        return {"event": event, "state": state, **event}
 
-    def state(self) -> dict:
+    def claim_daily_bonus(self) -> dict[str, Any]:
         with self._lock:
-            return dict(self._state)
+            reward_lc = 10_000
+            reward_sc = 1.00
+            self._state["balance_lc"] += reward_lc
+            self._state["balance_sc"] = round(self._state["balance_sc"] + reward_sc, 2)
+            self._state["daily_bonus_claimed"] = True
+            event = {
+                "id": uuid.uuid4().hex,
+                "kind": "daily_bonus",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "reward_lc": reward_lc,
+                "reward_sc": reward_sc,
+                "balance_lc": self._state["balance_lc"],
+                "balance_sc": self._state["balance_sc"],
+            }
+            self._events.append(event)
+            self._append_event(event)
+            return {"ok": True, "reward_lc": reward_lc, "reward_sc": reward_sc, "state": self.state()}
+
+    def state(self) -> dict[str, Any]:
+        with self._lock:
+            state = dict(self._state)
+            rounds = state["rounds"]
+            wins = state["wins"]
+            state["balance"] = state["balance_lc"]  # backward compatibility
+            state["hit_rate"] = round((wins / rounds) * 100, 2) if rounds else 0.0
+            state["net_profit"] = state["total_payout_lc"] - state["total_bet_lc"]
+            state["net_profit_sc"] = round(state["total_payout_sc"] - state["total_bet_sc"], 2)
+            return state
+
+    def stats(self) -> dict[str, Any]:
+        with self._lock:
+            rounds = self._state["rounds"]
+            wins = self._state["wins"]
+            total_bet = self._state["total_bet_lc"]
+            total_payout = self._state["total_payout_lc"]
+            events = list(self._events)
+        biggest_win = max((e.get("payout", 0) for e in events if e.get("kind") == "round"), default=0)
+        max_multiplier = max((e.get("multiplier", 0) for e in events if e.get("kind") == "round"), default=0)
+        avg_bet = round(total_bet / rounds, 2) if rounds else 0.0
+        return {
+            "rounds": rounds,
+            "wins": wins,
+            "win_rate": round((wins / rounds) * 100, 2) if rounds else 0.0,
+            "total_bet": total_bet,
+            "total_payout": total_payout,
+            "net_profit": total_payout - total_bet,
+            "biggest_win": biggest_win,
+            "max_multiplier": max_multiplier,
+            "avg_bet": avg_bet,
+            "vip_tier": self._state["vip_tier"],
+            "vip_points": self._state["vip_points"],
+            "balance_lc": self._state["balance_lc"],
+            "balance_sc": self._state["balance_sc"],
+        }
 
     def recent_events(self, limit: int = 50) -> list[dict]:
-        limit = max(1, min(int(limit), MAX_EVENT_HISTORY))
-        with self._lock:
-            return list(self._events)[-limit:][::-1]
-
-    def stats(self) -> dict:
         with self._lock:
             events = list(self._events)
-            if not events:
-                return {
-                    "rounds": 0,
-                    "total_bet": 0,
-                    "total_payout": 0,
-                    "win_rate": 0,
-                    "biggest_win": 0,
-                    "biggest_multiplier": 0,
-                    "game_breakdown": {},
-                    "outcome_breakdown": {},
-                    "avg_bet": 0,
-                    "net_profit": 0,
-                }
-            total_bet = sum(e.get("bet", 0) for e in events)
-            total_payout = sum(e.get("payout", 0) for e in events)
-            wins = [e for e in events if e.get("payout", 0) > 0]
-            biggest_win = max((e.get("payout", 0) for e in events), default=0)
-            biggest_multiplier = max((e.get("multiplier", 0) for e in events), default=0)
-            game_breakdown = {}
-            outcome_breakdown = {}
-            for e in events:
-                g = e.get("game", "unknown")
-                o = e.get("outcome", "unknown")
-                game_breakdown[g] = game_breakdown.get(g, 0) + 1
-                outcome_breakdown[o] = outcome_breakdown.get(o, 0) + 1
-            return {
-                "rounds": len(events),
-                "total_bet": total_bet,
-                "total_payout": total_payout,
-                "win_rate": round(len(wins) / len(events) * 100, 1) if events else 0,
-                "biggest_win": biggest_win,
-                "biggest_multiplier": biggest_multiplier,
-                "game_breakdown": game_breakdown,
-                "outcome_breakdown": outcome_breakdown,
-                "avg_bet": round(total_bet / len(events), 1) if events else 0,
-                "net_profit": total_payout - total_bet,
-            }
-
-
-class EventHub:
-    """Small in-process fan-out hub for server-sent events."""
-
-    def __init__(self) -> None:
-        self._lock = threading.Lock()
-        self._subscribers: set[queue.Queue] = set()
-
-    def subscribe(self) -> queue.Queue:
-        subscriber: queue.Queue = queue.Queue(maxsize=128)
-        with self._lock:
-            self._subscribers.add(subscriber)
-        return subscriber
-
-    def unsubscribe(self, subscriber: queue.Queue) -> None:
-        with self._lock:
-            self._subscribers.discard(subscriber)
-
-    def publish(self, message: dict) -> None:
-        with self._lock:
-            subscribers = list(self._subscribers)
-        for subscriber in subscribers:
-            try:
-                subscriber.put_nowait(message)
-            except queue.Full:
-                try:
-                    subscriber.get_nowait()
-                except queue.Empty:
-                    pass
-                try:
-                    subscriber.put_nowait(message)
-                except queue.Full:
-                    pass
+        if limit <= 0:
+            return []
+        return events[-limit:]
 
 
 class AutoRunner:
-    """Bounded background runner for synthetic rounds."""
-
-    def __init__(self, simulator: Simulator, on_status=None) -> None:
+    def __init__(self, simulator: Simulator, hub: EventHub) -> None:
         self.simulator = simulator
-        self.on_status = on_status
-        self._lock = threading.RLock()
-        self._stop = threading.Event()
+        self.hub = hub
         self._thread: threading.Thread | None = None
-        self._requested = 0
-        self._completed = 0
-        self._running = False
-        self._game_id = "slots"
-        self._payload: dict = {}
+        self._stop_event = threading.Event()
+        self._lock = threading.Lock()
+        self._status = {"running": False, "remaining": 0, "total": 0, "bet": 0, "interval_ms": 0, "game": "slots"}
 
-    def start(self, rounds: object = 10, bet: object = 2, interval_ms: object = 500, *, game_id: str = "slots", payload: dict | None = None) -> dict:
-        if isinstance(rounds, bool) or not isinstance(rounds, int):
-            raise ValueError("rounds must be an integer")
-        if not 1 <= rounds <= MAX_AUTO_ROUNDS:
-            raise ValueError(f"rounds must be between 1 and {MAX_AUTO_ROUNDS}")
-        if isinstance(interval_ms, bool) or not isinstance(interval_ms, int):
-            raise ValueError("interval_ms must be an integer")
-        if not 0 <= interval_ms <= MAX_AUTO_INTERVAL_MS:
-            raise ValueError(f"interval_ms must be between 0 and {MAX_AUTO_INTERVAL_MS}")
-        bet = Simulator.validate_bet(bet)
-
+    def status(self) -> dict[str, Any]:
         with self._lock:
-            if self._running:
-                raise RuntimeError("an auto run is already active")
-            self._stop = threading.Event()
-            self._requested = rounds
-            self._completed = 0
-            self._running = True
-            self._game_id = game_id
-            self._payload = payload or {}
-            self._thread = threading.Thread(
-                target=self._run,
-                args=(rounds, bet, interval_ms, game_id, payload or {}),
-                daemon=True,
-                name="zslog-auto-runner",
-            )
-            self._thread.start()
-            snapshot = self.snapshot()
-
-        self._emit_status("started")
-        return snapshot
-
-    def _run(self, rounds: int, bet: int, interval_ms: int, game_id: str, payload: dict) -> None:
-        try:
-            for _ in range(rounds):
-                if self._stop.is_set():
-                    break
-                try:
-                    self.simulator.spin(bet, source="auto", game_id=game_id, payload=payload)
-                except InsufficientCredits:
-                    break
-                with self._lock:
-                    self._completed += 1
-                if self._stop.wait(interval_ms / 1000):
-                    break
-        finally:
-            with self._lock:
-                self._running = False
-            self._emit_status("stopped")
-
-    def stop(self) -> dict:
-        with self._lock:
-            thread = self._thread
-            self._stop.set()
-        if thread and thread is not threading.current_thread():
-            thread.join(timeout=2)
-        return self.snapshot()
+            return dict(self._status)
 
     def is_running(self) -> bool:
         with self._lock:
-            return self._running
+            return bool(self._status.get("running", False))
 
-    def snapshot(self) -> dict:
+    def start(
+        self,
+        *,
+        rounds: int = 10,
+        bet: int = 2,
+        interval_ms: int = 500,
+        game_id: str = "slots",
+        currency: str = "LC",
+        payload: dict | None = None,
+    ) -> dict[str, Any]:
+        rounds = int(rounds)
+        if not 1 <= rounds <= MAX_AUTO_ROUNDS:
+            raise ValueError(f"rounds must be between 1 and {MAX_AUTO_ROUNDS}")
+        interval_ms = int(interval_ms)
+        if not 0 <= interval_ms <= MAX_AUTO_INTERVAL_MS:
+            raise ValueError(f"interval_ms must be between 0 and {MAX_AUTO_INTERVAL_MS}")
+        bet = self.simulator.validate_bet(bet)
+
         with self._lock:
-            return {
-                "running": self._running,
-                "requested": self._requested,
-                "completed": self._completed,
+            if self._thread and self._thread.is_alive():
+                raise RuntimeError("auto-run already in progress")
+            self._stop_event.clear()
+            self._status = {
+                "running": True,
+                "remaining": rounds,
+                "total": rounds,
+                "bet": bet,
+                "interval_ms": interval_ms,
+                "game": game_id,
+                "currency": currency,
             }
+            self._thread = threading.Thread(
+                target=self._run,
+                args=(rounds, bet, interval_ms, game_id, currency, payload),
+                daemon=True,
+            )
+            self._thread.start()
+            return dict(self._status)
 
-    def _emit_status(self, status: str) -> None:
-        if self.on_status:
-            self.on_status({"type": "auto", "status": status, "auto": self.snapshot()})
+    def stop(self) -> dict[str, Any]:
+        with self._lock:
+            self._stop_event.set()
+            thread = self._thread
+        if thread and thread.is_alive() and threading.current_thread() != thread:
+            thread.join(timeout=2.0)
+        with self._lock:
+            self._status["running"] = False
+            return dict(self._status)
+
+    def _run(self, rounds: int, bet: int, interval_ms: int, game_id: str, currency: str, payload: dict | None) -> None:
+        try:
+            for _ in range(rounds):
+                if self._stop_event.is_set():
+                    break
+                try:
+                    self.simulator.spin(bet, source="auto", game_id=game_id, currency=currency, payload=payload)
+                except InsufficientCredits:
+                    break
+                with self._lock:
+                    self._status["remaining"] -= 1
+                if interval_ms > 0 and not self._stop_event.is_set():
+                    self._stop_event.wait(interval_ms / 1000)
+        finally:
+            with self._lock:
+                self._status["running"] = False
+            self.hub.publish("auto_stopped", {"status": self.status(), "state": self.simulator.state()})
+
+
+class EventHub:
+    def __init__(self) -> None:
+        self._lock = threading.RLock()
+        self._subscribers: list[queue.Queue] = []
+
+    def subscribe(self) -> queue.Queue:
+        q: queue.Queue = queue.Queue(maxsize=100)
+        with self._lock:
+            self._subscribers.append(q)
+        return q
+
+    def unsubscribe(self, q: queue.Queue) -> None:
+        with self._lock:
+            if q in self._subscribers:
+                self._subscribers.remove(q)
+
+    def publish(self, event_type: str, data: dict) -> None:
+        with self._lock:
+            subs = list(self._subscribers)
+        message = {"type": event_type, "data": data, "timestamp": datetime.now(timezone.utc).isoformat()}
+        for sub in subs:
+            try:
+                sub.put_nowait(message)
+            except queue.Full:
+                pass
 
 
 class ZslogApplication:
     def __init__(self, data_path: Path | str | None = None) -> None:
         self.hub = EventHub()
-        self.simulator = Simulator(data_path=data_path, on_event=self.hub.publish)
-        self.runner = AutoRunner(self.simulator, on_status=self.hub.publish)
+        self.simulator = Simulator(data_path, on_event=self._on_simulator_event)
+        self.runner = AutoRunner(self.simulator, self.hub)
         self.static_root = Path(__file__).resolve().parent / "static"
 
-    def state(self) -> dict:
-        state = self.simulator.state()
-        state["auto"] = self.runner.snapshot()
-        return state
+    def _on_simulator_event(self, event: dict, state: dict) -> None:
+        self.hub.publish("round", {"event": event, "state": state})
 
-    def snapshot(self) -> dict:
+    def state(self) -> dict[str, Any]:
         return {
-            "type": "snapshot",
+            **self.simulator.state(),
+            "auto": self.runner.status(),
+        }
+
+    def snapshot(self) -> dict[str, Any]:
+        return {
             "state": self.state(),
             "events": self.simulator.recent_events(50),
+            "games": list_games(),
+            "stats": self.simulator.stats(),
         }
 
 
 class ZslogRequestHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
-    server_version = "zslog"
-    sys_version = ""
 
     @property
     def application(self) -> ZslogApplication:
@@ -480,7 +511,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError as exc:
             raise ValueError("invalid content length") from exc
-        if length > 8_192:
+        if length > 32_768:
             raise ValueError("request body is too large")
         raw = self.rfile.read(length) if length else b"{}"
         try:
@@ -494,7 +525,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802
         path = urlsplit(self.path).path
         if path == "/health":
-            self._send_json({"ok": True, "service": "zslog", "mode": "demo"})
+            self._send_json({"ok": True, "service": "zslog", "mode": "demo", "platform": "lunaland-grade"})
             return
         if path == "/api/games":
             self._send_json({"games": list_games()})
@@ -589,7 +620,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
         self._headers(content_type, len(body))
         self.send_header(
             "Content-Security-Policy",
-            "default-src 'self'; connect-src 'self'; style-src 'self'; script-src 'self'",
+            "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://unpkg.com; connect-src 'self' *; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com;",
         )
         self.end_headers()
         self.wfile.write(body)
@@ -629,7 +660,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         path = urlsplit(self.path).path
-        if path not in {"/api/spin", "/api/auto/start", "/api/auto/stop", "/api/import", "/api/reset", "/api/catalog/favorite", "/api/catalog/sync"}:
+        if path not in {"/api/spin", "/api/auto/start", "/api/auto/stop", "/api/import", "/api/reset", "/api/catalog/favorite", "/api/catalog/sync", "/api/daily-bonus"}:
             self._send_error_json("not found", HTTPStatus.NOT_FOUND)
             return
         try:
@@ -639,9 +670,14 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
                     payload.get("bet", 2),
                     source="manual",
                     game_id=payload.get("game", "slots"),
+                    currency=payload.get("currency", "LC"),
                     payload=payload,
                 )
                 self._send_json(result)
+                return
+            if path == "/api/daily-bonus":
+                reward = self.application.simulator.claim_daily_bonus()
+                self._send_json(reward)
                 return
             if path == "/api/auto/start":
                 auto = self.application.runner.start(
@@ -649,6 +685,7 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
                     bet=payload.get("bet", 2),
                     interval_ms=payload.get("interval_ms", 500),
                     game_id=payload.get("game", "slots"),
+                    currency=payload.get("currency", "LC"),
                     payload=payload,
                 )
                 self._send_json(
@@ -698,7 +735,6 @@ class ZslogRequestHandler(BaseHTTPRequestHandler):
             self._send_error_json(str(exc), HTTPStatus.BAD_REQUEST)
 
     def log_message(self, format: str, *args) -> None:
-        # Keep service logs useful without leaking request bodies or credentials.
         super().log_message("%s", format % args)
 
 
@@ -721,7 +757,7 @@ def create_server(
 
 def main() -> None:
     server = create_server()
-    print(f"zslog demo listening on http://{HOST}:{server.server_port}", flush=True)
+    print(f"zslog Lunaland-grade social casino listening on http://{HOST}:{server.server_port}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

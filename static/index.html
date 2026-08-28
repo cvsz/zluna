@@ -3,380 +3,518 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0b0f19" />
-    <title>zslog / Synthetic Run Console</title>
+    <meta name="theme-color" content="#070a13" />
+    <title>Lunaland • Next-Gen Social Casino & Realtime Gaming Engine</title>
     <link rel="stylesheet" href="/tabler.min.css" />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   </head>
   <body>
     <div class="page">
-      <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark" id="sidebar">
-        <div class="container-fluid">
-          <div class="navbar-brand">
-            <span class="brand-mark">Z</span>
-            <div>
-              <strong>zslog</strong>
-              <small>synthetic telemetry</small>
+      <!-- Lunaland Cosmic Header Bar -->
+      <header class="luna-topbar">
+        <div class="topbar-left">
+          <button class="icon-button mobile-menu d-lg-none" id="mobile-menu-button" title="Menu">☰</button>
+          <div class="luna-logo">
+            <div class="luna-orb">🌙</div>
+            <div class="luna-brand-text">
+              <span class="luna-title">LUNALAND</span>
+              <span class="luna-sub">SWEEPSTAKES & SOCIAL CASINO</span>
             </div>
           </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="sidebar-menu">
-            <nav class="nav">
-              <a class="nav-item active" href="#run">
-                <span class="nav-icon">◉</span>
-                <span>Run</span>
-              </a>
-              <a class="nav-item" href="#library">
-                <span class="nav-icon">☰</span>
-                <span>Library</span>
-              </a>
-              <a class="nav-item" href="#stats">
-                <span class="nav-icon">◫</span>
-                <span>Statistics</span>
-              </a>
-              <a class="nav-item" href="#history">
-                <span class="nav-icon">☷</span>
-                <span>History</span>
-              </a>
-              <a class="nav-item" href="#settings">
-                <span class="nav-icon">⚙</span>
-                <span>Settings</span>
-              </a>
-            </nav>
-          </div>
-          <div class="sidebar-footer">
-            <span class="live-indicator">
-              <i id="connection-dot"></i>
-              <span id="connection-label">connecting</span>
-            </span>
-            <span class="demo-badge">DEMO ONLY</span>
-            <button class="icon-button mobile-close" id="mobile-close-button" title="Close menu">✕</button>
+        </div>
+
+        <!-- Currency Selector & Balances -->
+        <div class="topbar-center">
+          <div class="currency-toggle-pill">
+            <button class="curr-tab active" id="tab-curr-lc" data-currency="LC">
+              <span class="curr-badge lc-badge">LC</span>
+              <span class="curr-amt" id="header-lc-balance">50,000</span>
+              <small class="curr-label">Luna Coins</small>
+            </button>
+            <button class="curr-tab" id="tab-curr-sc" data-currency="SC">
+              <span class="curr-badge sc-badge">SC</span>
+              <span class="curr-amt" id="header-sc-balance">10.00</span>
+              <small class="curr-label">Sweeps Coins</small>
+            </button>
           </div>
         </div>
-      </aside>
 
-      <header class="navbar navbar-expand-md navbar-light d-none d-lg-flex">
-        <div class="container-fluid">
-          <div class="navbar-brand d-lg-none">
-            <span class="brand-mark">Z</span>
-            <strong>zslog</strong>
+        <div class="topbar-right">
+          <button class="btn-daily-bonus" id="btn-daily-bonus">
+            <span class="gift-icon">🎁</span>
+            <span class="bonus-text">DAILY REWARD</span>
+          </button>
+          <div class="vip-pill" id="vip-pill" title="Lunaland VIP Club">
+            <span class="vip-icon">👑</span>
+            <span class="vip-name" id="header-vip-tier">Bronze Stardust</span>
           </div>
-          <div class="ms-auto d-flex gap-2">
-            <button class="icon-button mobile-menu" id="mobile-menu-button" title="Menu">☰</button>
-            <button class="icon-button" id="theme-toggle" title="Toggle theme">◐</button>
-            <button class="icon-button" id="stats-button" title="Statistics">◫</button>
-            <button class="icon-button" id="profile-button" title="Profile">👤</button>
-            <button class="icon-button" id="settings-button" title="Settings">⚙</button>
-          </div>
+          <button class="icon-button" id="theme-toggle" title="Toggle theme">◐</button>
         </div>
       </header>
 
-      <div class="content">
-        <div class="container-fluid">
-          <section class="view active" id="view-run">
-            <div class="row">
-              <div class="col-12">
-                <div class="metrics">
-                  <article class="metric metric-primary">
-                    <span class="metric-label">Fake credits</span>
-                    <strong id="balance">1,000</strong>
-                    <small>available balance</small>
-                    <div class="metric-trend" id="balance-trend"></div>
+      <div class="luna-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark" id="sidebar">
+          <div class="container-fluid">
+            <div class="sidebar-user-card">
+              <div class="user-avatar">🧑‍🚀</div>
+              <div class="user-meta">
+                <strong id="sidebar-username">LunaCommander</strong>
+                <span class="badge-vip" id="sidebar-vip-badge">Bronze</span>
+              </div>
+            </div>
+
+            <div class="collapse navbar-collapse" id="sidebar-menu">
+              <nav class="nav">
+                <div class="nav-category">GAMES & LOBBY</div>
+                <a class="nav-item active" href="#lobby">
+                  <span class="nav-icon">🎰</span>
+                  <span>Featured Lobby</span>
+                  <span class="nav-count">Hot</span>
+                </a>
+                <a class="nav-item" href="#slots">
+                  <span class="nav-icon">⭐</span>
+                  <span>Slots & Megaways</span>
+                  <span class="nav-count">700+</span>
+                </a>
+                <a class="nav-item" href="#instant">
+                  <span class="nav-icon">🚀</span>
+                  <span>Instant & Arcade</span>
+                </a>
+                <a class="nav-item" href="#table">
+                  <span class="nav-icon">🃏</span>
+                  <span>Table Games</span>
+                </a>
+                
+                <div class="nav-category">PLAY & SIMULATOR</div>
+                <a class="nav-item" href="#play-station">
+                  <span class="nav-icon">🎮</span>
+                  <span>Live Game Deck</span>
+                </a>
+                <a class="nav-item" href="#auto-engine">
+                  <span class="nav-icon">⚡</span>
+                  <span>Auto-Run Engine</span>
+                </a>
+
+                <div class="nav-category">INTELLIGENCE & AUDIT</div>
+                <a class="nav-item" href="#vip-club">
+                  <span class="nav-icon">💎</span>
+                  <span>VIP Rewards</span>
+                </a>
+                <a class="nav-item" href="#fairness">
+                  <span class="nav-icon">🛡️</span>
+                  <span>Provably Fair</span>
+                </a>
+                <a class="nav-item" href="#stats">
+                  <span class="nav-icon">📊</span>
+                  <span>Analytics & RTP</span>
+                </a>
+                <a class="nav-item" href="#history">
+                  <span class="nav-icon">📜</span>
+                  <span>Round Audit Trail</span>
+                </a>
+              </nav>
+            </div>
+
+            <div class="sidebar-footer">
+              <div class="telemetry-bar">
+                <span class="live-indicator">
+                  <i id="connection-dot"></i>
+                  <span id="connection-label">ONLINE</span>
+                </span>
+                <span class="demo-badge">DEMO ONLY</span>
+              </div>
+              <button class="icon-button mobile-close" id="mobile-close-button" title="Close menu">✕</button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content">
+          <div class="container-fluid">
+            
+            <!-- VIEW 1: LUNALAND LOBBY (Banner Hero + Filterable Catalog) -->
+            <section class="view active" id="view-lobby">
+              <!-- Hero Banner -->
+              <div class="hero-banner">
+                <div class="hero-content">
+                  <span class="hero-tag">🌟 LUNALAND EXCLUSIVE</span>
+                  <h1 class="hero-title">ANCIENT TUMBLE MEGAWAYS</h1>
+                  <p class="hero-desc">117,649 Ways to Win • Cascading Multipliers • Colossal Free Spins</p>
+                  <div class="hero-actions">
+                    <button class="btn-play-hero" id="btn-hero-launch" data-game="ancient_tumble">
+                      <span>PLAY NOW (LC/SC)</span>
+                      <b>▶</b>
+                    </button>
+                    <span class="hero-provider">Powered by Relax Gaming & NetEnt</span>
+                  </div>
+                </div>
+                <div class="hero-graphics">
+                  <div class="floating-art">🏺✨💎</div>
+                </div>
+              </div>
+
+              <!-- Realtime Quick Stats Strip -->
+              <div class="metrics metrics-grid-4">
+                <article class="metric metric-primary">
+                  <span class="metric-label">Active Wallet</span>
+                  <strong id="balance">50,000</strong>
+                  <small id="balance-sub">Luna Coins (LC)</small>
+                  <div class="metric-trend" id="balance-trend"></div>
+                </article>
+                <article class="metric">
+                  <span class="metric-label">Total Rounds</span>
+                  <strong id="rounds">0</strong>
+                  <small id="rounds-note">Awaiting spin</small>
+                  <div class="metric-trend" id="rounds-trend"></div>
+                </article>
+                <article class="metric">
+                  <span class="metric-label">RTP / Hit Rate</span>
+                  <strong id="hit-rate">0%</strong>
+                  <small>Provably Fair Randomness</small>
+                  <div class="metric-trend" id="hit-rate-trend"></div>
+                </article>
+                <article class="metric">
+                  <span class="metric-label">Net Profit</span>
+                  <strong id="net-profit">0</strong>
+                  <small>Aggregated Payout</small>
+                  <div class="metric-trend" id="profit-trend"></div>
+                </article>
+              </div>
+
+              <!-- Filter Bar & Game Grid -->
+              <div class="catalog-section">
+                <div class="catalog-nav-tabs">
+                  <button class="cat-pill active" data-filter="">🔥 All Games</button>
+                  <button class="cat-pill" data-filter="slots">🎰 Slots</button>
+                  <button class="cat-pill" data-filter="instant">🚀 Instant Win</button>
+                  <button class="cat-pill" data-filter="table">🃏 Table Games</button>
+                  <button class="cat-pill" data-filter="lottery">🔢 Lottery & Keno</button>
+                </div>
+                <div class="catalog-filters-row">
+                  <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input id="library-search" type="search" placeholder="Search 700+ titles (e.g. Sugar Rush, Olympus, Mines)..." />
+                  </div>
+                  <select id="library-provider" class="form-select-luna">
+                    <option value="">All Providers</option>
+                  </select>
+                  <select id="library-sort" class="form-select-luna">
+                    <option value="popular">Most Popular</option>
+                    <option value="name">Alphabetical (A-Z)</option>
+                    <option value="rtp">Highest RTP</option>
+                    <option value="recent">Recently Played</option>
+                  </select>
+                  <button class="btn-fav-filter" id="library-favorites-only">⭐ Favorites</button>
+                </div>
+
+                <div class="library-grid" id="library-grid">
+                  <!-- Injected dynamically via app.js -->
+                </div>
+              </div>
+            </section>
+
+            <!-- VIEW 2: LIVE GAME DECK (Interactive Console) -->
+            <section class="view" id="view-play-station">
+              <div class="row">
+                <!-- Left: Control Deck -->
+                <div class="col-lg-5">
+                  <article class="card control-card">
+                    <div class="card-header">
+                      <div>
+                        <p class="eyebrow" id="active-game-provider">NetEnt • 96.5% RTP</p>
+                        <h2 id="active-game-title">Classic Lunar 777</h2>
+                      </div>
+                      <span class="badge" id="active-game-cat">SLOTS</span>
+                    </div>
+
+                    <div class="currency-selector-row">
+                      <label>Currency Mode:</label>
+                      <div class="currency-switch-mini">
+                        <button class="btn-curr-select active" id="btn-mode-lc" data-mode="LC">🪙 LC (Standard)</button>
+                        <button class="btn-curr-select" id="btn-mode-sc" data-mode="SC">⭐ SC (Sweeps)</button>
+                      </div>
+                    </div>
+
+                    <div class="field mt-3">
+                      <label>Select Title</label>
+                      <div class="game-selector" id="game-selector"></div>
+                    </div>
+
+                    <div class="game-fields" id="game-fields"></div>
+
+                    <div class="field">
+                      <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="bet-input">Stake Amount</label>
+                        <div class="quick-bet-pills">
+                          <button class="btn-quick-bet" data-amount="1">Min</button>
+                          <button class="btn-quick-bet" data-amount="5">5</button>
+                          <button class="btn-quick-bet" data-amount="20">20</button>
+                          <button class="btn-quick-bet" data-amount="50">50</button>
+                          <button class="btn-quick-bet" data-amount="100">Max</button>
+                        </div>
+                      </div>
+                      <div class="input-wrap">
+                        <input id="bet-input" type="number" min="1" max="100" value="2" inputmode="numeric" />
+                        <span class="input-suffix" id="bet-currency-suffix">LC</span>
+                      </div>
+                    </div>
+
+                    <button class="button button-primary spin-pulse-btn" id="spin-button" type="button">
+                      <span>SPIN / PLAY ROUND</span>
+                      <b>▶</b>
+                    </button>
+
+                    <div class="divider"><span>AUTOMATED PACER</span></div>
+                    <div class="auto-fields">
+                      <label>
+                        <span>Rounds</span>
+                        <input id="rounds-input" type="number" min="1" max="100" value="10" />
+                      </label>
+                      <label>
+                        <span>Pace</span>
+                        <input id="interval-input" type="number" min="0" max="5000" step="100" value="400" />
+                        <span class="input-suffix">ms</span>
+                      </label>
+                    </div>
+                    <div class="button-row">
+                      <button class="button button-secondary" id="auto-start-button" type="button">Start Auto-Spin</button>
+                      <button class="button button-stop" id="auto-stop-button" type="button" disabled>Stop</button>
+                    </div>
+                    <p class="control-status" id="control-status">Ready for next round.</p>
                   </article>
-                  <article class="metric">
-                    <span class="metric-label">Rounds</span>
-                    <strong id="rounds">0</strong>
-                    <small id="rounds-note">awaiting first event</small>
-                    <div class="metric-trend" id="rounds-trend"></div>
+                </div>
+
+                <!-- Right: Visualizer & Live Feed -->
+                <div class="col-lg-7">
+                  <article class="card signal-card">
+                    <div class="card-header">
+                      <div>
+                        <p class="eyebrow">Visualizer Matrix</p>
+                        <h2 id="visualizer-heading">Live Game Stage</h2>
+                      </div>
+                      <span class="signal-counter" id="signal-counter">0000</span>
+                    </div>
+
+                    <div class="reel-stage" id="reel-stage" aria-label="synthetic outcome display">
+                      <div class="scan-line"></div>
+                      <div class="reel" id="reel-1"><span class="reel-symbol" id="reel-a">🌙</span><small>REEL 1</small></div>
+                      <div class="reel" id="reel-2"><span class="reel-symbol" id="reel-b">💎</span><small>REEL 2</small></div>
+                      <div class="reel" id="reel-3"><span class="reel-symbol" id="reel-c">⭐</span><small>REEL 3</small></div>
+                    </div>
+
+                    <div class="visualizer-hud" id="visualizer-hud">
+                      <div class="hud-item">
+                        <span>Last Outcome:</span>
+                        <strong id="hud-outcome">—</strong>
+                      </div>
+                      <div class="hud-item">
+                        <span>Multiplier:</span>
+                        <strong id="hud-mult">0x</strong>
+                      </div>
+                      <div class="hud-item">
+                        <span>Payout:</span>
+                        <strong id="hud-payout">0</strong>
+                      </div>
+                    </div>
+
+                    <div class="signal-footer">
+                      <span><i class="pulse"></i> PROVABLY FAIR SHA-256</span>
+                      <span id="fairness-hash-indicator">Seed: Verified</span>
+                    </div>
                   </article>
-                  <article class="metric">
-                    <span class="metric-label">Hit rate</span>
-                    <strong id="hit-rate">0%</strong>
-                    <small>synthetic outcomes</small>
-                    <div class="metric-trend" id="hit-rate-trend"></div>
-                  </article>
-                  <article class="metric">
-                    <span class="metric-label">Net profit</span>
-                    <strong id="net-profit">0</strong>
-                    <small>total payout − bet</small>
-                    <div class="metric-trend" id="profit-trend"></div>
+
+                  <!-- Live Stream Feed -->
+                  <article class="card feed-card">
+                    <div class="card-header">
+                      <div>
+                        <p class="eyebrow">Audited Realtime Ledger</p>
+                        <h2>Live Feed</h2>
+                      </div>
+                      <span class="badge">SSE Live</span>
+                      <div class="card-actions">
+                        <button class="icon-button small" id="export-button" title="Export events">⬇</button>
+                        <label class="icon-button small" title="Import events" for="import-file">⬆</label>
+                        <input type="file" id="import-file" accept=".json" style="display:none" />
+                        <button class="icon-button small" id="reset-button" title="Reset balance">↺</button>
+                      </div>
+                    </div>
+                    <div class="feed-head">
+                      <span>Time</span>
+                      <span>Game / Multiplier</span>
+                      <span>Outcome</span>
+                      <span>Wallet Balance</span>
+                    </div>
+                    <div class="event-list" id="event-list" aria-live="polite">
+                      <div class="empty-state">
+                        <div class="empty-state-icon">🎲</div>
+                        <span>Ready to launch</span>
+                        <small>Run a spin to start generating append-only ledger events.</small>
+                      </div>
+                    </div>
                   </article>
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div class="row">
-              <div class="col-12">
-                <article class="card chart-card">
-                  <div class="card-header">
-                    <div>
-                      <p class="eyebrow">Balance history</p>
-                      <h2>Over time</h2>
-                    </div>
-                    <span class="badge">live</span>
+            <!-- VIEW 3: PROVABLY FAIR AUDIT & CRYPTOGRAPHY -->
+            <section class="view" id="view-fairness">
+              <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <p class="eyebrow">Cryptographic Integrity</p>
+                    <h2>Provably Fair SHA-256 Verifier</h2>
                   </div>
-                  <div id="balance-chart"></div>
-                </article>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-lg-5">
-                <article class="card control-card">
-                  <div class="card-header">
-                    <div>
-                      <p class="eyebrow">Control</p>
-                      <h2>Start a run</h2>
-                    </div>
-                    <span class="badge">bounded</span>
-                  </div>
-                  <p class="card-subtitle">Generate synthetic rounds on the server. Every action is capped and written to the local event log.</p>
-
+                  <span class="badge bg-success">100% Verifiable</span>
+                </div>
+                <p class="text-muted">Every outcome is generated using an unalterable HMAC-SHA256 hash combining the Server Seed, Client Seed, and Nonce counter.</p>
+                <div class="fairness-checker-box">
                   <div class="field">
-                    <label>Game</label>
-                    <div class="game-selector" id="game-selector"></div>
+                    <label>Client Seed</label>
+                    <input type="text" id="fairness-client-seed" value="lunaland-fair-seed" class="form-control-luna" />
                   </div>
-
-                  <div class="game-fields" id="game-fields"></div>
-
-                  <div class="field">
-                    <label for="bet-input">Round stake</label>
-                    <div class="input-wrap">
-                      <input id="bet-input" type="number" min="1" max="100" value="2" inputmode="numeric" />
-                      <span class="input-suffix">FC</span>
-                    </div>
+                  <div class="field mt-3">
+                    <label>Latest Server Seed Hash (SHA-256)</label>
+                    <input type="text" id="fairness-server-hash" readonly value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" class="form-control-luna font-mono" />
                   </div>
-                  <button class="button button-primary" id="spin-button" type="button">
-                    <span>Run one round</span>
-                    <b>↗</b>
-                  </button>
-
-                  <div class="divider"><span>or bounded auto-run</span></div>
-                  <div class="auto-fields">
-                    <label>
-                      <span>Rounds</span>
-                      <input id="rounds-input" type="number" min="1" max="100" value="10" />
-                    </label>
-                    <label>
-                      <span>Pace</span>
-                      <input id="interval-input" type="number" min="0" max="5000" step="100" value="500" />
-                      <span class="input-suffix">ms</span>
-                    </label>
+                  <div class="field mt-3">
+                    <label>Generated Result Hash</label>
+                    <input type="text" id="fairness-result-hash" readonly value="7a8f12c...verified" class="form-control-luna font-mono" />
                   </div>
-                  <div class="button-row">
-                    <button class="button button-secondary" id="auto-start-button" type="button">Start auto-run</button>
-                    <button class="button button-stop" id="auto-stop-button" type="button" disabled>Stop</button>
-                  </div>
-                  <p class="control-status" id="control-status">Ready for a synthetic round.</p>
-                  <div class="game-details" id="game-details" style="display:none;"></div>
-                </article>
-              </div>
-              <div class="col-lg-7">
-                <article class="card signal-card">
-                  <div class="card-header">
-                    <div>
-                      <p class="eyebrow">Signal</p>
-                      <h2>Outcome sampler</h2>
-                    </div>
-                    <span class="signal-counter" id="signal-counter">0000</span>
-                  </div>
-              <div class="reel-stage" aria-label="synthetic outcome display">
-                <div class="scan-line"></div>
-                <div class="reel" id="reel-1"><span class="reel-symbol" id="reel-a">—</span><small>A</small></div>
-                <div class="reel" id="reel-2"><span class="reel-symbol" id="reel-b">—</span><small>B</small></div>
-                <div class="reel" id="reel-3"><span class="reel-symbol" id="reel-c">—</span><small>C</small></div>
-              </div>
-                  <div class="signal-footer">
-                    <span><i class="pulse"></i> generator online</span>
-                    <span>entropy / synthetic</span>
-                  </div>
-                </article>
-                <article class="card feed-card">
-                  <div class="card-header">
-                    <div>
-                      <p class="eyebrow">Event trail</p>
-                      <h2>Live log</h2>
-                    </div>
-                    <span class="badge">SSE stream</span>
-                    <div class="card-actions">
-                      <button class="icon-button small" id="export-button" title="Export events">⬇</button>
-                      <label class="icon-button small" title="Import events" for="import-file">⬆</label>
-                      <input type="file" id="import-file" accept=".json" style="display:none" />
-                      <button class="icon-button small" id="reset-button" title="Reset balance">↺</button>
-                    </div>
-                  </div>
-                  <div class="feed-head">
-                    <span>Timestamp</span>
-                    <span>Event / result</span>
-                    <span>Balance</span>
-                  </div>
-              <div class="event-list" id="event-list" aria-live="polite">
-                <div class="empty-state">
-                  <div class="empty-state-icon">🎲</div>
-                  <span>No rounds yet</span>
-                  <small>Run a synthetic round or start an auto-run to see events here.</small>
                 </div>
               </div>
-                </article>
-              </div>
-            </div>
-          </section>
+            </section>
 
-          <section class="view" id="view-library">
-            <div class="library-header">
-              <div>
-                <p class="eyebrow">game library</p>
-                <h2>Available games</h2>
+            <!-- VIEW 4: VIP CLUB & REWARDS -->
+            <section class="view" id="view-vip-club">
+              <div class="vip-header-card">
+                <div class="vip-badge-col">
+                  <div class="vip-large-icon">👑</div>
+                  <h2 id="vip-current-title">Bronze Stardust</h2>
+                  <span class="text-muted">VIP Tier Progression</span>
+                </div>
+                <div class="vip-progress-col">
+                  <div class="d-flex justify-content-between mb-2">
+                    <span id="vip-points-text">Points: 0 / 5,000</span>
+                    <span id="vip-next-tier">Next: Silver Moon</span>
+                  </div>
+                  <div class="vip-progress-bar">
+                    <div class="vip-progress-fill" id="vip-progress-fill" style="width: 5%;"></div>
+                  </div>
+                </div>
               </div>
-              <div class="library-filters" id="library-filters">
-                <input id="library-search" type="search" placeholder="Search games..." />
-                <select id="library-category">
-                  <option value="">All categories</option>
-                </select>
-                <select id="library-provider">
-                  <option value="">All providers</option>
-                </select>
-                <button class="button button-secondary small" id="library-favorites-only">Favorites</button>
-              </div>
-            </div>
-            <div class="library-grid" id="library-grid">
-              <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:80%"></div></div>
-              <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:70%"></div></div>
-              <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:90%"></div></div>
-              <div class="library-card skeleton skeleton-card"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:75%"></div></div>
-            </div>
-          </section>
 
-          <section class="view" id="view-stats">
-            <div class="stats-header">
-              <div>
-                <p class="eyebrow">analytics</p>
-                <h2>Statistics</h2>
+              <div class="row mt-4">
+                <div class="col-md-3">
+                  <div class="vip-tier-card">
+                    <h3>🥉 Bronze</h3>
+                    <p>Standard 96% RTP</p>
+                    <small>0+ Points</small>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="vip-tier-card">
+                    <h3>🥈 Silver Moon</h3>
+                    <p>+5% Bonus Sweeps Coins</p>
+                    <small>5,000+ Points</small>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="vip-tier-card">
+                    <h3>🥇 Gold Nebula</h3>
+                    <p>+10% Daily Spin Boost</p>
+                    <small>15,000+ Points</small>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="vip-tier-card highlight">
+                    <h3>💎 Diamond Orbit</h3>
+                    <p>Exclusive High-Limit Tables</p>
+                    <small>100,000+ Points</small>
+                  </div>
+                </div>
               </div>
-              <button class="button button-secondary" id="refresh-stats">Refresh</button>
-            </div>
-            <div class="stats-grid" id="stats-grid">
-              <div class="stat-card"><span class="stat-label">Total Rounds</span><strong>0</strong></div>
-              <div class="stat-card"><span class="stat-label">Win Rate</span><strong>0%</strong></div>
-              <div class="stat-card"><span class="stat-label">Biggest Win</span><strong>0</strong></div>
-              <div class="stat-card"><span class="stat-label">Avg Bet</span><strong>0</strong></div>
-              <div class="stat-card"><span class="stat-label">Net Profit</span><strong>0</strong></div>
-              <div class="stat-card"><span class="stat-label">Max Multiplier</span><strong>0x</strong></div>
-            </div>
-            <div class="card">
-              <div class="card-header">
+            </section>
+
+            <!-- VIEW 5: ANALYTICS & STATS -->
+            <section class="view" id="view-stats">
+              <div class="stats-header">
                 <div>
-                  <p class="eyebrow">breakdown</p>
-                  <h2>Performance by game</h2>
+                  <p class="eyebrow">Telemetry & Telematics</p>
+                  <h2>Performance Analytics</h2>
                 </div>
+                <button class="button button-secondary" id="refresh-stats">Refresh Metrics</button>
               </div>
-              <div class="breakdown" id="stats-game-breakdown"></div>
-            </div>
-            <div class="card">
-              <div class="card-header">
+
+              <div class="stats-grid" id="stats-grid">
+                <div class="stat-card"><span class="stat-label">Total Rounds</span><strong id="stat-rounds">0</strong></div>
+                <div class="stat-card"><span class="stat-label">Win Rate</span><strong id="stat-winrate">0%</strong></div>
+                <div class="stat-card"><span class="stat-label">Biggest Win</span><strong id="stat-biggest">0</strong></div>
+                <div class="stat-card"><span class="stat-label">Avg Bet</span><strong id="stat-avgbet">0</strong></div>
+                <div class="stat-card"><span class="stat-label">Net Profit (LC)</span><strong id="stat-profit">0</strong></div>
+                <div class="stat-card"><span class="stat-label">Max Multiplier</span><strong id="stat-maxmult">0x</strong></div>
+              </div>
+
+              <div class="card mt-4">
+                <div class="card-header">
+                  <div>
+                    <p class="eyebrow">Realtime Trend</p>
+                    <h2>Balance Progression</h2>
+                  </div>
+                </div>
+                <div id="balance-chart" style="min-height: 260px;"></div>
+              </div>
+            </section>
+
+            <!-- VIEW 6: AUDIT HISTORY -->
+            <section class="view" id="view-history">
+              <div class="history-header">
                 <div>
-                  <p class="eyebrow">outcomes</p>
-                  <h2>Outcome distribution</h2>
+                  <p class="eyebrow">Historical Ledger</p>
+                  <h2>Recent Rounds Audit</h2>
                 </div>
-              </div>
-              <div class="breakdown" id="stats-outcome-breakdown"></div>
-            </div>
-          </section>
-
-          <section class="view" id="view-history">
-            <div class="history-header">
-              <div>
-                <p class="eyebrow">event history</p>
-                <h2>Recent rounds</h2>
-              </div>
-              <div class="history-actions">
-                <button class="icon-button small" id="export-history" title="Export">⬇</button>
-                <button class="icon-button small" id="clear-history" title="Clear">🗑</button>
-              </div>
-            </div>
-            <div class="card">
-              <div class="feed-head">
-                <span>Timestamp</span>
-                <span>Event / result</span>
-                <span>Balance</span>
-              </div>
-              <div class="event-list" id="history-event-list" aria-live="polite">
-                <div class="empty-state">
-                  <div class="empty-state-icon">📜</div>
-                  <span>No history yet</span>
-                  <small>Play some rounds to see them here.</small>
+                <div class="history-actions">
+                  <button class="icon-button small" id="export-history" title="Export Ledger">⬇</button>
+                  <button class="icon-button small" id="clear-history" title="Clear">🗑</button>
                 </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="view" id="view-settings">
-            <div class="settings-header">
-              <div>
-                <p class="eyebrow">preferences</p>
-                <h2>Settings</h2>
-              </div>
-            </div>
-            <div class="settings-grid">
-              <div class="card">
-                <div class="card-header"><h2>General</h2></div>
-                <div class="setting-row"><label>Sound effects</label><input type="checkbox" id="setting-sound" checked /></div>
-                <div class="setting-row"><label>Starting balance</label><input type="number" id="setting-balance" value="1000" min="100" max="100000" /></div>
               </div>
               <div class="card">
-                <div class="card-header"><h2>Account</h2></div>
-                <div class="setting-row"><label>Username</label><input type="text" id="setting-username" value="player" /></div>
-                <div class="setting-row"><label>Email</label><input type="email" id="setting-email" value="" /></div>
+                <div class="feed-head">
+                  <span>Timestamp</span>
+                  <span>Game / Outcome</span>
+                  <span>Bet / Multiplier</span>
+                  <span>Wallet Balance</span>
+                </div>
+                <div class="event-list" id="history-event-list" aria-live="polite">
+                  <div class="empty-state">
+                    <div class="empty-state-icon">📜</div>
+                    <span>No history recorded yet</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </section>
-        </div>
+            </section>
+
+          </div>
+        </main>
       </div>
     </div>
 
-    <div class="modal" id="stats-modal" style="display:none;">
-      <div class="modal-content">
+    <!-- Modals -->
+    <div class="modal" id="bonus-modal" style="display:none;">
+      <div class="modal-content bonus-modal-content">
         <div class="modal-header">
-          <h3>Statistics</h3>
-          <button class="icon-button" id="close-stats">✕</button>
+          <h3>🎉 Daily Bonus Claimed!</h3>
+          <button class="icon-button" id="close-bonus-modal">✕</button>
         </div>
-        <div class="modal-body" id="stats-body"></div>
-      </div>
-    </div>
-
-    <div class="modal" id="profile-modal" style="display:none;">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Profile</h3>
-          <button class="icon-button" id="close-profile">✕</button>
-        </div>
-        <div class="modal-body" id="profile-body">
-          <div class="profile-list" id="profile-list"></div>
-          <div class="profile-form">
-            <input type="text" id="profile-name" placeholder="New profile name" />
-            <button id="create-profile" class="button button-primary">Create Profile</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal" id="settings-modal" style="display:none;">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Settings</h3>
-          <button class="icon-button" id="close-settings">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="setting-row">
-            <label>Sound effects</label>
-            <input type="checkbox" id="modal-setting-sound" checked />
-          </div>
-          <div class="setting-row">
-            <label>Starting balance</label>
-            <input type="number" id="modal-setting-balance" value="1000" min="100" max="100000" />
-          </div>
+        <div class="modal-body text-center py-4">
+          <div style="font-size: 3rem; margin-bottom: 12px;">🎁✨</div>
+          <h4>You received:</h4>
+          <p class="text-gold font-bold" style="font-size: 1.4rem;">+10,000 Luna Coins (LC)</p>
+          <p class="text-teal font-bold" style="font-size: 1.4rem;">+1.00 Sweeps Coins (SC)</p>
+          <button class="button button-primary mt-3" id="btn-collect-bonus">COLLECT & SPIN</button>
         </div>
       </div>
     </div>

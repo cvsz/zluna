@@ -1,10 +1,11 @@
-"""Local game catalog metadata for zslog synthetic games."""
+"""Local game catalog metadata for zslog synthetic games with Lunaland Providers."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import random
+import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -20,12 +21,12 @@ class GameMetadata:
     name: str
     description: str
     category: str
-    provider: str = "zslog-synthetic"
+    provider: str = "Lunaland Original"
     tags: list[str] = field(default_factory=list)
     min_bet: int = 1
-    max_bet: int = 100
-    rtp: float | None = None
-    volatility: str | None = None
+    max_bet: int = 1000
+    rtp: float | None = 96.5
+    volatility: str | None = "Medium"
     thumbnail: str | None = None
     images: list[str] = field(default_factory=list)
     featured: bool = False
@@ -60,7 +61,7 @@ class CatalogEntry:
     favorite: bool = False
     last_played_at: str | None = None
     play_count: int = 0
-    source: str = "local-seed"
+    source: str = "lunaland-seed"
     provenance: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -80,16 +81,22 @@ def _seed_catalog() -> list[CatalogEntry]:
     for game in list_games():
         category = game.get("category", "other") or "other"
         tags = [category]
-        if category == "table":
-            tags += ["table", "skill"]
+        if category == "slots":
+            tags += ["slots", "megaways", "popular"]
+        elif category == "table":
+            tags += ["table", "cards", "skill"]
         elif category == "instant":
-            tags += ["fast", "instant"]
+            tags += ["fast", "instant", "arcade"]
         elif category == "lottery":
             tags += ["numbers", "draw"]
+            
+        provider = game.get("provider", "Lunaland Original")
+        tags.append(provider.lower().replace(" ", "-"))
+
         provenance = {
-            "source": "local-seed",
+            "source": "lunaland-seed",
             "imported_at": datetime.now(timezone.utc).isoformat(),
-            "provider": "zslog-synthetic",
+            "provider": provider,
             "external_id": game["id"],
         }
         entry = CatalogEntry(
@@ -98,18 +105,20 @@ def _seed_catalog() -> list[CatalogEntry]:
                 name=game["name"],
                 description=game["description"],
                 category=category,
-                provider="zslog-synthetic",
+                provider=provider,
                 tags=tags,
                 min_bet=game.get("min_bet", 1),
-                max_bet=game.get("max_bet", 100),
-                featured=game["id"] in {"slots", "dice", "roulette"},
+                max_bet=game.get("max_bet", 1000),
+                rtp=game.get("rtp", 96.5),
+                volatility=game.get("volatility", "Medium"),
+                featured=game.get("featured", False),
                 status="available",
                 updated_at=datetime.now(timezone.utc).isoformat(),
             ),
             favorite=False,
             last_played_at=None,
             play_count=0,
-            source="local-seed",
+            source="lunaland-seed",
             provenance=provenance,
         )
         entries.append(entry)
@@ -168,6 +177,8 @@ class GameCatalog:
             items.sort(key=lambda item: item.last_played_at or "", reverse=True)
         elif sort == "popular":
             items.sort(key=lambda item: item.play_count, reverse=True)
+        elif sort == "rtp":
+            items.sort(key=lambda item: item.metadata.rtp or 0, reverse=True)
         start = max(0, (page - 1) * page_size)
         end = start + page_size
         page_items = items[start:end]
@@ -207,7 +218,5 @@ class GameCatalog:
                 tag_set.update(entry.metadata.tags)
             return sorted(tag_set)
 
-
-import threading
 
 catalog = GameCatalog()
