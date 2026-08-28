@@ -1425,7 +1425,7 @@
           if (btnLauncherOpenDeck && gameLauncherModal) {
             btnLauncherOpenDeck.addEventListener("click", () => {
               gameLauncherModal.style.display = "none";
-              launchGame("ancient_tumble");
+              launchGame(activeLauncherGameId);
             });
           }
 
@@ -1440,7 +1440,7 @@
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     bet: 2,
-                    game: "slots",
+                    game: activeLauncherGameId,
                     currency: activeCurrency,
                   }),
                 });
@@ -1450,6 +1450,8 @@
                   launcherRoundStatus.textContent = `🎉 Round Settled! Outcome: ${ev.outcome} (${ev.multiplier}x) — Won ${ev.payout} ${ev.currency}`;
                   syncState(data.state);
                   appendEventRow(ev);
+                } else if (launcherRoundStatus) {
+                  launcherRoundStatus.textContent = `⚠️ ${data.error || "Round could not settle"}`;
                 }
               } catch (_) {}
             });

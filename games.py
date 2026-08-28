@@ -616,11 +616,62 @@ def list_games() -> list[dict[str, Any]]:
 
 
 def get_game(game_id: str) -> dict[str, Any] | None:
-    return GAMES.get(game_id)
+    if game_id in GAMES:
+        return GAMES[game_id]
+    # Check LuckyConnect 6,000+ catalog
+    from luckyconnect import luckyconnect
+    with luckyconnect._lock:
+        agg_game = luckyconnect._games.get(game_id)
+        if agg_game:
+            return {
+                "id": agg_game.game_id,
+                "name": agg_game.name,
+                "description": f"{agg_game.provider} flagship {agg_game.type} title aggregated via LuckyConnect.",
+                "min_bet": MIN_BET,
+                "max_bet": MAX_BET,
+                "fields": [],
+                "category": agg_game.category,
+                "provider": agg_game.provider,
+                "rtp": agg_game.rtp,
+                "volatility": agg_game.volatility,
+                "featured": True,
+            }
+    return None
 
 
 def play_game(game_id: str, ctx: GameContext) -> dict[str, Any]:
     game = GAMES.get(game_id)
-    if game is None:
-        raise ValueError(f"unknown game: {game_id}")
-    return game["play"](ctx)
+    if game is not None:
+        return game["play"](ctx)
+
+    # Dynamic Universal Simulation for LuckyConnect Aggregated Titles
+    from luckyconnect import luckyconnect
+    with luckyconnect._lock:
+        agg = luckyconnect._games.get(game_id)
+        if not agg:
+            raise ValueError(f"unknown game: {game_id}")
+
+        # Live Dealer Blackjack / Baccarat / Roulette routing
+        if agg.type == "live_dealer":
+            if "blackjack" in game_id:
+                return _blackjack_game(ctx)
+            elif "roulette" in game_id:
+                return _roulette_game(ctx)
+            elif "baccarat" in game_id:
+                return _baccarat_game(ctx)
+            return _slots_game(ctx)
+
+        # Slots / Crash / Arcade Routing
+        if agg.type == "crash":
+            return _crash_game(ctx)
+        elif agg.type == "arcade":
+            return _plinko_game(ctx)
+        elif "olympus" in game_id or "princess" in game_id:
+            return _gates_of_olympus_game(ctx)
+        elif "sugar" in game_id or "bonanza" in game_id:
+            return _sugar_rush_game(ctx)
+        elif "hold" in game_id or "immortal" in game_id or "mayan" in game_id:
+            return _hold_and_win_game(ctx)
+        elif "tumble" in game_id or "megaways" in game_id or "ways" in game_id:
+            return _ancient_tumble_game(ctx)
+        return _slots_game(ctx)
