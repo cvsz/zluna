@@ -1,21 +1,42 @@
-# Development
+# Development Guide: zluna
 
-## Local setup
+## 1. Local Environment Setup
 
-1. Clone the generated repository.
-2. Copy `.env.example` to `.env` and populate local-only values.
-3. Install the selected runtime and dependencies.
-4. Replace placeholder `Makefile` targets with real project commands.
-5. Run formatting, linting, tests, build, and security checks before opening a pull request.
+1. **Clone the repository**:
+   ```bash
+   git clone git@github.com:cvsz/zluna.git
+   cd zluna
+   ```
 
-## Quality expectations
+2. **Configure environment**:
+   ```bash
+   cp .env.example .env
+   ```
 
-- Keep changes small and reviewable.
-- Add tests for behavior changes.
-- Prefer deterministic and reproducible tooling.
-- Do not commit secrets or local credentials.
-- Do not weaken security or CI gates to obtain a passing build.
+3. **Install dependencies**:
+   ```bash
+   python3 -m pip install -r <(echo "pytest pytest-asyncio pytest-cov")
+   ```
 
-## Documentation
+## 2. Running Locally
 
-Update architecture, development, release, and ADR documentation when behavior or operational assumptions change.
+Start the realtime simulation server:
+```bash
+make run
+# or: PYTHONPATH=src python3 src/app.py
+```
+Default bind is `http://127.0.0.1:9581`. Access the live Web HUD at `http://127.0.0.1:9581` or via Cloudflare Tunnel at `https://zluna.zeaz.dev`.
+
+## 3. Running Test Suite
+
+Execute all unit, integration, and enterprise tests:
+```bash
+make test
+# or: PYTHONPATH=src pytest tests/ -v
+```
+
+## 4. Code Quality & Standards
+
+- **Formatting & Style**: Python 3.12+ type hints, clean docstrings, snake_case function names.
+- **Safety Boundary**: Strict adherence to synthetic dual-currency rules (`real_money=False`).
+- **GPG Signing**: All commits pushed to `main` must be GPG signed (`git commit -S`).

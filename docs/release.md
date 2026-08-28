@@ -1,19 +1,25 @@
-# Release
+# Release Guide: zluna
 
-## Versioning
+## 1. Versioning Strategy
 
-Use an explicit versioning policy. Semantic Versioning is recommended for reusable software unless the project has a better-defined scheme.
+`zluna` uses [Semantic Versioning 2.0.0](https://semver.org/).
+- Current Active Version: `v2.0.0`
+- Major: Core engine, protocol, or state schema changes.
+- Minor: New game implementations, marketing modules, or wallet chains.
+- Patch: Bug fixes, UI improvements, and telemetry tweaks.
 
-## Release checklist
+## 2. Release Checklist
 
-1. Ensure required CI and security checks pass.
-2. Update `CHANGELOG.md`.
-3. Confirm migrations and compatibility notes.
-4. Verify deployment and rollback procedures.
-5. Create and push the release tag according to project policy.
-6. Publish artifacts only from trusted workflows.
-7. Verify the release after publication.
-
-## Rollback
-
-Document how to restore the last known-good version, revert migrations safely, invalidate compromised artifacts, and communicate operational impact.
+1. **Test Verification**: Ensure `PYTHONPATH=src pytest tests/ -v` passes 100% (28/28 tests).
+2. **Security Gates**: Verify zero secret files tracked (`.env` in `.gitignore`) and CodeQL passes.
+3. **Changelog Update**: Add entries to `CHANGELOG.md` under the release version.
+4. **Git Tagging**: Create a signed annotated tag:
+   ```bash
+   git tag -s v2.0.0 -m "Release v2.0.0: ZLUNA Enterprise Suite"
+   git push origin v2.0.0
+   ```
+5. **Deployment Service**:
+   ```bash
+   systemctl --user restart zluna.service
+   ```
+6. **Live Ingress Verification**: Confirm `curl https://zluna.zeaz.dev/health` returns `HTTP 200 OK`.
