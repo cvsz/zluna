@@ -1,7 +1,9 @@
 
-# zslog
+# zluna (Lunaland Next-Gen Social Casino Simulator)
 
-`zslog` is a safe, self-contained fake-credit simulator and realtime event dashboard. It is intentionally designed without external gambling connections, real-money handling, or browser automation.
+`zluna` (formerly `zslog`) is an enterprise-grade, safe, self-contained fake-credit simulator and realtime event dashboard. It operates under synthetic social casino mechanics with Dual-Currency Simulation (Luna Coins 'LC' & Sweeps Coins 'SC'), Tier VIP progression, Provably Fair SHA-256 verification, LuckyConnect 6,000+ aggregator, and append-only local ledger.
+
+**Public Ingress:** [https://zluna.zeaz.dev](https://zluna.zeaz.dev) (also available via [https://zslog.zeaz.dev](https://zslog.zeaz.dev))
 
 ## Safety Boundary
 
@@ -14,7 +16,7 @@ The following invariants are enforced by design:
 - `external_gambling_integration = false`
 - `synthetic_credit = true`
 
-The service does not connect to casinos, place real bets, control browsers, or handle real currency.
+The service does not connect to real casinos, place real bets, control browsers, or handle real currency.
 
 ## Run locally
 
@@ -27,9 +29,9 @@ The service binds to `127.0.0.1:9581` by default.
 Override the bind address, port, or append-only event file with:
 
 ```bash
-ZSLOG_HOST=127.0.0.1
-ZSLOG_PORT=9581
-ZSLOG_DATA_PATH=data/events.jsonl
+ZLUNA_HOST=127.0.0.1
+ZLUNA_PORT=9581
+ZLUNA_DATA_PATH=data/events.jsonl
 ```
 
 ## Game Catalog

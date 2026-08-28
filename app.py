@@ -36,12 +36,15 @@ from risk_analytics import risk_engine, RiskAndAnalyticsEngine
 from ai_dealer import ai_dealer, AIDealerHost
 
 
-HOST = os.environ.get("ZSLOG_HOST", "127.0.0.1")
-PORT = int(os.environ.get("ZSLOG_PORT", "9581"))
+HOST = os.environ.get("ZLUNA_HOST", os.environ.get("ZSLOG_HOST", "127.0.0.1"))
+PORT = int(os.environ.get("ZLUNA_PORT", os.environ.get("ZSLOG_PORT", "9581")))
 DEFAULT_DATA_PATH = Path(
     os.environ.get(
-        "ZSLOG_DATA_PATH",
-        str(Path(__file__).resolve().parent / "data" / "events.jsonl"),
+        "ZLUNA_DATA_PATH",
+        os.environ.get(
+            "ZSLOG_DATA_PATH",
+            str(Path(__file__).resolve().parent / "data" / "events.jsonl"),
+        ),
     )
 )
 STARTING_BALANCE_LC = 50_000

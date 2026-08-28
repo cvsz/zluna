@@ -1,26 +1,26 @@
 {
-  "name": "zslog",
-  "version": "1.0.0",
-  "description": "`zslog` is a safe, self-contained fake-credit simulator and realtime event dashboard. It is intentionally designed without external gambling connections, real-money handling, or browser automation.",
+  "name": "zluna",
+  "version": "2.0.0",
+  "description": "`zluna` is a safe, self-contained Lunaland-grade social casino simulator and realtime event dashboard.",
   "main": "index.js",
   "directories": {
     "doc": "docs",
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "PYTHONPATH=. pytest tests/ -v"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cvsz/zslog.git"
+    "url": "git+https://github.com/cvsz/zluna.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["lunaland", "casino-simulator", "provably-fair", "luckystreak"],
+  "author": "cvsz",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/cvsz/zslog/issues"
+    "url": "https://github.com/cvsz/zluna/issues"
   },
-  "homepage": "https://github.com/cvsz/zslog#readme",
+  "homepage": "https://zluna.zeaz.dev",
   "dependencies": {
     "@tabler/core": "^1.4.0",
     "apexcharts": "^7.0.0"
