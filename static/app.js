@@ -1405,9 +1405,60 @@
           });
 
           // Bind Launch Buttons
+          const gameLauncherModal = $("game-launcher-modal");
+          const closeLauncherModal = $("close-launcher-modal");
+          const launcherModalTitle = $("launcher-modal-title");
+          const launcherModalProvider = $("launcher-modal-provider");
+          const launcherStageTitle = $("launcher-stage-title");
+          const launcherSessionDisplay = $("launcher-session-display");
+          const launcherRoundStatus = $("launcher-round-status");
+          const btnLauncherSpin = $("btn-launcher-spin");
+          const btnLauncherOpenDeck = $("btn-launcher-open-deck");
+          let activeLauncherGameId = "ls_live_blackjack_vip";
+
+          if (closeLauncherModal && gameLauncherModal) {
+            closeLauncherModal.addEventListener("click", () => {
+              gameLauncherModal.style.display = "none";
+            });
+          }
+
+          if (btnLauncherOpenDeck && gameLauncherModal) {
+            btnLauncherOpenDeck.addEventListener("click", () => {
+              gameLauncherModal.style.display = "none";
+              launchGame("ancient_tumble");
+            });
+          }
+
+          if (btnLauncherSpin) {
+            btnLauncherSpin.addEventListener("click", async () => {
+              if (launcherRoundStatus) {
+                launcherRoundStatus.textContent = "🎲 Spinning live studio round...";
+              }
+              try {
+                const res = await fetch("/api/spin", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    bet: 2,
+                    game: "slots",
+                    currency: activeCurrency,
+                  }),
+                });
+                const data = await res.json();
+                if (res.ok && data.ok && launcherRoundStatus) {
+                  const ev = data.event;
+                  launcherRoundStatus.textContent = `🎉 Round Settled! Outcome: ${ev.outcome} (${ev.multiplier}x) — Won ${ev.payout} ${ev.currency}`;
+                  syncState(data.state);
+                  appendEventRow(ev);
+                }
+              } catch (_) {}
+            });
+          }
+
           lcGamesGrid.querySelectorAll("[data-lc-game]").forEach((btn) => {
             btn.addEventListener("click", async () => {
               const gid = btn.getAttribute("data-lc-game");
+              activeLauncherGameId = gid;
               try {
                 const lRes = await fetch("/api/luckyconnect/launch", {
                   method: "POST",
@@ -1418,8 +1469,13 @@
                   body: JSON.stringify({ game_id: gid, currency: activeCurrency, demo: true }),
                 });
                 const lData = await lRes.json();
-                if (lRes.ok && lData.ok) {
-                  alert(`🎮 LuckyConnect Session Created for ${lData.name} (${lData.provider})\n\n🔗 Authenticated Launcher URL:\n${lData.launch_url}`);
+                if (lRes.ok && lData.ok && gameLauncherModal) {
+                  if (launcherModalTitle) launcherModalTitle.textContent = lData.name;
+                  if (launcherModalProvider) launcherModalProvider.textContent = `${lData.provider} • LuckyConnect HD Feed`;
+                  if (launcherStageTitle) launcherStageTitle.textContent = lData.name;
+                  if (launcherSessionDisplay) launcherSessionDisplay.textContent = `Session: ${lData.session_token} • Mode: Realtime Live Stream`;
+                  if (launcherRoundStatus) launcherRoundStatus.textContent = "";
+                  gameLauncherModal.style.display = "flex";
                 }
               } catch (_) {}
             });

@@ -1180,6 +1180,38 @@
       </div>
     </div>
 
+    <!-- Interactive Game Launcher Modal (LuckyConnect & Studio Feeds) -->
+    <div class="modal-backdrop-luna" id="game-launcher-modal" style="display:none; z-index:2000;">
+      <div class="modal-dialog-luna" style="max-width:850px; width:92%;">
+        <div class="modal-dialog-header">
+          <div class="d-flex align-items-center gap-2">
+            <span style="font-size:22px;" id="launcher-game-icon">🎮</span>
+            <div>
+              <h3 id="launcher-modal-title" style="margin:0; font-size:18px;">LuckyStreak Live Game</h3>
+              <small class="text-muted" id="launcher-modal-provider">Provider Studio • Hawk Verified</small>
+            </div>
+          </div>
+          <button class="icon-btn-sm" id="close-launcher-modal">✕</button>
+        </div>
+        <div class="modal-dialog-body text-center p-4">
+          <!-- Game Playable Container -->
+          <div id="launcher-live-container" style="background:#020617; border-radius:14px; border:1px solid rgba(139,92,246,0.3); height:380px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden;">
+            <div class="scanning-laser"></div>
+            <div id="launcher-stage-visual" style="font-size:64px; animation: floatArt 3s ease-in-out infinite alternate;">🎰</div>
+            <h2 id="launcher-stage-title" class="mt-3" style="font-family:'Space Grotesk', sans-serif; font-size:24px; font-weight:800; background:var(--luna-accent-gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Ready to Play</h2>
+            <p class="text-muted mt-1" style="font-size:13px;" id="launcher-session-display">Session Token: LS-SESS-ACTIVE • Currency: LC</p>
+            
+            <!-- Quick Round Action inside Launcher -->
+            <div class="d-flex gap-2 mt-4" style="z-index:5;">
+              <button class="btn-spin-primary" id="btn-launcher-spin" style="padding:10px 24px;">🎮 PLAY LIVE ROUND</button>
+              <button class="btn-store-glow" id="btn-launcher-open-deck" style="padding:10px 20px;">OPEN FULL CONSOLE</button>
+            </div>
+            <p id="launcher-round-status" class="console-status-text mt-3" style="font-size:14px; font-weight:700; color:#fbbf24;"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Bonus Modal -->
     <div class="modal-backdrop-luna" id="bonus-modal" style="display:none;">
       <div class="modal-dialog-luna">
