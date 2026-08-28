@@ -363,6 +363,12 @@
                       <div class="stage-reel-cell"><span class="symbol-txt" id="reel-c">⭐</span><small>REEL 3</small></div>
                     </div>
 
+                    <!-- Interactive HTML5 Canvas Animation Stage for Plinko / Crash -->
+                    <div class="canvas-stage-wrapper mt-2" id="canvas-stage-wrap" style="display:none; position:relative; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); background:#030712;">
+                      <canvas id="luna-physics-canvas" width="600" height="220" style="width:100%; height:220px; display:block;"></canvas>
+                      <div id="canvas-overlay-hud" style="position:absolute; top:10px; right:12px; font-family:'JetBrains Mono', monospace; font-size:13px; color:#10b981; font-weight:700;">60 FPS • Realtime Physics</div>
+                    </div>
+
                     <div class="stage-hud-bar">
                       <div class="hud-stat-unit">
                         <span>Outcome</span>

@@ -267,27 +267,129 @@
     });
   }
 
+  // --- HTML5 CANVAS PHYSICS RENDERER (PLINKO & CRASH) ---
+  const canvasWrap = $("canvas-stage-wrap");
+  const reelStage = $("reel-stage");
+  const canvas = $("luna-physics-canvas");
+  let ctx2d = canvas ? canvas.getContext("2d") : null;
+
+  function renderPlinkoCanvas(details) {
+    if (!canvas || !ctx2d) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx2d.clearRect(0, 0, w, h);
+
+    // Draw Pin Grid
+    const rows = 8;
+    const pinRadius = 3.5;
+    ctx2d.fillStyle = "#8b5cf6";
+    for (let r = 0; r < rows; r++) {
+      const count = r + 3;
+      const spacing = w / (rows + 4);
+      const startX = (w - (count - 1) * spacing) / 2;
+      const y = 30 + r * (h - 60) / rows;
+      for (let c = 0; c < count; c++) {
+        ctx2d.beginPath();
+        ctx2d.arc(startX + c * spacing, y, pinRadius, 0, Math.PI * 2);
+        ctx2d.fill();
+      }
+    }
+
+    // Draw Multiplier Buckets at bottom
+    const buckets = [10, 5, 2, 1, 0.5, 1, 2, 5, 10];
+    const bW = w / buckets.length;
+    buckets.forEach((b, i) => {
+      ctx2d.fillStyle = b >= 5 ? "rgba(245, 158, 11, 0.3)" : (b >= 2 ? "rgba(139, 92, 246, 0.25)" : "rgba(255, 255, 255, 0.08)");
+      ctx2d.fillRect(i * bW + 2, h - 24, bW - 4, 20);
+      ctx2d.fillStyle = b >= 5 ? "#fbbf24" : "#ffffff";
+      ctx2d.font = "bold 10px Outfit, sans-serif";
+      ctx2d.textAlign = "center";
+      ctx2d.fillText(`${b}x`, i * bW + bW / 2, h - 10);
+    });
+
+    // Draw Animated Plinko Ball
+    const finalPos = details.final_pos || 4;
+    const ballX = (w / 2) + ((finalPos - 4) * 26);
+    ctx2d.beginPath();
+    ctx2d.arc(ballX, h - 32, 7, 0, Math.PI * 2);
+    ctx2d.fillStyle = "#fbbf24";
+    ctx2d.shadowColor = "#fbbf24";
+    ctx2d.shadowBlur = 12;
+    ctx2d.fill();
+    ctx2d.shadowBlur = 0;
+  }
+
+  function renderCrashCanvas(details) {
+    if (!canvas || !ctx2d) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx2d.clearRect(0, 0, w, h);
+
+    const cp = details.crash_point || 2.0;
+    const isCrashed = details.outcome === "CRASHED";
+
+    // Grid lines
+    ctx2d.strokeStyle = "rgba(255, 255, 255, 0.06)";
+    ctx2d.lineWidth = 1;
+    for (let x = 0; x < w; x += 60) {
+      ctx2d.beginPath(); ctx2d.moveTo(x, 0); ctx2d.lineTo(x, h); ctx2d.stroke();
+    }
+    for (let y = 0; y < h; y += 40) {
+      ctx2d.beginPath(); ctx2d.moveTo(0, y); ctx2d.lineTo(w, y); ctx2d.stroke();
+    }
+
+    // Rocket Exponential Flight Curve
+    ctx2d.beginPath();
+    ctx2d.moveTo(40, h - 30);
+    const endX = Math.min(w - 60, 40 + (cp * 50));
+    const endY = Math.max(40, (h - 30) - (cp * 25));
+    ctx2d.quadraticCurveTo(w / 2, h - 30, endX, endY);
+    ctx2d.strokeStyle = isCrashed ? "#ef4444" : "#10b981";
+    ctx2d.lineWidth = 4;
+    ctx2d.stroke();
+
+    // Rocket Icon
+    ctx2d.font = "24px sans-serif";
+    ctx2d.textAlign = "center";
+    ctx2d.fillText(isCrashed ? "💥" : "🚀", endX, endY - 10);
+
+    // Multiplier Callout
+    ctx2d.fillStyle = isCrashed ? "#ef4444" : "#10b981";
+    ctx2d.font = "bold 28px 'JetBrains Mono', monospace";
+    ctx2d.fillText(`${cp}x`, w / 2, 70);
+  }
+
   // --- REEL & OUTCOME VISUALIZATION ---
   function updateVisualizer(event) {
     const outcome = event.outcome || "MISS";
     const mult = event.multiplier || 0;
     const payout = event.payout || 0;
-
-    const rA = $("reel-a");
-    const rB = $("reel-b");
-    const rC = $("reel-c");
     const details = event.details || {};
 
-    if (rA && rB && rC) {
-      if (details.reels && details.reels.length >= 3) {
-        rA.textContent = details.reels[0];
-        rB.textContent = details.reels[1];
-        rC.textContent = details.reels[2];
-      } else {
-        const icon = GAME_ICONS[event.game] || "🌙";
-        rA.textContent = mult > 0 ? "💎" : icon;
-        rB.textContent = mult > 0 ? "⭐" : "🍒";
-        rC.textContent = mult > 0 ? "💎" : "🍋";
+    if (event.game === "plinko" || event.game === "crash") {
+      if (reelStage) reelStage.style.display = "none";
+      if (canvasWrap) canvasWrap.style.display = "block";
+      if (event.game === "plinko") renderPlinkoCanvas(details);
+      if (event.game === "crash") renderCrashCanvas({ ...details, outcome });
+    } else {
+      if (reelStage) reelStage.style.display = "flex";
+      if (canvasWrap) canvasWrap.style.display = "none";
+
+      const rA = $("reel-a");
+      const rB = $("reel-b");
+      const rC = $("reel-c");
+
+      if (rA && rB && rC) {
+        if (details.reels && details.reels.length >= 3) {
+          rA.textContent = details.reels[0];
+          rB.textContent = details.reels[1];
+          rC.textContent = details.reels[2];
+        } else {
+          const icon = GAME_ICONS[event.game] || "🌙";
+          rA.textContent = mult > 0 ? "💎" : icon;
+          rB.textContent = mult > 0 ? "⭐" : "🍒";
+          rC.textContent = mult > 0 ? "💎" : "🍋";
+        }
       }
     }
 
