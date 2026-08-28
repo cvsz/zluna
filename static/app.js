@@ -693,6 +693,117 @@
     if (btnSendChat) btnSendChat.addEventListener("click", sendChatMessage);
     if (chatInput) chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendChatMessage(); });
 
+    // Theme Toggle
+    if (themeToggle) {
+      themeToggle.addEventListener("click", () => {
+        const isDark = document.documentElement.getAttribute("data-theme") !== "light";
+        if (isDark) {
+          document.documentElement.setAttribute("data-theme", "light");
+          document.documentElement.style.setProperty("--luna-bg", "#f3f4f6");
+          document.documentElement.style.setProperty("--luna-bg-card", "#ffffff");
+          document.documentElement.style.setProperty("--luna-text", "#111827");
+          document.documentElement.style.setProperty("--luna-text-muted", "#4b5563");
+          document.documentElement.style.setProperty("--luna-line", "rgba(0,0,0,0.1)");
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+          document.documentElement.style.removeProperty("--luna-bg");
+          document.documentElement.style.removeProperty("--luna-bg-card");
+          document.documentElement.style.removeProperty("--luna-text");
+          document.documentElement.style.removeProperty("--luna-text-muted");
+          document.documentElement.style.removeProperty("--luna-line");
+        }
+      });
+    }
+
+    // Ledger Export Handler
+    const exportBtn = $("export-button");
+    const exportHistBtn = $("export-history");
+    const handleExport = async () => {
+      try {
+        const res = await fetch("/api/export");
+        const data = await res.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `lunaland-ledger-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (_) {}
+    };
+    if (exportBtn) exportBtn.addEventListener("click", handleExport);
+    if (exportHistBtn) exportHistBtn.addEventListener("click", handleExport);
+
+    // Ledger Import Handler
+    const importFile = $("import-file");
+    if (importFile) {
+      importFile.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            const events = parsed.events || (Array.isArray(parsed) ? parsed : []);
+            const res = await fetch("/api/import", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ events }),
+            });
+            const data = await res.json();
+            if (res.ok) alert(`✅ Imported ${data.imported} ledger rounds!`);
+          } catch (_) {
+            alert("❌ Invalid JSON ledger format");
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    // Balance Reset Handler
+    const resetBtn = $("reset-button");
+    const clearHistBtn = $("clear-history");
+    const handleReset = async () => {
+      if (confirm("Reset wallet balances to default starting credit?")) {
+        try {
+          const res = await fetch("/api/reset", { method: "POST" });
+          const data = await res.json();
+          if (res.ok) {
+            syncState(data.state);
+            if (eventList) eventList.innerHTML = '<div class="empty-state"><span>Ledger Reset</span></div>';
+            if (historyEventList) historyEventList.innerHTML = '<div class="empty-state"><span>Ledger Reset</span></div>';
+          }
+        } catch (_) {}
+      }
+    };
+    if (resetBtn) resetBtn.addEventListener("click", handleReset);
+    if (clearHistBtn) clearHistBtn.addEventListener("click", handleReset);
+
+    // Stats Refresh Button
+    const refreshStatsBtn = $("refresh-stats");
+    if (refreshStatsBtn) {
+      refreshStatsBtn.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/stats");
+          const s = await res.json();
+          if (res.ok) {
+            const sRounds = $("stat-rounds");
+            const sWinrate = $("stat-winrate");
+            const sBiggest = $("stat-biggest");
+            const sAvgbet = $("stat-avgbet");
+            const sProfit = $("stat-profit");
+            const sMaxmult = $("stat-maxmult");
+            if (sRounds) sRounds.textContent = s.rounds;
+            if (sWinrate) sWinrate.textContent = `${s.win_rate}%`;
+            if (sBiggest) sBiggest.textContent = s.biggest_win;
+            if (sAvgbet) sAvgbet.textContent = s.avg_bet;
+            if (sProfit) sProfit.textContent = formatMoney(s.net_profit);
+            if (sMaxmult) sMaxmult.textContent = `${s.max_multiplier}x`;
+          }
+        } catch (_) {}
+      });
+    }
+
     // Hash check on load
     const initHash = window.location.hash.replace("#", "") || "lobby";
     activateView(initHash);
