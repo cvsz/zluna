@@ -1,5 +1,5 @@
 [Unit]
-Description=zslog fake-credit realtime simulator
+Description=zluna (Lunaland Next-Gen) fake-credit realtime simulator & casino engine
 After=network-online.target
 Wants=network-online.target
 
@@ -7,11 +7,11 @@ Wants=network-online.target
 Type=simple
 User=cvsz
 Group=cvsz
-WorkingDirectory=/home/cvsz/zslog
-ExecStart=/usr/bin/python3 /home/cvsz/zslog/app.py
-Environment=ZSLOG_HOST=127.0.0.1
-Environment=ZSLOG_PORT=9581
-Environment=ZSLOG_DATA_PATH=/home/cvsz/zslog/data/events.jsonl
+WorkingDirectory=/home/cvsz/zluna
+ExecStart=/usr/bin/python3 /home/cvsz/zluna/src/app.py
+Environment=ZLUNA_HOST=127.0.0.1
+Environment=ZLUNA_PORT=9581
+Environment=ZLUNA_DATA_PATH=/home/cvsz/zluna/data/events.jsonl
 Restart=always
 RestartSec=3
 UMask=0077
@@ -28,7 +28,7 @@ RestrictSUIDSGID=true
 LockPersonality=true
 RestrictRealtime=true
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-ReadWritePaths=/home/cvsz/zslog/data
+ReadWritePaths=/home/cvsz/zluna/data
 
 [Install]
 WantedBy=multi-user.target
