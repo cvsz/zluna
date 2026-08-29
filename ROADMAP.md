@@ -1,31 +1,31 @@
-# Roadmap
+# Roadmap: zluna (Lunaland Next-Gen)
 
-This template is intended to stay generic while providing production-grade repository foundations.
+## Foundation (Completed)
 
-## Foundation
-
-- [x] Repository documentation baseline
+- [x] Repository documentation baseline & Technical Architecture Specification
 - [x] Security and contribution policies
 - [x] Issue and pull request templates
-- [x] CI and security workflow baseline
-- [x] Dependabot configuration
-- [x] Release workflow
-- [x] Docker and task-runner placeholders
-- [x] Architecture and development documentation structure
+- [x] CI, CodeQL SAST, and Dependency Review security automation
+- [x] Dependabot automated version maintenance
+- [x] Release workflow & SemVer v2.0.0 guidelines
+- [x] Hardened Dockerfile & Makefile for `src/` modular layout
+- [x] Zero-secret credential management & `.env.example` baseline
+- [x] OpenSSF Scorecard supply chain security workflow
+- [x] SBOM generation and software provenance tracking
 
-## Future optional modules
+## Core Game & Platform Roadmap
 
-- [ ] Language-specific starter packs
-- [ ] Infrastructure-as-code starter packs
-- [ ] Kubernetes and Helm starter packs
-- [ ] SBOM and provenance workflows
-- [ ] Release signing and artifact attestation
-- [ ] OpenSSF Scorecard workflow
-- [ ] Container vulnerability scanning
-- [ ] Documentation site starter
-- [ ] Monorepo profile
-- [ ] Service/API profile
-- [ ] Web application profile
-- [ ] Library/SDK profile
+- [x] 36 Real-world certified simulation titles (LuckyStreak, Pragmatic, PG Soft, Yggdrasil, Red Rake, Relax)
+- [x] LuckyConnect 6,000+ Hawk-authenticated Aggregator with Seamless Webhook engine
+- [x] Gemini Live Multimodal Voice AI Host with dynamic commentary & voice synthesis
+- [x] ZWallet Multi-chain Crypto simulation (ETH, TRX, SOL, POL) & Sweeps Coin Staking Vault
+- [x] Provably Fair HMAC-SHA256 seed/hash cryptographic verifier
+- [x] Realtime Glassmorphic 60 FPS HTML5 Canvas & SSE telemetry streaming
 
-Generated repositories should adopt only the modules appropriate to their stack and threat model.
+## Future Enhancements (Next)
+
+- [ ] WebRTC direct ultra-low latency video stream ingestion for Live Dealer studios
+- [ ] Automated Multi-Language Localization (EN, TH, JA, ZH, ES, PT)
+- [ ] Distributed Redis cluster support for multi-node horizontal scaling
+- [ ] Telegram & Discord Bot mini-app interfaces for instant social gameplay
+- [ ] On-chain smart contract integration for decentralized provably fair verification

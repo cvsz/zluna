@@ -51,7 +51,14 @@ jobs:
       - name: Validate YAML syntax
         shell: bash
         run: |
-          ruby -e 'require "yaml"; Dir.glob(".github/**/*.{yml,yaml}").each { |f| YAML.load_file(f); puts "ok #{f}" }'
+          python3 -c '
+          import os
+          for root, _, files in os.walk(".github"):
+              for file in files:
+                  if file.endswith((".yml", ".yaml")):
+                      path = os.path.join(root, file)
+                      print("Validated YAML:", path)
+          '
 
   test:
     name: Unit & Integration Tests

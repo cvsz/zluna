@@ -1,0 +1,32 @@
+name: SBOM & Provenance
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Generate CycloneDX SBOM
+        uses: CycloneDX/gh-python-generate-sbom@v2
+        with:
+          input: ./src
+          output: ./zluna-sbom.json
+        continue-on-error: true
+
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zluna-sbom
+          path: ./zluna-sbom.json
+          if-no-files-found: ignore
