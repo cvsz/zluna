@@ -4,6 +4,9 @@ __pycache__/
 tests/__pycache__/
 .pytest_cache/
 node_modules/
+dist/
+build/
+*.egg-info/
 
 .env
 .env.local

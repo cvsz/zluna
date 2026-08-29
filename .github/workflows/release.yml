@@ -1,0 +1,47 @@
+name: Release & Publish Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  build-and-release:
+    name: Build, Package & Publish Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools & run tests
+        run: |
+          python -m pip install --upgrade pip build wheel pytest pytest-cov pytest-asyncio
+          PYTHONPATH=src pytest tests/ -v
+
+      - name: Build Python Package & Wheel
+        run: |
+          python -m build
+
+      - name: Create GitHub Release with Assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: ZLUNA Enterprise Suite ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist/*
