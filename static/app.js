@@ -1681,6 +1681,37 @@
       });
     }
 
+    // --- COIN STORE PACK PURCHASES ---
+    document.querySelectorAll(".btn-buy-pack").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const pkgId = btn.getAttribute("data-pack") || "popular";
+        btn.disabled = true;
+        try {
+          const res = await fetch("/api/store/buy", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+            },
+            body: JSON.stringify({ package_id: pkgId }),
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            syncState(data.state);
+            const p = data.package;
+            speakWithAiDealer(`Cosmic purchase confirmed! You received ${p.lc.toLocaleString()} Luna Coins and ${p.sc.toFixed(2)} complimentary Sweeps Coins!`);
+            alert(`🎉 Package Purchase Successful!\n\nPackage: ${p.name}\nCredited: +${p.lc.toLocaleString()} LC & +${p.sc.toFixed(2)} Free SC\nPrice: $${p.price_usd} USD`);
+          } else {
+            alert(`❌ ${data.error || "Purchase could not be processed"}`);
+          }
+        } catch (err) {
+          alert(`⚠️ Network error: ${err.message}`);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+
     // --- STUDIO P&L RENDERING IN ADMIN CONSOLE ---
     const adminStudioPnlList = $("admin-studio-pnl-list");
     async function loadStudioPnl() {
