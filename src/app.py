@@ -344,10 +344,10 @@ class Simulator:
     def purchase_coin_package(self, package_id: str) -> dict[str, Any]:
         """Lunaland Store Packages: Buy LC and receive complimentary Sweeps Coins (SC)."""
         packages = {
-            "starter": {"name": "Lunar Stardust Pack", "price_usd": 4.99, "lc": 25_000, "sc": 5.00, "popular": False},
-            "popular": {"name": "Nebula Explorer Pack", "price_usd": 19.99, "lc": 120_000, "sc": 21.00, "popular": True},
-            "highroller": {"name": "Cosmic Voyager Pack", "price_usd": 49.99, "lc": 350_000, "sc": 52.50, "popular": False},
-            "whale": {"name": "Supernova Eclipse VIP", "price_usd": 99.99, "lc": 800_000, "sc": 105.00, "popular": False},
+            "starter": {"name": "Lunar Stardust", "price_usd": 4.99, "lc": 25_000, "sc": 5.00, "popular": False},
+            "popular": {"name": "Nebula Explorer", "price_usd": 19.99, "lc": 120_000, "sc": 21.00, "popular": True},
+            "highroller": {"name": "Cosmic Voyager", "price_usd": 49.99, "lc": 350_000, "sc": 52.50, "popular": False},
+            "whale": {"name": "Supernova VIP", "price_usd": 99.99, "lc": 800_000, "sc": 105.00, "popular": False},
         }
         pkg = packages.get(package_id)
         if not pkg:
@@ -781,6 +781,15 @@ class ZlunaRequestHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/risk/dashboard":
             self._send_json(risk_engine.get_risk_and_pnl_dashboard())
+            return
+        if path == "/api/store/packages":
+            packages = [
+                {"id": "starter", "tag": "Starter", "icon": "🪙", "name": "Lunar Stardust", "lc": 25_000, "sc": 5.00, "price_usd": 4.99, "popular": False},
+                {"id": "popular", "tag": "Most Popular", "icon": "🚀", "name": "Nebula Explorer", "lc": 120_000, "sc": 21.00, "price_usd": 19.99, "popular": True},
+                {"id": "highroller", "tag": "High Roller", "icon": "💎", "name": "Cosmic Voyager", "lc": 350_000, "sc": 52.50, "price_usd": 49.99, "popular": False},
+                {"id": "whale", "tag": "VIP Whale", "icon": "👑", "name": "Supernova VIP", "lc": 800_000, "sc": 105.00, "price_usd": 99.99, "popular": False},
+            ]
+            self._send_json({"ok": True, "title": "Get Luna Coins & Complimentary Sweeps Coins", "subtitle": "100% Free SC Included", "packages": packages})
             return
         if path == "/api/luckyconnect/games":
             query = parse_qs(urlsplit(self.path).query)

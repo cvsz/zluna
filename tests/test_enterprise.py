@@ -24,7 +24,7 @@ class LunalandEnterpriseTests(unittest.TestCase):
             sim = Simulator(data_path=Path(tmp) / "events.jsonl", starting_balance=1000)
             res = sim.purchase_coin_package("popular")
             self.assertTrue(res["ok"])
-            self.assertEqual(res["package"]["name"], "Nebula Explorer Pack")
+            self.assertEqual(res["package"]["name"], "Nebula Explorer")
             self.assertEqual(res["state"]["balance_lc"], 1000 + 120_000)
             self.assertEqual(res["state"]["balance_sc"], 10.00 + 21.00)
 
