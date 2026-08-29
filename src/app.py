@@ -34,6 +34,8 @@ from keyless_gaming import keyless_hub, KeylessGamingHub
 from marketing import marketing_engine, MarketingEngine
 from risk_analytics import risk_engine, RiskAndAnalyticsEngine
 from ai_dealer import ai_dealer, AIDealerHost
+from i18n import i18n_engine, I18nEngine
+from bot_integrations import bot_hub, BotIntegrationHub
 
 
 HOST = os.environ.get("ZLUNA_HOST", os.environ.get("ZSLOG_HOST", "127.0.0.1"))
@@ -763,6 +765,16 @@ class ZlunaRequestHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/marketing/summary":
             self._send_json({"ok": True, "marketing": marketing_engine.get_campaigns_summary()})
+            return
+        if path == "/api/i18n":
+            query = parse_qs(urlsplit(self.path).query)
+            lang = query.get("lang", ["EN"])[0]
+            self._send_json(i18n_engine.get_translations(lang))
+            return
+        if path == "/api/bots/miniapp":
+            query = parse_qs(urlsplit(self.path).query)
+            mid = query.get("mid", ["lunacommander"])[0]
+            self._send_json(bot_hub.generate_telegram_miniapp_url(mid))
             return
         if path == "/api/ai-dealer/status":
             self._send_json(ai_dealer.get_live_host_status())

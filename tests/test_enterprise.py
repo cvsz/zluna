@@ -316,6 +316,25 @@ class LunalandEnterpriseHttpTests(unittest.TestCase):
         self.assertEqual(comm["commentary"]["emotion"], "excited")
         self.assertEqual(comm["commentary"]["audio_cue"], "fanfare")
 
+    def test_i18n_and_bot_integrations_api(self):
+        # 1. Test i18n Thai translation GET
+        req = Request(self.base_url + "/api/i18n?lang=TH", method="GET")
+        with urlopen(req, timeout=2) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.load(resp)
+            self.assertTrue(data["ok"])
+            self.assertEqual(data["language"], "TH")
+            self.assertIn("หมุนสปินเพื่อชนะ", data["dictionary"]["spin_to_win"])
+
+        # 2. Test Telegram MiniApp URL generator GET
+        req_b = Request(self.base_url + "/api/bots/miniapp?mid=testuser", method="GET")
+        with urlopen(req_b, timeout=2) as resp_b:
+            self.assertEqual(resp_b.status, 200)
+            b_data = json.load(resp_b)
+            self.assertTrue(b_data["ok"])
+            self.assertIn("LunalandCasinoBot", b_data["bot_username"])
+            self.assertIn("mid=testuser", b_data["miniapp_url"])
+
 
 if __name__ == "__main__":
     unittest.main()
