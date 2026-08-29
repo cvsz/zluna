@@ -4,6 +4,14 @@ All notable changes to `zluna` (Lunaland Next-Gen) are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-08-29
+
+### Added
+- **Multi-Language Internationalization (i18n)**: Native 6-language dictionary and runtime switcher (EN, TH, JA, ZH, ES, PT) with `GET /api/i18n?lang={code}`.
+- **Social Bot Integrations**: Telegram Mini-App URL launch token generator (`GET /api/bots/miniapp`) and Discord Big Win (>=10x) rich embed notification hub.
+- **Deep Pentest & Security Hardening**: Constant-time timing-attack mitigation on credentials and Hawk HMACs, fail-closed bet boundary fuzzing protection, and zero-leak credential isolation.
+- **Supply Chain Security**: OpenSSF Scorecard automated analysis and CycloneDX SBOM provenance tracking workflows.
+
 ## [2.0.0] - 2026-08-28
 
 ### Added
