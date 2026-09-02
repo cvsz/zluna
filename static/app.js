@@ -1787,6 +1787,11 @@
     loadKeylessFeeds();
     loadStudioPnl();
     updateZwDepositPreview();
+    initLanguageSelector();
+    initLiveDealerHandlers();
+    initBotHandlers();
+    initOnChainHandlers();
+    initClusterStatus();
 
     // Hash check on load
     const initHash = window.location.hash.replace("#", "") || "lobby";
@@ -1794,4 +1799,228 @@
   }
 
   document.addEventListener("DOMContentLoaded", init);
+
+  // ===== LANGUAGE SELECTOR =====
+  function initLanguageSelector() {
+    const sel = $("language-selector");
+    if (!sel) return;
+    const saved = localStorage.getItem("zluna_lang");
+    if (saved) sel.value = saved;
+    sel.addEventListener("change", () => {
+      localStorage.setItem("zluna_lang", sel.value);
+      applyTranslations(sel.value);
+    });
+    if (saved) applyTranslations(saved);
+  }
+
+  function applyTranslations(lang) {
+    fetch(`/api/i18n?lang=${lang}`).then(r => r.json()).then(data => {
+      if (!data.dictionary) return;
+      const dict = data.dictionary;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) el.textContent = dict[key];
+      });
+      document.documentElement.lang = lang.toLowerCase();
+    }).catch(() => {});
+  }
+
+  // ===== LIVE DEALER (WebRTC) =====
+  let ldCurrentRoom = null;
+  let ldPeerId = null;
+  let ldPeerConnection = null;
+
+  function initLiveDealerHandlers() {
+    const btnCreate = $("btn-ld-create-room");
+    const btnRefresh = $("btn-ld-refresh");
+    const btnLeave = $("btn-ld-leave");
+    if (btnCreate) btnCreate.addEventListener("click", ldCreateRoom);
+    if (btnRefresh) btnRefresh.addEventListener("click", ldRefreshRooms);
+    if (btnLeave) btnLeave.addEventListener("click", ldLeaveRoom);
+    ldRefreshRooms();
+  }
+
+  function ldCreateRoom() {
+    const gameType = $("ld-game-type") ? $("ld-game-type").value : "blackjack";
+    const studioId = "studio_" + Math.random().toString(36).slice(2, 8);
+    fetch("/api/webrtc/studios/register", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({studio_id: studioId, name: "Studio " + studioId.slice(0, 4).toUpperCase(), location: "Monte Carlo"})
+    }).then(r => r.json()).then(() => {
+      fetch("/api/webrtc/rooms/create", {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({studio_id: studioId, game_type: gameType, max_viewers: 50})
+      }).then(r => r.json()).then(data => {
+        if (data.ok) {
+          ldJoinRoom(data.room.room_id, true);
+        }
+      });
+    });
+  }
+
+  function ldRefreshRooms() {
+    fetch("/api/webrtc/rooms?status=live").then(r => r.json()).then(data => {
+      const list = $("ld-rooms-list");
+      if (!list) return;
+      if (!data.rooms || data.rooms.length === 0) {
+        list.innerHTML = '<div class="empty-state"><span>No active rooms</span><small>Create one to start streaming!</small></div>';
+        return;
+      }
+      list.innerHTML = data.rooms.map(room => `
+        <div class="d-flex justify-content-between align-items-center p-2" style="border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div>
+            <strong>${room.game_type.toUpperCase()}</strong>
+            <small class="text-muted d-block">${room.room_id.slice(0, 12)}... • ${room.viewer_count}/${room.max_viewers} viewers</small>
+          </div>
+          <span class="badge-green">${room.status}</span>
+        </div>
+      `).join("");
+      list.querySelectorAll("[data-room-id]").forEach(el => {
+        el.style.cursor = "pointer";
+        el.addEventListener("click", () => ldJoinRoom(el.dataset.roomId, false));
+      });
+    }).catch(() => {});
+  }
+
+  function ldJoinRoom(roomId, isStudio) {
+    fetch("/api/webrtc/config").then(r => r.json()).then(configData => {
+      const peerId = "peer_" + Math.random().toString(36).slice(2, 10);
+      ldPeerId = peerId;
+      fetch("/api/webrtc/rooms/join", {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({room_id: roomId, peer_id: peerId, member_id: "lunacommander"})
+      }).then(r => r.json()).then(data => {
+        if (data.ok) {
+          ldCurrentRoom = roomId;
+          $("ld-stream-container").style.display = "block";
+          $("ld-stream-title").textContent = isStudio ? "Studio Broadcast" : "Live Dealer Stream";
+          $("ld-stream-status").textContent = "CONNECTING...";
+          setupWebRTC(configData.config, isStudio);
+        }
+      });
+    });
+  }
+
+  function setupWebRTC(config, isStudio) {
+    if (!window.RTCPeerConnection) {
+      $("ld-stream-status").textContent = "WebRTC not supported";
+      return;
+    }
+    const pc = new RTCPeerConnection({iceServers: config.ice_servers || []});
+    ldPeerConnection = pc;
+    const video = $("ld-video");
+    const placeholder = $("ld-video-placeholder");
+    if (isStudio) {
+      navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(stream => {
+        stream.getTracks().forEach(t => pc.addTrack(t, stream));
+        video.srcObject = stream;
+        video.style.display = "block";
+        if (placeholder) placeholder.style.display = "none";
+        return pc.createOffer();
+      }).then(offer => pc.setLocalDescription(offer)).then(() => {
+        fetch("/api/webrtc/signal/offer", {
+          method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({from_peer: ldPeerId, to_peer: "", sdp: {type: "offer", sdp: pc.localDescription.sdp}})
+        });
+      }).catch(() => {});
+    }
+    pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        fetch("/api/webrtc/signal/ice", {
+          method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({from_peer: ldPeerId, to_peer: "", candidate: e.candidate.toJSON()})
+        });
+      }
+    };
+    pc.ontrack = (e) => {
+      video.srcObject = e.streams[0];
+      video.style.display = "block";
+      if (placeholder) placeholder.style.display = "none";
+      $("ld-stream-status").textContent = "LIVE";
+    };
+    $("ld-stream-status").textContent = "CONNECTED";
+  }
+
+  function ldLeaveRoom() {
+    if (ldPeerConnection) { ldPeerConnection.close(); ldPeerConnection = null; }
+    if (ldPeerId) {
+      fetch("/api/webrtc/rooms/leave", {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({peer_id: ldPeerId})
+      });
+    }
+    ldCurrentRoom = null;
+    ldPeerId = null;
+    $("ld-stream-container").style.display = "none";
+    ldRefreshRooms();
+  }
+
+  // ===== BOT HANDLERS =====
+  function initBotHandlers() {
+    const btnTg = $("btn-tg-launch");
+    const btnDc = $("btn-discord-connect");
+    if (btnTg) btnTg.addEventListener("click", () => {
+      fetch("/api/bots/miniapp?mid=lunacommander").then(r => r.json()).then(data => {
+        const link = $("tg-miniapp-link");
+        if (link) link.innerHTML = `<a href="${data.miniapp_url}" target="_blank" style="color:#8b5cf6;">${data.miniapp_url}</a>`;
+      });
+    });
+    if (btnDc) btnDc.addEventListener("click", () => {
+      fetch("/api/bots/discord/connect", {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({bot_token: "demo_token_" + Math.random().toString(36).slice(2)})
+      }).then(r => r.json()).then(data => {
+        const status = $("discord-status");
+        if (status) status.textContent = data.ok ? "Bot connected successfully!" : "Connection failed: " + (data.error || "unknown");
+      });
+    });
+  }
+
+  // ===== ON-CHAIN HANDLERS =====
+  function initOnChainHandlers() {
+    fetch("/api/smart-contract/info").then(r => r.json()).then(data => {
+      if (data.contract_address) $("oc-contract-address").textContent = data.contract_address;
+      $("oc-total-anchored").textContent = data.total_anchored || 0;
+      $("oc-pending").textContent = data.pending_count || 0;
+      $("oc-batches").textContent = data.anchored_batches || 0;
+    }).catch(() => {});
+    fetch("/api/smart-contract/solidity").then(r => r.json()).then(data => {
+      if (data.contract) $("oc-solidity-source").textContent = data.contract;
+    }).catch(() => {});
+    const btnAnchor = $("oc-anchor-btn");
+    if (btnAnchor) btnAnchor.addEventListener("click", () => {
+      fetch("/api/smart-contract/anchor", {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({batch_size: 10})
+      }).then(r => r.json()).then(data => {
+        const res = $("oc-anchor-result");
+        if (data.ok && res) {
+          res.innerHTML = `<span style="color:#10b981;">Anchored! Batch: ${data.batch.batch_id.slice(0,16)}... | TX: ${data.batch.tx_hash.slice(0,20)}... | Gas: ${data.batch.gas_used}</span>`;
+          initOnChainHandlers();
+        } else if (res) {
+          res.textContent = data.error || "Anchor failed";
+        }
+      });
+    });
+  }
+
+  // ===== CLUSTER STATUS =====
+  function initClusterStatus() {
+    fetch("/api/cluster/status").then(r => r.json()).then(data => {
+      $("cluster-mode").textContent = data.mode || "standalone";
+      $("cluster-nodes").textContent = data.total_nodes || 1;
+      $("cluster-node-id").textContent = (data.node_id || "-").slice(0, 12) + "...";
+      const badge = $("cluster-mode-badge");
+      if (badge) badge.textContent = data.mode || "Standalone";
+      const list = $("cluster-nodes-list");
+      if (list && data.nodes) {
+        list.innerHTML = data.nodes.map(n => `
+          <div class="d-flex justify-content-between p-2" style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span>${n.node_id.slice(0, 16)}...</span>
+            <span class="badge-${n.status === "active" ? "green" : "teal"}">${n.status || "standalone"}</span>
+          </div>
+        `).join("");
+      }
+    }).catch(() => {});
+  }
 })();

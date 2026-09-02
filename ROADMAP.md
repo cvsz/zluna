@@ -24,8 +24,8 @@
 
 ## Future Enhancements (Next)
 
-- [ ] WebRTC direct ultra-low latency video stream ingestion for Live Dealer studios
-- [ ] Automated Multi-Language Localization (EN, TH, JA, ZH, ES, PT)
-- [ ] Distributed Redis cluster support for multi-node horizontal scaling
-- [ ] Telegram & Discord Bot mini-app interfaces for instant social gameplay
-- [ ] On-chain smart contract integration for decentralized provably fair verification
+- [x] WebRTC direct ultra-low latency video stream ingestion for Live Dealer studios
+- [x] Automated Multi-Language Localization (EN, TH, JA, ZH, ES, PT)
+- [x] Distributed Redis cluster support for multi-node horizontal scaling
+- [x] Telegram & Discord Bot mini-app interfaces for instant social gameplay
+- [x] On-chain smart contract integration for decentralized provably fair verification

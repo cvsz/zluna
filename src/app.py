@@ -36,6 +36,9 @@ from risk_analytics import risk_engine, RiskAndAnalyticsEngine
 from ai_dealer import ai_dealer, AIDealerHost
 from i18n import i18n_engine, I18nEngine
 from bot_integrations import bot_hub, BotIntegrationHub
+from webrtc_stream import webrtc_engine, WebRTCStreamEngine
+from redis_cluster import redis_cluster, RedisClusterManager
+from smart_contract import smart_contract, SmartContractAnchor
 
 
 HOST = os.environ.get("ZLUNA_HOST", os.environ.get("ZSLOG_HOST", "127.0.0.1"))
@@ -283,6 +286,17 @@ class Simulator:
             self._state["last_event"] = event
             self._events.append(event)
             self._append_event(event)
+            # Submit for on-chain anchoring
+            try:
+                smart_contract.submit_result(
+                    result_hash=fair_hash,
+                    client_seed=client_seed,
+                    server_seed_hash=event["provably_fair"]["server_seed_hash"],
+                    nonce=nonce,
+                    round_id=self._state["rounds"],
+                )
+            except Exception:
+                pass
             state = self.state()
             try:
                 catalog.record_play(game_id)
@@ -776,6 +790,85 @@ class ZlunaRequestHandler(BaseHTTPRequestHandler):
             mid = query.get("mid", ["lunacommander"])[0]
             self._send_json(bot_hub.generate_telegram_miniapp_url(mid))
             return
+        if path == "/api/bots/status":
+            self._send_json(bot_hub.get_bot_status())
+            return
+        if path == "/api/bots/discord/connect":
+            self._send_json({"ok": True, "message": "Use POST /api/bots/discord/connect with bot_token"})
+            return
+        if path == "/api/bots/telegram/session":
+            query = parse_qs(urlsplit(self.path).query)
+            mid = query.get("mid", ["lunacommander"])[0]
+            tg_id = int(query.get("tg_id", ["0"])[0])
+            res = bot_hub.telegram.create_miniapp_session(mid, tg_id)
+            self._send_json(res)
+            return
+        if path == "/api/webrtc/config":
+            self._send_json({"ok": True, "config": webrtc_engine.get_studio_config()})
+            return
+        if path == "/api/webrtc/studios":
+            self._send_json({"ok": True, "studios": webrtc_engine.list_studios()})
+            return
+        if path == "/api/webrtc/rooms":
+            query = parse_qs(urlsplit(self.path).query)
+            status = query.get("status", [None])[0]
+            self._send_json({"ok": True, "rooms": webrtc_engine.list_rooms(status)})
+            return
+        if path == "/api/webrtc/room":
+            query = parse_qs(urlsplit(self.path).query)
+            room_id = query.get("room_id", [None])[0]
+            if room_id:
+                room = webrtc_engine.get_room(room_id)
+                if room:
+                    self._send_json({"ok": True, "room": room.to_dict(include_sdp=True)})
+                else:
+                    self._send_error_json("room not found", HTTPStatus.NOT_FOUND)
+            else:
+                self._send_error_json("room_id required", HTTPStatus.BAD_REQUEST)
+            return
+        if path == "/api/webrtc/signaling":
+            query = parse_qs(urlsplit(self.path).query)
+            peer_id = query.get("peer_id", [None])[0]
+            if peer_id:
+                self._send_json(webrtc_engine.get_pending_signaling(peer_id))
+            else:
+                self._send_error_json("peer_id required", HTTPStatus.BAD_REQUEST)
+            return
+        if path == "/api/cluster/status":
+            self._send_json(redis_cluster.get_cluster_status())
+            return
+        if path == "/api/cluster/nodes":
+            self._send_json({"ok": True, "nodes": redis_cluster.list_nodes()})
+            return
+        if path == "/api/smart-contract/info":
+            self._send_json(smart_contract.get_contract_info())
+            return
+        if path == "/api/smart-contract/batches":
+            query = parse_qs(urlsplit(self.path).query)
+            limit = int(query.get("limit", ["50"])[0])
+            self._send_json({"ok": True, "batches": smart_contract.list_batches(limit)})
+            return
+        if path == "/api/smart-contract/pending":
+            self._send_json({"ok": True, "pending": smart_contract.get_pending()})
+            return
+        if path == "/api/smart-contract/batch":
+            query = parse_qs(urlsplit(self.path).query)
+            batch_id = query.get("batch_id", [None])[0]
+            if batch_id:
+                batch = smart_contract.get_batch(batch_id)
+                if batch:
+                    self._send_json({"ok": True, "batch": batch})
+                else:
+                    self._send_error_json("batch not found", HTTPStatus.NOT_FOUND)
+            else:
+                self._send_error_json("batch_id required", HTTPStatus.BAD_REQUEST)
+            return
+        if path == "/api/smart-contract/solidity":
+            self._send_json({"ok": True, "contract": smart_contract.generate_solidity_contract()})
+            return
+        if path == "/api/i18n/all":
+            self._send_json(i18n_engine.get_all_translations())
+            return
         if path == "/api/ai-dealer/status":
             self._send_json(ai_dealer.get_live_host_status())
             return
@@ -901,7 +994,13 @@ class ZlunaRequestHandler(BaseHTTPRequestHandler):
             "/api/luckyconnect/launch", "/api/luckyconnect/webhook",
             "/api/marketing/redeem", "/api/marketing/wheel", "/api/risk/ocr",
             "/api/zwallet/deposit", "/api/zwallet/withdraw", "/api/zwallet/stake",
-            "/api/ai-dealer/commentary"
+            "/api/ai-dealer/commentary",
+            "/api/bots/discord/connect", "/api/bots/telegram/validate",
+            "/api/webrtc/rooms/create", "/api/webrtc/rooms/join", "/api/webrtc/rooms/leave",
+            "/api/webrtc/rooms/close", "/api/webrtc/signal/offer", "/api/webrtc/signal/answer",
+            "/api/webrtc/signal/ice", "/api/webrtc/studios/register",
+            "/api/smart-contract/submit", "/api/smart-contract/anchor",
+            "/api/smart-contract/verify", "/api/cluster/heartbeat",
         }
         if path not in allowed_paths:
             self._send_error_json("not found", HTTPStatus.NOT_FOUND)
@@ -919,6 +1018,88 @@ class ZlunaRequestHandler(BaseHTTPRequestHandler):
                 )
                 self._send_json({"ok": True, "commentary": res.__dict__})
                 return
+            if path == "/api/bots/discord/connect":
+                token = payload.get("bot_token", "")
+                self._send_json(bot_hub.discord.connect(token))
+                return
+            if path == "/api/bots/telegram/validate":
+                init_data = payload.get("init_data", "")
+                bot_token = payload.get("bot_token", "")
+                self._send_json(bot_hub.telegram.validate_init_data(init_data, bot_token))
+                return
+            if path == "/api/webrtc/studios/register":
+                studio_id = payload.get("studio_id", f"studio_{secrets.token_hex(4)}")
+                name = payload.get("name", f"Studio {studio_id}")
+                location = payload.get("location", "Monte Carlo")
+                self._send_json(webrtc_engine.register_studio(studio_id, name, location))
+                return
+            if path == "/api/webrtc/rooms/create":
+                studio_id = payload.get("studio_id", "")
+                game_type = payload.get("game_type", "blackjack")
+                max_viewers = int(payload.get("max_viewers", 100))
+                self._send_json(webrtc_engine.create_room(studio_id, game_type, max_viewers))
+                return
+            if path == "/api/webrtc/rooms/join":
+                room_id = payload.get("room_id", "")
+                peer_id = payload.get("peer_id", webrtc_engine.generate_peer_id())
+                member_id = payload.get("member_id", "lunacommander")
+                room = webrtc_engine.get_room(room_id)
+                if not room:
+                    self._send_error_json("room not found", HTTPStatus.NOT_FOUND)
+                    return
+                if room.studio_peer_id is None:
+                    res = webrtc_engine.studio_join_room(room_id, peer_id)
+                else:
+                    res = webrtc_engine.viewer_join_room(room_id, peer_id, member_id)
+                self._send_json(res)
+                return
+            if path == "/api/webrtc/rooms/leave":
+                peer_id = payload.get("peer_id", "")
+                self._send_json(webrtc_engine.leave_room(peer_id))
+                return
+            if path == "/api/webrtc/rooms/close":
+                room_id = payload.get("room_id", "")
+                self._send_json(webrtc_engine.close_room(room_id))
+                return
+            if path == "/api/webrtc/signal/offer":
+                from_peer = payload.get("from_peer", "")
+                to_peer = payload.get("to_peer", "")
+                sdp = payload.get("sdp", {})
+                self._send_json(webrtc_engine.signal_sdp_offer(from_peer, to_peer, sdp))
+                return
+            if path == "/api/webrtc/signal/answer":
+                from_peer = payload.get("from_peer", "")
+                to_peer = payload.get("to_peer", "")
+                sdp = payload.get("sdp", {})
+                self._send_json(webrtc_engine.signal_sdp_answer(from_peer, to_peer, sdp))
+                return
+            if path == "/api/webrtc/signal/ice":
+                from_peer = payload.get("from_peer", "")
+                to_peer = payload.get("to_peer", "")
+                candidate = payload.get("candidate", {})
+                self._send_json(webrtc_engine.relay_ice_candidate(from_peer, to_peer, candidate))
+                return
+            if path == "/api/smart-contract/submit":
+                res_hash = payload.get("result_hash", "")
+                client_seed = payload.get("client_seed", "")
+                server_hash = payload.get("server_seed_hash", "")
+                nonce = int(payload.get("nonce", 0))
+                round_id = int(payload.get("round_id", 0))
+                self._send_json(smart_contract.submit_result(res_hash, client_seed, server_hash, nonce, round_id))
+                return
+            if path == "/api/smart-contract/anchor":
+                batch_size = int(payload.get("batch_size", 10))
+                self._send_json(smart_contract.anchor_batch(batch_size))
+                return
+            if path == "/api/smart-contract/verify":
+                result_hash = payload.get("result_hash", "")
+                proof = payload.get("merkle_proof", [])
+                root = payload.get("merkle_root", "")
+                self._send_json(smart_contract.verify_on_chain(result_hash, proof, root))
+                return
+            if path == "/api/cluster/heartbeat":
+                redis_cluster.heartbeat()
+                self._send_json({"ok": True, "node_id": redis_cluster.node_id})
             if path == "/api/marketing/redeem":
                 auth_hdr = self.headers.get("Authorization", "")
                 token = auth_hdr.replace("Bearer ", "").strip() if "Bearer " in auth_hdr else auth_hdr.strip()

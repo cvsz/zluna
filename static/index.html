@@ -168,24 +168,49 @@
                 <span class="badge-accent">CMS</span>
               </a>
 
-              <div class="menu-group-label">INTELLIGENCE & SUPPORT</div>
-              <a class="luna-nav-link" href="#fairness">
-                <span class="nav-ico">🛡️</span>
-                <span class="nav-txt">Provably Fair</span>
-              </a>
-              <a class="luna-nav-link" href="#stats">
-                <span class="nav-ico">📊</span>
-                <span class="nav-txt">Analytics & RTP</span>
-              </a>
-              <a class="luna-nav-link" href="#history">
-                <span class="nav-ico">📜</span>
-                <span class="nav-txt">Audit Ledger</span>
-              </a>
-              <a class="luna-nav-link" href="#support">
-                <span class="nav-ico">💬</span>
-                <span class="nav-txt">24/7 AI Support</span>
-              </a>
-            </nav>
+               <div class="menu-group-label">INTELLIGENCE & SUPPORT</div>
+               <a class="luna-nav-link" href="#fairness">
+                 <span class="nav-ico">🛡️</span>
+                 <span class="nav-txt">Provably Fair</span>
+               </a>
+               <a class="luna-nav-link" href="#stats">
+                 <span class="nav-ico">📊</span>
+                 <span class="nav-txt">Analytics & RTP</span>
+               </a>
+               <a class="luna-nav-link" href="#history">
+                 <span class="nav-ico">📜</span>
+                 <span class="nav-txt">Audit Ledger</span>
+               </a>
+               <a class="luna-nav-link" href="#support">
+                 <span class="nav-ico">💬</span>
+                 <span class="nav-txt">24/7 AI Support</span>
+               </a>
+               <div class="menu-group-label">SOCIAL & STREAMING</div>
+               <a class="luna-nav-link" href="#live-dealer">
+                 <span class="nav-ico">🎥</span>
+                 <span class="nav-txt">Live Dealer Studios</span>
+                 <span class="nav-badge-hot">WebRTC</span>
+               </a>
+               <a class="luna-nav-link" href="#social-bots">
+                 <span class="nav-ico">🤖</span>
+                 <span class="nav-txt">Telegram & Discord</span>
+                 <span class="nav-badge-gold">Mini-Apps</span>
+               </a>
+               <div class="menu-group-label">BLOCKCHAIN</div>
+               <a class="luna-nav-link" href="#on-chain">
+                 <span class="nav-ico">⛓️</span>
+                 <span class="nav-txt">On-Chain Verify</span>
+                 <span class="badge-accent">Smart Contract</span>
+               </a>
+               <select id="language-selector" class="luna-select mt-2" style="width:calc(100% - 16px); margin:8px;">
+                 <option value="EN">🇬🇧 English</option>
+                 <option value="TH">🇹🇭 ไทย</option>
+                 <option value="JA">🇯🇵 日本語</option>
+                 <option value="ZH">🇨🇳 中文</option>
+                 <option value="ES">🇪🇸 Español</option>
+                 <option value="PT">🇧🇷 Português</option>
+               </select>
+             </nav>
           </div>
 
           <div class="sidebar-status-bar">
@@ -708,7 +733,132 @@
               </div>
             </section>
 
-            <!-- VIEW 3: COIN STORE -->
+            <!-- VIEW: LIVE DEALER STUDIOS (WebRTC) -->
+            <section class="view" id="view-live-dealer">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Ultra-Low Latency Streaming</p>
+                  <h2>Live Dealer Studios</h2>
+                </div>
+                <span class="badge-green">WebRTC P2P</span>
+              </div>
+              <div class="deck-grid mt-4">
+                <div class="deck-card">
+                  <h3 class="card-title">Studio Rooms</h3>
+                  <p class="text-muted" style="font-size:13px;">Join a live dealer room for real-time video streaming directly from certified studios.</p>
+                  <div class="field-wrap mt-3">
+                    <label class="field-label">Game Type</label>
+                    <select id="ld-game-type" class="luna-select w-100">
+                      <option value="blackjack">Blackjack</option>
+                      <option value="baccarat">Baccarat</option>
+                      <option value="roulette">Roulette</option>
+                      <option value="poker">Texas Hold'em</option>
+                    </select>
+                  </div>
+                  <button class="btn-spin-primary mt-3" id="btn-ld-create-room">Create Room</button>
+                  <button class="btn-store-glow mt-2" id="btn-ld-refresh">Refresh Rooms</button>
+                </div>
+                <div class="deck-card">
+                  <h3 class="card-title">Active Streams</h3>
+                  <div id="ld-rooms-list" style="max-height:300px; overflow-y:auto;">
+                    <div class="empty-state"><span>No active rooms</span><small>Create one to start streaming!</small></div>
+                  </div>
+                </div>
+              </div>
+              <div class="deck-card mt-3" id="ld-stream-container" style="display:none;">
+                <div class="deck-card-header">
+                  <div>
+                    <p class="card-eyebrow">Live Stream</p>
+                    <h3 class="card-title" id="ld-stream-title">Stream View</h3>
+                  </div>
+                  <div class="d-flex gap-2 align-items-center">
+                    <span class="badge-green" id="ld-stream-status">CONNECTED</span>
+                    <span class="text-muted" id="ld-stream-stats" style="font-size:12px;"></span>
+                    <button class="btn-auto-stop" id="btn-ld-leave">Leave</button>
+                  </div>
+                </div>
+                <div style="background:#020617; border-radius:14px; height:360px; display:flex; align-items:center; justify-content:center; position:relative;">
+                  <video id="ld-video" autoplay playsinline style="width:100%; height:100%; object-fit:cover; border-radius:14px; display:none;"></video>
+                  <div id="ld-video-placeholder" style="text-align:center;">
+                    <div style="font-size:48px;">📡</div>
+                    <p class="text-muted mt-2">WebRTC stream will appear here</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- VIEW: TELEGRAM & DISCORD BOTS -->
+            <section class="view" id="view-social-bots">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Social Mini-Apps</p>
+                  <h2>Telegram & Discord Bot Integration</h2>
+                </div>
+                <span class="badge-teal">Mini-Apps</span>
+              </div>
+              <div class="deck-grid mt-4">
+                <div class="deck-card">
+                  <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #0088cc 0%, #229ED9 100%); display:flex; align-items:center; justify-content:center; font-size:24px;">✈️</div>
+                    <div><h4 style="margin:0;">Telegram Mini-App</h4><small class="text-muted">Play inside Telegram</small></div>
+                  </div>
+                  <button class="btn-spin-primary mt-3" id="btn-tg-launch">Launch Mini-App</button>
+                  <div id="tg-miniapp-link" class="mt-2" style="font-size:12px; word-break:break-all;"></div>
+                </div>
+                <div class="deck-card">
+                  <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #5865F2 0%, #7289DA 100%); display:flex; align-items:center; justify-content:center; font-size:24px;">🎮</div>
+                    <div><h4 style="margin:0;">Discord Bot</h4><small class="text-muted">Play from Discord servers</small></div>
+                  </div>
+                  <button class="btn-store-glow mt-3" id="btn-discord-connect">Connect Bot</button>
+                  <div id="discord-status" class="mt-2 console-status-text"></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- VIEW: ON-CHAIN VERIFICATION -->
+            <section class="view" id="view-on-chain">
+              <div class="page-title-banner">
+                <div>
+                  <p class="card-eyebrow">Decentralized Verification</p>
+                  <h2>On-Chain Smart Contract Anchoring</h2>
+                </div>
+                <span class="badge-teal">Polygon</span>
+              </div>
+              <div class="telemetry-grid mt-3">
+                <div class="telemetry-card highlight-card"><span class="telemetry-label">Total Anchored</span><div class="telemetry-num" id="oc-total-anchored">0</div></div>
+                <div class="telemetry-card"><span class="telemetry-label">Pending</span><div class="telemetry-num" id="oc-pending">0</div></div>
+                <div class="telemetry-card"><span class="telemetry-label">Batches</span><div class="telemetry-num" id="oc-batches">0</div></div>
+                <div class="telemetry-card"><span class="telemetry-label">Chain</span><div class="telemetry-num" style="font-size:16px;">Polygon</div></div>
+              </div>
+              <div class="deck-card mt-3">
+                <h3 class="card-title">Anchor Batch</h3>
+                <p class="text-muted" style="font-size:13px;">Anchor pending results on-chain as Merkle root commitment.</p>
+                <button class="btn-spin-primary mt-3" id="oc-anchor-btn">Anchor On-Chain</button>
+                <div id="oc-anchor-result" class="console-status-text mt-2"></div>
+              </div>
+              <div class="deck-card mt-3">
+                <h3 class="card-title">Smart Contract</h3>
+                <p class="text-muted" style="font-size:13px;">Contract: <code id="oc-contract-address" style="color:#8b5cf6;">Loading...</code></p>
+                <details class="mt-2"><summary style="cursor:pointer; color:#8b5cf6;">Solidity Source</summary><pre id="oc-solidity-source" style="background:#020617; padding:16px; border-radius:8px; font-size:11px; overflow-x:auto; margin-top:12px; max-height:300px; overflow-y:auto;"></pre></details>
+              </div>
+            </section>
+
+            <!-- VIEW: CLUSTER STATUS -->
+            <section class="view" id="view-cluster">
+              <div class="page-title-banner">
+                <div><p class="card-eyebrow">Horizontal Scaling</p><h2>Redis Cluster Status</h2></div>
+                <span class="badge-teal" id="cluster-mode-badge">Standalone</span>
+              </div>
+              <div class="telemetry-grid mt-3">
+                <div class="telemetry-card highlight-card"><span class="telemetry-label">Mode</span><div class="telemetry-num" id="cluster-mode" style="font-size:16px;">Standalone</div></div>
+                <div class="telemetry-card"><span class="telemetry-label">Nodes</span><div class="telemetry-num" id="cluster-nodes">1</div></div>
+              </div>
+              <div class="deck-card mt-3"><h3 class="card-title">Nodes</h3><div id="cluster-nodes-list" class="ledger-stream-box" style="max-height:300px; overflow-y:auto;"></div></div>
+            </section>
+
+            <!-- MODALS -->
+     </section>
             <section class="view" id="view-store">
               <div class="page-title-banner">
                 <div>
