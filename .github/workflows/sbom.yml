@@ -25,7 +25,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload SBOM Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: zluna-sbom
           path: ./zluna-sbom.json
