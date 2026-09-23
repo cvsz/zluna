@@ -36,7 +36,7 @@ jobs:
           python -m build
 
       - name: Create GitHub Release with Assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           name: ZLUNA Enterprise Suite ${{ github.ref_name }}
